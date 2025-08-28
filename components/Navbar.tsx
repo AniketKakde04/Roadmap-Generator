@@ -2,15 +2,20 @@ import React from 'react';
 import GitHubIcon from './icons/GitHubIcon';
 
 interface NavbarProps {
-    currentView: 'home' | 'examples';
-    onNavigate: (view: 'home' | 'examples') => void;
+    currentView: 'home' | 'examples' | 'resume';
+    onNavigate: (view: 'home' | 'examples' | 'resume') => void;
+    isLoggedIn: boolean;
+    userName?: string;
+    onSignInClick: () => void;
+    onSignUpClick: () => void;
+    onSignOut: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
-    const navLinkClasses = (view: 'home' | 'examples') => 
+const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, isLoggedIn, userName, onSignInClick, onSignUpClick, onSignOut }) => {
+    const navLinkClasses = (view: 'home' | 'examples' | 'resume') =>
         `px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-            currentView === view 
-            ? 'bg-slate-700 text-sky-400' 
+            currentView === view
+            ? 'bg-slate-700 text-sky-400'
             : 'text-slate-300 hover:bg-slate-800 hover:text-white'
         }`;
 
@@ -31,14 +36,38 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate }) => {
                              <button onClick={() => onNavigate('home')} className={navLinkClasses('home')}>
                                 Home
                             </button>
+                            <button onClick={() => onNavigate('resume')} className={navLinkClasses('resume')}>
+                                Resume Analyzer
+                            </button>
                             <button onClick={() => onNavigate('examples')} className={navLinkClasses('examples')}>
                                 Examples
                             </button>
                         </div>
-                        <a 
-                            href="https://github.com/google/generative-ai-docs/tree/main/site/en/gemini-api/docs/applications/roadmap_generator" 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
+
+                        <div className="w-px h-6 bg-slate-700"></div>
+
+                        {isLoggedIn ? (
+                            <div className="flex items-center space-x-4">
+                                <span className="text-sm text-slate-300 hidden sm:block">Welcome, {userName}!</span>
+                                <button onClick={onSignOut} className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                                    Sign Out
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex items-center space-x-2">
+                                <button onClick={onSignInClick} className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                                    Sign In
+                                </button>
+                                <button onClick={onSignUpClick} className="px-3 py-2 rounded-md text-sm font-medium bg-sky-600 text-white hover:bg-sky-500 transition-colors">
+                                    Sign Up
+                                </button>
+                            </div>
+                        )}
+                        
+                        <a
+                            href="https://github.com/google/generative-ai-docs/tree/main/site/en/gemini-api/docs/applications/roadmap_generator"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             aria-label="GitHub Repository"
                             className="text-slate-400 hover:text-white transition-colors"
                         >

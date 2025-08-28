@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Roadmap } from '../types';
+import { Roadmap, ProjectSuggestion } from '../types';
 
 const BROWSER_API_KEY = process.env.API_KEY;
 if (!BROWSER_API_KEY) {
@@ -49,6 +49,61 @@ const roadmapSchema = {
     },
     required: ["title", "description", "steps"],
 };
+
+const projectSuggestionSchema = {
+    type: Type.ARRAY,
+    items: {
+        type: Type.OBJECT,
+        properties: {
+            title: { type: Type.STRING, description: "A concise, catchy title for the suggested project." },
+            description: { type: Type.STRING, description: "A short, compelling description of the project and why it's valuable for the user's portfolio." },
+        },
+        required: ["title", "description"],
+    },
+};
+
+export async function suggestProjectsFromResume(resumeText: string): Promise<ProjectSuggestion[]> {
+    try {
+        if (!resumeText.trim()) {
+            throw new Error("Resume text cannot be empty.");
+        }
+
+        const prompt = `You are an expert career coach and senior hiring manager for a tech company. Your task is to analyze the provided resume text and suggest 3 unique and impactful projects the candidate could build to significantly strengthen their portfolio and fill any potential skill gaps.
+
+The suggestions should be tailored to the candidate's existing skills and experience level. For each project, provide a concise title and a short description.
+
+Resume Text:
+---
+${resumeText}
+---
+
+Generate 3 project suggestions based on this resume. The output MUST be a valid JSON object matching the provided schema.`;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: projectSuggestionSchema,
+            },
+        });
+
+        const jsonText = response.text.trim();
+        const projectData: ProjectSuggestion[] = JSON.parse(jsonText);
+
+        if (!Array.isArray(projectData) || projectData.length === 0) {
+            throw new Error("Invalid project suggestions structure received from AI.");
+        }
+
+        return projectData;
+    } catch (error) {
+        console.error("Error suggesting projects:", error);
+        if (error instanceof Error) {
+            throw new Error(`Failed to get project suggestions from AI: ${error.message}`);
+        }
+        throw new Error("An unknown error occurred while suggesting projects.");
+    }
+}
 
 export async function generateRoadmap(topic: string, level: string, timeline: string): Promise<Roadmap> {
     try {

@@ -16,3 +16,8 @@ export interface Roadmap {
   description: string;
   steps: Step[];
 }
+
+export interface ProjectSuggestion {
+  title: string;
+  description: string;
+}
