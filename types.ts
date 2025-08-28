@@ -20,4 +20,5 @@ export interface Roadmap {
 export interface ProjectSuggestion {
   title: string;
   description: string;
+  reasoning: string;
 }

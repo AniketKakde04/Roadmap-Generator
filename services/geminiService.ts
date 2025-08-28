@@ -57,27 +57,38 @@ const projectSuggestionSchema = {
         properties: {
             title: { type: Type.STRING, description: "A concise, catchy title for the suggested project." },
             description: { type: Type.STRING, description: "A short, compelling description of the project and why it's valuable for the user's portfolio." },
+            reasoning: { type: Type.STRING, description: "A detailed explanation of why this project is a good fit for the user, referencing their skills and explaining how it addresses skill gaps relative to a target job if provided." },
         },
-        required: ["title", "description"],
+        required: ["title", "description", "reasoning"],
     },
 };
 
-export async function suggestProjectsFromResume(resumeText: string): Promise<ProjectSuggestion[]> {
+export async function suggestProjectsFromResume(resumeText: string, jobTitle: string, jobDescription: string): Promise<ProjectSuggestion[]> {
     try {
         if (!resumeText.trim()) {
             throw new Error("Resume text cannot be empty.");
         }
 
-        const prompt = `You are an expert career coach and senior hiring manager for a tech company. Your task is to analyze the provided resume text and suggest 3 unique and impactful projects the candidate could build to significantly strengthen their portfolio and fill any potential skill gaps.
+        let prompt = `You are an expert career coach and senior hiring manager for a tech company. Your task is to analyze the provided resume text and suggest 3 unique and impactful projects the candidate could build to significantly strengthen their portfolio and fill any potential skill gaps.
 
-The suggestions should be tailored to the candidate's existing skills and experience level. For each project, provide a concise title and a short description.
+For each project, provide:
+1. A concise, catchy title.
+2. A short, compelling description of the project.
+3. A clear 'reasoning' explaining *why* this specific project is a great choice for the candidate. This reasoning should connect to their existing skills mentioned in the resume and explain what new, valuable skills they will gain.
 
-Resume Text:
----
-${resumeText}
----
+The suggestions should be tailored to the candidate's existing skills and experience level.`;
 
-Generate 3 project suggestions based on this resume. The output MUST be a valid JSON object matching the provided schema.`;
+        if (jobTitle.trim() || jobDescription.trim()) {
+            prompt += `\n\nThe candidate is specifically targeting the following job. The project suggestions should be highly relevant to bridging any gaps between their resume and this job description.`;
+            if (jobTitle.trim()) {
+                prompt += `\n\nTarget Job Title: ${jobTitle}`;
+            }
+            if (jobDescription.trim()) {
+                prompt += `\n\nJob Description:\n---\n${jobDescription}\n---`;
+            }
+        }
+        
+        prompt += `\n\nResume Text:\n---\n${resumeText}\n---\n\nGenerate 3 project suggestions based on this resume and target job. The output MUST be a valid JSON object matching the provided schema.`;
 
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
