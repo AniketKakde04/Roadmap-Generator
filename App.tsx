@@ -1,11 +1,13 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { generateRoadmap } from './services/geminiService';
-import { Roadmap as RoadmapType } from './types';
+import { Roadmap as RoadmapType, SavedRoadmap } from './types';
 import Loader from './components/Loader';
 import Roadmap from './components/Roadmap';
 import Navbar from './components/Navbar';
 import AuthModal from './components/AuthModal';
 import ResumeAnalyzer from './components/ResumeAnalyzer';
+import ProfilePage from './components/ProfilePage';
 
 const exampleTopics = [
     { title: 'Learn Quantum Computing', description: 'From qubits to quantum algorithms, a path for beginners.' },
@@ -44,7 +46,7 @@ const ExamplesPage: React.FC<{ onSelectExample: (topic: string) => void }> = ({ 
 
 
 const App: React.FC = () => {
-    const [view, setView] = useState<'home' | 'examples' | 'resume'>('home');
+    const [view, setView] = useState<'home' | 'examples' | 'resume' | 'profile'>('home');
     const [topic, setTopic] = useState<string>('');
     const [level, setLevel] = useState<'Beginner' | 'Intermediate' | 'Professional'>('Beginner');
     const [timeline, setTimeline] = useState<string>('');
@@ -56,6 +58,33 @@ const App: React.FC = () => {
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
     const [user, setUser] = useState<{ name: string } | null>(null);
     const [modalView, setModalView] = useState<'signIn' | 'signUp' | null>(null);
+    const [savedRoadmaps, setSavedRoadmaps] = useState<SavedRoadmap[]>([]);
+    
+    // Load saved roadmaps from local storage on login
+    useEffect(() => {
+        if (isLoggedIn && user) {
+            try {
+                const storedData = localStorage.getItem(`roadmaps_${user.name}`);
+                if (storedData) {
+                    setSavedRoadmaps(JSON.parse(storedData));
+                }
+            } catch (e) {
+                console.error("Failed to parse saved roadmaps from localStorage", e);
+                setSavedRoadmaps([]);
+            }
+        } else {
+            // Clear saved roadmaps on logout
+            setSavedRoadmaps([]);
+        }
+    }, [isLoggedIn, user]);
+
+    // Function to save roadmaps to state and local storage
+    const updateSavedRoadmaps = (newRoadmaps: SavedRoadmap[]) => {
+        setSavedRoadmaps(newRoadmaps);
+        if (user) {
+            localStorage.setItem(`roadmaps_${user.name}`, JSON.stringify(newRoadmaps));
+        }
+    };
 
     const handleGenerateRoadmap = useCallback(async () => {
         if (!topic.trim()) {
@@ -84,6 +113,41 @@ const App: React.FC = () => {
             setAutoGenerate(false);
         }
     }, [autoGenerate, topic, handleGenerateRoadmap]);
+    
+    const handleSaveRoadmap = () => {
+        if (!roadmap || !user) return;
+
+        const isAlreadySaved = savedRoadmaps.some(r => r.title === roadmap.title && r.description === roadmap.description);
+        if (isAlreadySaved) {
+            return; // Already saved, button should be disabled
+        }
+
+        const newSavedRoadmap: SavedRoadmap = {
+            ...roadmap,
+            id: new Date().toISOString(),
+            savedAt: new Date().toISOString(),
+            completedSteps: [],
+        };
+        updateSavedRoadmaps([...savedRoadmaps, newSavedRoadmap]);
+    };
+
+    const handleDeleteRoadmap = (roadmapId: string) => {
+        const newRoadmaps = savedRoadmaps.filter(r => r.id !== roadmapId);
+        updateSavedRoadmaps(newRoadmaps);
+    };
+
+    const handleProgressToggle = (roadmapId: string, stepIndex: number) => {
+        const newRoadmaps = savedRoadmaps.map(r => {
+            if (r.id === roadmapId) {
+                const completedSteps = r.completedSteps.includes(stepIndex)
+                    ? r.completedSteps.filter(i => i !== stepIndex)
+                    : [...r.completedSteps, stepIndex];
+                return { ...r, completedSteps };
+            }
+            return r;
+        });
+        updateSavedRoadmaps(newRoadmaps);
+    };
 
     const handleSelectExample = (selectedTopic: string) => {
         setTopic(selectedTopic);
@@ -124,6 +188,7 @@ const App: React.FC = () => {
     const handleSignOut = () => {
         setUser(null);
         setIsLoggedIn(false);
+        setView('home'); // Go to home on sign out
     };
 
     const renderContent = () => {
@@ -132,8 +197,18 @@ const App: React.FC = () => {
                 return <ExamplesPage onSelectExample={handleSelectExample} />;
             case 'resume':
                 return <ResumeAnalyzer onProjectSelect={handleProjectSelect} />;
+            case 'profile':
+                 return user ? (
+                    <ProfilePage 
+                        userName={user.name} 
+                        savedRoadmaps={savedRoadmaps} 
+                        onProgressToggle={handleProgressToggle}
+                        onDeleteRoadmap={handleDeleteRoadmap}
+                    />
+                 ) : null;
             case 'home':
             default:
+                const isCurrentRoadmapSaved = roadmap && savedRoadmaps.some(r => r.title === roadmap.title && r.description === roadmap.description);
                 return (
                     <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
                         <header className="w-full text-center pt-8 md:pt-12">
@@ -222,7 +297,22 @@ const App: React.FC = () => {
 
                             <div className="w-full mt-8">
                                 {isLoading && <Loader />}
-                                {roadmap && <Roadmap roadmap={roadmap} />}
+                                {roadmap && (
+                                     <div>
+                                        {isLoggedIn && (
+                                            <div className="text-center mb-6">
+                                                <button 
+                                                    onClick={handleSaveRoadmap}
+                                                    disabled={!!isCurrentRoadmapSaved}
+                                                    className="bg-green-600 text-white font-semibold py-2 px-5 rounded-md hover:bg-green-500 transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed"
+                                                >
+                                                    {isCurrentRoadmapSaved ? 'Roadmap Saved' : 'Save Roadmap to Profile'}
+                                                </button>
+                                            </div>
+                                        )}
+                                        <Roadmap roadmap={roadmap} />
+                                    </div>
+                                )}
                             </div>
                         </main>
                     </div>

@@ -1,9 +1,10 @@
+
 import React from 'react';
 import GitHubIcon from './icons/GitHubIcon';
 
 interface NavbarProps {
-    currentView: 'home' | 'examples' | 'resume';
-    onNavigate: (view: 'home' | 'examples' | 'resume') => void;
+    currentView: 'home' | 'examples' | 'resume' | 'profile';
+    onNavigate: (view: 'home' | 'examples' | 'resume' | 'profile') => void;
     isLoggedIn: boolean;
     userName?: string;
     onSignInClick: () => void;
@@ -12,7 +13,7 @@ interface NavbarProps {
 }
 
 const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, isLoggedIn, userName, onSignInClick, onSignUpClick, onSignOut }) => {
-    const navLinkClasses = (view: 'home' | 'examples' | 'resume') =>
+    const navLinkClasses = (view: 'home' | 'examples' | 'resume' | 'profile') =>
         `px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
             currentView === view
             ? 'bg-slate-700 text-sky-400'
@@ -47,8 +48,10 @@ const Navbar: React.FC<NavbarProps> = ({ currentView, onNavigate, isLoggedIn, us
                         <div className="w-px h-6 bg-slate-700"></div>
 
                         {isLoggedIn ? (
-                            <div className="flex items-center space-x-4">
-                                <span className="text-sm text-slate-300 hidden sm:block">Welcome, {userName}!</span>
+                            <div className="flex items-center space-x-2">
+                                <button onClick={() => onNavigate('profile')} className={navLinkClasses('profile')}>
+                                    Profile
+                                </button>
                                 <button onClick={onSignOut} className="px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
                                     Sign Out
                                 </button>

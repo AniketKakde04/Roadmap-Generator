@@ -12,9 +12,15 @@ export interface Step {
 }
 
 export interface Roadmap {
-  title: string;
+  title:string;
   description: string;
   steps: Step[];
+}
+
+export interface SavedRoadmap extends Roadmap {
+  id: string;
+  savedAt: string;
+  completedSteps: number[]; // Array of step indices
 }
 
 export interface ProjectSuggestion {
