@@ -82,10 +82,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
             
             {savedRoadmaps.length > 0 ? (
                 <div className="space-y-4">
-                    {savedRoadmaps.slice().reverse().map(roadmap => {
+                    {savedRoadmaps.slice().reverse().map((roadmap, index) => {
                         const progressPercent = roadmap.steps.length > 0 ? Math.round((roadmap.completedSteps.length / roadmap.steps.length) * 100) : 0;
                         return (
-                            <div key={roadmap.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 transition-all duration-300 group">
+                            <div 
+                                key={roadmap.id} 
+                                className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 transition-all duration-300 group animate-fadeInUp"
+                                style={{ animationDelay: `${index * 100}ms` }}
+                            >
                                 <div className="flex justify-between items-start">
                                     <button onClick={() => setSelectedRoadmap(roadmap)} className="text-left flex-grow pr-4">
                                         <h3 className="text-lg font-bold text-slate-100 group-hover:text-sky-400 transition-colors">{roadmap.title}</h3>

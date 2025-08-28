@@ -6,12 +6,13 @@ import ResourceLink from './ResourceLink';
 interface StepCardProps {
   step: Step;
   index: number;
-  totalSteps: number;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
-const StepCard: React.FC<StepCardProps> = ({ step, index }) => {
+const StepCard: React.FC<StepCardProps> = ({ step, index, className = '', style }) => {
   return (
-    <div className="mb-8 flex justify-between items-center w-full group">
+    <div className={`mb-8 flex justify-between items-center w-full group ${className}`} style={style}>
       {/* Timeline connector and dot for larger screens */}
       <div className="hidden md:flex order-1 w-5/12"></div>
       <div className="z-20 hidden md:flex items-center order-1 bg-slate-800 shadow-xl w-12 h-12 rounded-full justify-center">

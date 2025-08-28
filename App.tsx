@@ -221,7 +221,7 @@ const App: React.FC = () => {
                         </header>
 
                         <main className="w-full flex-grow flex flex-col items-center">
-                            <div className="w-full max-w-2xl p-4 sticky top-20 z-10 bg-slate-900/50 backdrop-blur-md rounded-xl shadow-lg border border-slate-700/50 mt-8">
+                            <div className="w-full max-w-2xl p-4 bg-slate-900/50 backdrop-blur-md rounded-xl shadow-lg border border-slate-700/50 mt-8">
                                 <div className="space-y-4">
                                     <div>
                                         <label htmlFor="topic" className="block text-sm font-medium text-slate-300 mb-2">
@@ -340,7 +340,9 @@ const App: React.FC = () => {
                 />
             )}
             <div className="flex flex-col items-center p-4">
-               {renderContent()}
+               <div key={view} className="w-full animate-fadeIn">
+                 {renderContent()}
+               </div>
             </div>
         </div>
     );

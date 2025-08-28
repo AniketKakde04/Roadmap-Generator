@@ -66,12 +66,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ initialView, onClose, onSignInSuc
 
     return (
         <div 
-            className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn"
             onClick={handleOverlayClick}
             aria-modal="true"
             role="dialog"
         >
-            <div className="bg-slate-800 border border-slate-700/50 rounded-2xl shadow-xl w-full max-w-md p-8 relative">
+            <div className="bg-slate-800 border border-slate-700/50 rounded-2xl shadow-xl w-full max-w-md p-8 relative animate-fadeInUp">
                 <button 
                     onClick={onClose} 
                     className="absolute top-4 right-4 text-slate-500 hover:text-slate-200 transition-colors"

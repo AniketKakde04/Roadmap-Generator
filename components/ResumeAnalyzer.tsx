@@ -161,7 +161,7 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
 
             {suggestions.length > 0 && (
                 <div className="mt-12">
-                     <h2 className="text-2xl font-bold text-center text-slate-200 mb-8">
+                     <h2 className="text-2xl font-bold text-center text-slate-200 mb-8 animate-fadeInUp">
                         Recommended Projects
                      </h2>
                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -169,7 +169,8 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                              <button
                                 key={index}
                                 onClick={() => onProjectSelect(project.title)}
-                                className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 text-left hover:bg-slate-800 hover:border-sky-500/50 transition-all duration-300 transform hover:-translate-y-1 group flex flex-col"
+                                className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 text-left hover:bg-slate-800 hover:border-sky-500/50 transition-all duration-300 transform hover:-translate-y-1 group flex flex-col animate-fadeInUp"
+                                style={{ animationDelay: `${index * 150}ms` }}
                                 aria-label={`Select project: ${project.title}`}
                              >
                                 <div className="flex-grow">
