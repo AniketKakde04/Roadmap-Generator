@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { Roadmap } from '../types';
 
@@ -51,13 +50,21 @@ const roadmapSchema = {
     required: ["title", "description", "steps"],
 };
 
-export async function generateRoadmap(topic: string): Promise<Roadmap> {
+export async function generateRoadmap(topic: string, level: string, timeline: string): Promise<Roadmap> {
     try {
-        const prompt = `You are an expert educator and curriculum designer. Your task is to generate a comprehensive, step-by-step learning roadmap for the given topic. The roadmap should be logical, starting from fundamentals and progressing to advanced concepts. For each step, provide a clear title, a concise description of what to learn, and a curated list of at least 3 high-quality, free-to-access online resources.
+        let prompt = `You are an expert educator and curriculum designer. Your task is to generate a comprehensive, step-by-step learning roadmap for the given topic. The roadmap should be logical, starting from fundamentals and progressing to advanced concepts. For each step, provide a clear title, a concise description of what to learn, and a curated list of at least 3 high-quality, free-to-access online resources.
 
-The topic is: "${topic}".
+The user's goal is to learn about or build: "${topic}".`;
 
-Ensure all URLs are valid and directly lead to the resource. The output MUST be a valid JSON object matching the provided schema.`;
+        if (level) {
+            prompt += `\n\nThe user's self-assessed expertise level is "${level}". Please tailor the starting point and complexity of the roadmap to be appropriate for this level. For a beginner, start with the absolute basics. For an intermediate learner, assume some foundational knowledge. For a professional, focus on advanced topics, specializations, or alternative technologies.`;
+        }
+
+        if (timeline.trim()) {
+            prompt += `\n\nThe user aims to complete this roadmap within a timeframe of "${timeline}". While this is a guideline, please try to structure the number and intensity of the steps to be realistically achievable within this period.`;
+        }
+
+        prompt += `\n\nEnsure all URLs are valid and directly lead to the resource. The output MUST be a valid JSON object matching the provided schema.`;
 
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
