@@ -5,7 +5,44 @@ import Loader from './components/Loader';
 import Roadmap from './components/Roadmap';
 import Navbar from './components/Navbar';
 
+const exampleTopics = [
+    { title: 'Learn Quantum Computing', description: 'From qubits to quantum algorithms, a path for beginners.' },
+    { title: 'Build a Full-Stack Web App with Next.js', description: 'Create a modern, server-rendered React application.' },
+    { title: 'Master Python for Data Science', description: 'A roadmap covering Pandas, NumPy, Matplotlib, and Scikit-learn.' },
+    { title: 'Become a UI/UX Designer', description: 'Learn the principles of user-centered design and create beautiful interfaces.' },
+    { title: 'Develop a Mobile Game with Unity', description: 'From C# basics to publishing your first game on app stores.' },
+    { title: 'Contribute to an Open Source Project', description: 'A guide to using Git, finding a project, and making your first PR.' },
+];
+
+const ExamplesPage: React.FC<{ onSelectExample: (topic: string) => void }> = ({ onSelectExample }) => (
+    <div className="w-full max-w-5xl mx-auto py-8">
+        <header className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-indigo-400 mb-2">
+                Example Roadmaps
+            </h1>
+            <p className="mt-4 text-lg text-slate-400">
+                Click on any example to populate the form and generate a detailed learning plan.
+            </p>
+        </header>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {exampleTopics.map(example => (
+                <button
+                    key={example.title}
+                    onClick={() => onSelectExample(example.title)}
+                    className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 text-left hover:bg-slate-800 hover:border-sky-500/50 transition-all duration-300 transform hover:-translate-y-1 group"
+                    aria-label={`Select example: ${example.title}`}
+                >
+                    <h3 className="text-lg font-bold text-slate-100 group-hover:text-sky-400 transition-colors">{example.title}</h3>
+                    <p className="text-sm text-slate-400 mt-2">{example.description}</p>
+                </button>
+            ))}
+        </div>
+    </div>
+);
+
+
 const App: React.FC = () => {
+    const [view, setView] = useState<'home' | 'examples'>('home');
     const [topic, setTopic] = useState<string>('');
     const [level, setLevel] = useState<'Beginner' | 'Intermediate' | 'Professional'>('Beginner');
     const [timeline, setTimeline] = useState<string>('');
@@ -33,6 +70,11 @@ const App: React.FC = () => {
             setIsLoading(false);
         }
     }, [topic, level, timeline]);
+    
+    const handleSelectExample = (selectedTopic: string) => {
+        setTopic(selectedTopic);
+        setView('home');
+    };
 
     const handleTopicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setTopic(e.target.value);
@@ -47,9 +89,10 @@ const App: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-slate-900 text-white font-sans selection:bg-sky-500 selection:text-white">
-            <Navbar />
+            <Navbar currentView={view} onNavigate={setView} />
             <div className="flex flex-col items-center p-4">
-                <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
+               {view === 'home' ? (
+                 <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
                     <header className="w-full text-center pt-8 md:pt-12">
                         <h1 className="text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-500">
                             AI Roadmap Generator
@@ -60,7 +103,7 @@ const App: React.FC = () => {
                     </header>
 
                     <main className="w-full flex-grow flex flex-col items-center">
-                        <div className="w-full max-w-2xl p-4 sticky top-20 z-10 bg-slate-900/50 backdrop-blur-md rounded-xl shadow-lg border border-slate-700/50">
+                        <div className="w-full max-w-2xl p-4 sticky top-20 z-10 bg-slate-900/50 backdrop-blur-md rounded-xl shadow-lg border border-slate-700/50 mt-8">
                             <div className="space-y-4">
                                 <div>
                                     <label htmlFor="topic" className="block text-sm font-medium text-slate-300 mb-2">
@@ -140,6 +183,9 @@ const App: React.FC = () => {
                         </div>
                     </main>
                 </div>
+               ) : (
+                <ExamplesPage onSelectExample={handleSelectExample} />
+               )}
             </div>
         </div>
     );
