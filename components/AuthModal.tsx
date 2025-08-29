@@ -1,19 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import XMarkIcon from './icons/XMarkIcon';
+import { signInUser, signUpUser } from '../services/authService';
 
 interface AuthModalProps {
     initialView: 'signIn' | 'signUp';
     onClose: () => void;
-    onSignInSuccess: (name: string) => void;
-    onSignUpSuccess: (name: string) => void;
+    onAuthSuccess: () => void;
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ initialView, onClose, onSignInSuccess, onSignUpSuccess }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ initialView, onClose, onAuthSuccess }) => {
     const [view, setView] = useState(initialView);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget) {
@@ -34,25 +35,32 @@ const AuthModal: React.FC<AuthModalProps> = ({ initialView, onClose, onSignInSuc
         };
     }, [handleEscKey]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setLoading(true);
 
-        if (view === 'signUp') {
-            if (!name || !email || !password) {
-                setError('Please fill in all fields.');
-                return;
+        try {
+            if (view === 'signUp') {
+                if (!name || !email || !password) {
+                    setError('Please fill in all fields.');
+                    setLoading(false);
+                    return;
+                }
+                await signUpUser({ name, email, password });
+            } else {
+                if (!email || !password) {
+                    setError('Please fill in all fields.');
+                    setLoading(false);
+                    return;
+                }
+                await signInUser({ email, password });
             }
-            // Simulate successful signup
-            onSignUpSuccess(name);
-        } else {
-            if (!email || !password) {
-                setError('Please fill in all fields.');
-                return;
-            }
-            // Simulate successful signin
-            // In a real app, you'd find the user by email
-            onSignInSuccess(email.split('@')[0]); // Use part of email as name for demo
+            onAuthSuccess();
+        } catch (err: any) {
+            setError(err.message || 'An error occurred.');
+        } finally {
+            setLoading(false);
         }
     };
     
@@ -98,6 +106,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ initialView, onClose, onSignInSuc
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="Your Name"
                                 className="w-full bg-slate-700 border border-slate-600 text-slate-200 placeholder-slate-500 rounded-md py-2 px-3 focus:ring-2 focus:ring-sky-500 focus:outline-none transition"
+                                disabled={loading}
                             />
                         </div>
                     )}
@@ -110,6 +119,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ initialView, onClose, onSignInSuc
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="you@example.com"
                             className="w-full bg-slate-700 border border-slate-600 text-slate-200 placeholder-slate-500 rounded-md py-2 px-3 focus:ring-2 focus:ring-sky-500 focus:outline-none transition"
+                            disabled={loading}
                         />
                     </div>
                     <div>
@@ -121,6 +131,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ initialView, onClose, onSignInSuc
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="••••••••"
                             className="w-full bg-slate-700 border border-slate-600 text-slate-200 placeholder-slate-500 rounded-md py-2 px-3 focus:ring-2 focus:ring-sky-500 focus:outline-none transition"
+                            disabled={loading}
                         />
                     </div>
 
@@ -128,16 +139,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ initialView, onClose, onSignInSuc
                     
                     <button
                         type="submit"
-                        className="w-full bg-sky-600 text-white font-semibold py-2.5 px-6 rounded-md hover:bg-sky-500 disabled:bg-slate-600 transition-all duration-200"
+                        className="w-full bg-sky-600 text-white font-semibold py-2.5 px-6 rounded-md hover:bg-sky-500 disabled:bg-slate-600 transition-all duration-200 flex items-center justify-center"
+                        disabled={loading}
                     >
-                        {view === 'signIn' ? 'Sign In' : 'Sign Up'}
+                        {loading ? 'Processing...' : (view === 'signIn' ? 'Sign In' : 'Sign Up')}
                     </button>
                 </form>
 
                 <div className="text-center mt-6">
                     <p className="text-sm text-slate-400">
                         {view === 'signIn' ? "Don't have an account? " : "Already have an account? "}
-                        <button onClick={() => switchView(view === 'signIn' ? 'signUp' : 'signIn')} className="font-medium text-sky-400 hover:text-sky-300">
+                        <button onClick={() => switchView(view === 'signIn' ? 'signUp' : 'signIn')} className="font-medium text-sky-400 hover:text-sky-300" disabled={loading}>
                             {view === 'signIn' ? 'Sign Up' : 'Sign In'}
                         </button>
                     </p>

@@ -1,14 +1,14 @@
-
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { generateRoadmap } from './services/geminiService';
-import { Roadmap as RoadmapType, SavedRoadmap } from './types';
+import { Roadmap as RoadmapType, SavedRoadmap, User } from './types';
 import Loader from './components/Loader';
 import Roadmap from './components/Roadmap';
 import Navbar from './components/Navbar';
 import AuthModal from './components/AuthModal';
 import ResumeAnalyzer from './components/ResumeAnalyzer';
 import ProfilePage from './components/ProfilePage';
+import { getSession, onAuthStateChange, signOutUser } from './services/authService';
+import { getSavedRoadmaps, saveRoadmap, deleteRoadmap, updateRoadmapProgress } from './services/roadmapService';
 
 const exampleTopics = [
     { title: 'Learn Quantum Computing', description: 'From qubits to quantum algorithms, a path for beginners.' },
@@ -56,36 +56,42 @@ const App: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [autoGenerate, setAutoGenerate] = useState(false);
 
-    const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-    const [user, setUser] = useState<{ name: string } | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [modalView, setModalView] = useState<'signIn' | 'signUp' | null>(null);
     const [savedRoadmaps, setSavedRoadmaps] = useState<SavedRoadmap[]>([]);
     
-    // Load saved roadmaps from local storage on login
     useEffect(() => {
-        if (isLoggedIn && user) {
-            try {
-                const storedData = localStorage.getItem(`roadmaps_${user.name}`);
-                if (storedData) {
-                    setSavedRoadmaps(JSON.parse(storedData));
+        const checkUser = async () => {
+            const session = await getSession();
+            setUser(session?.user ?? null);
+        };
+        checkUser();
+
+        const subscription = onAuthStateChange((session) => {
+            setUser(session?.user ?? null);
+        });
+
+        return () => {
+            subscription?.unsubscribe();
+        };
+    }, []);
+
+    useEffect(() => {
+        const fetchRoadmaps = async () => {
+            if (user) {
+                try {
+                    const roadmaps = await getSavedRoadmaps();
+                    setSavedRoadmaps(roadmaps);
+                } catch (e: any) {
+                    console.error("Failed to fetch saved roadmaps:", e.message);
+                    setError("Could not load your saved roadmaps.");
                 }
-            } catch (e) {
-                console.error("Failed to parse saved roadmaps from localStorage", e);
+            } else {
                 setSavedRoadmaps([]);
             }
-        } else {
-            // Clear saved roadmaps on logout
-            setSavedRoadmaps([]);
-        }
-    }, [isLoggedIn, user]);
-
-    // Function to save roadmaps to state and local storage
-    const updateSavedRoadmaps = (newRoadmaps: SavedRoadmap[]) => {
-        setSavedRoadmaps(newRoadmaps);
-        if (user) {
-            localStorage.setItem(`roadmaps_${user.name}`, JSON.stringify(newRoadmaps));
-        }
-    };
+        };
+        fetchRoadmaps();
+    }, [user]);
 
     const handleGenerateRoadmap = useCallback(async () => {
         if (!topic.trim()) {
@@ -115,39 +121,48 @@ const App: React.FC = () => {
         }
     }, [autoGenerate, topic, handleGenerateRoadmap]);
     
-    const handleSaveRoadmap = () => {
+    const handleSaveRoadmap = async () => {
         if (!roadmap || !user) return;
 
         const isAlreadySaved = savedRoadmaps.some(r => r.title === roadmap.title && r.description === roadmap.description);
-        if (isAlreadySaved) {
-            return; // Already saved, button should be disabled
+        if (isAlreadySaved) return;
+
+        try {
+            const newSavedRoadmap = await saveRoadmap(roadmap);
+            setSavedRoadmaps(prev => [...prev, newSavedRoadmap]);
+        } catch (e: any) {
+            setError("Failed to save roadmap. Please try again.");
+            console.error(e.message);
         }
-
-        const newSavedRoadmap: SavedRoadmap = {
-            ...roadmap,
-            id: new Date().toISOString(),
-            savedAt: new Date().toISOString(),
-            completedSteps: [],
-        };
-        updateSavedRoadmaps([...savedRoadmaps, newSavedRoadmap]);
     };
 
-    const handleDeleteRoadmap = (roadmapId: string) => {
-        const newRoadmaps = savedRoadmaps.filter(r => r.id !== roadmapId);
-        updateSavedRoadmaps(newRoadmaps);
+    const handleDeleteRoadmap = async (roadmapId: string) => {
+        try {
+            await deleteRoadmap(roadmapId);
+            setSavedRoadmaps(prev => prev.filter(r => r.id !== roadmapId));
+        } catch (e: any) {
+            setError("Failed to delete roadmap. Please try again.");
+            console.error(e.message);
+        }
     };
 
-    const handleProgressToggle = (roadmapId: string, stepIndex: number) => {
-        const newRoadmaps = savedRoadmaps.map(r => {
-            if (r.id === roadmapId) {
-                const completedSteps = r.completedSteps.includes(stepIndex)
-                    ? r.completedSteps.filter(i => i !== stepIndex)
-                    : [...r.completedSteps, stepIndex];
-                return { ...r, completedSteps };
-            }
-            return r;
-        });
-        updateSavedRoadmaps(newRoadmaps);
+    const handleProgressToggle = async (roadmapId: string, stepIndex: number) => {
+        const roadmapToUpdate = savedRoadmaps.find(r => r.id === roadmapId);
+        if (!roadmapToUpdate) return;
+        
+        const newCompletedSteps = roadmapToUpdate.completedSteps.includes(stepIndex)
+            ? roadmapToUpdate.completedSteps.filter(i => i !== stepIndex)
+            : [...roadmapToUpdate.completedSteps, stepIndex];
+
+        try {
+            await updateRoadmapProgress(roadmapId, newCompletedSteps);
+            setSavedRoadmaps(prev => prev.map(r => 
+                r.id === roadmapId ? { ...r, completedSteps: newCompletedSteps } : r
+            ));
+        } catch (e: any) {
+            setError("Failed to update progress. Please try again.");
+            console.error(e.message);
+        }
     };
 
     const handleSelectExample = (selectedTopic: string) => {
@@ -174,25 +189,18 @@ const App: React.FC = () => {
         }
     };
 
-    const handleSignIn = (name: string) => {
-        setUser({ name });
-        setIsLoggedIn(true);
+    const handleAuthSuccess = () => {
         setModalView(null);
     };
     
-    const handleSignUp = (name: string) => {
-        setUser({ name });
-        setIsLoggedIn(true);
-        setModalView(null);
-    };
-    
-    const handleSignOut = () => {
-        setUser(null);
-        setIsLoggedIn(false);
-        setView('home'); // Go to home on sign out
+    const handleSignOut = async () => {
+        await signOutUser();
+        setView('home');
     };
 
     const renderContent = () => {
+        const isLoggedIn = !!user;
+        const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0];
         switch (view) {
             case 'examples':
                 return <ExamplesPage onSelectExample={handleSelectExample} />;
@@ -201,7 +209,7 @@ const App: React.FC = () => {
             case 'profile':
                  return user ? (
                     <ProfilePage 
-                        userName={user.name} 
+                        userName={userName} 
                         savedRoadmaps={savedRoadmaps} 
                         onProgressToggle={handleProgressToggle}
                         onDeleteRoadmap={handleDeleteRoadmap}
@@ -320,6 +328,9 @@ const App: React.FC = () => {
                 );
         }
     };
+    
+    const isLoggedIn = !!user;
+    const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0];
 
     return (
         <div className="min-h-screen bg-slate-900 text-white font-sans selection:bg-sky-500 selection:text-white">
@@ -327,7 +338,7 @@ const App: React.FC = () => {
                 currentView={view} 
                 onNavigate={setView}
                 isLoggedIn={isLoggedIn}
-                userName={user?.name}
+                userName={userName}
                 onSignInClick={() => setModalView('signIn')}
                 onSignUpClick={() => setModalView('signUp')}
                 onSignOut={handleSignOut}
@@ -336,8 +347,7 @@ const App: React.FC = () => {
                 <AuthModal
                     initialView={modalView}
                     onClose={() => setModalView(null)}
-                    onSignInSuccess={handleSignIn}
-                    onSignUpSuccess={handleSignUp}
+                    onAuthSuccess={handleAuthSuccess}
                 />
             )}
             <div className="flex flex-col items-center p-4">
@@ -350,3 +360,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+
