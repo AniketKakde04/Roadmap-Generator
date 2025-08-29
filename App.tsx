@@ -1,4 +1,5 @@
 
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { generateRoadmap } from './services/geminiService';
 import { Roadmap as RoadmapType, SavedRoadmap } from './types';
@@ -208,7 +209,7 @@ const App: React.FC = () => {
                  ) : null;
             case 'home':
             default:
-                const isCurrentRoadmapSaved = roadmap && savedRoadmaps.some(r => r.title === roadmap.title && r.description === roadmap.description);
+                const isCurrentRoadmapSaved = !!(roadmap && savedRoadmaps.some(r => r.title === roadmap.title && r.description === roadmap.description));
                 return (
                     <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
                         <header className="w-full text-center pt-8 md:pt-12">
@@ -303,7 +304,7 @@ const App: React.FC = () => {
                                             <div className="text-center mb-6">
                                                 <button 
                                                     onClick={handleSaveRoadmap}
-                                                    disabled={!!isCurrentRoadmapSaved}
+                                                    disabled={isCurrentRoadmapSaved}
                                                     className="bg-green-600 text-white font-semibold py-2 px-5 rounded-md hover:bg-green-500 transition-colors disabled:bg-slate-600 disabled:cursor-not-allowed"
                                                 >
                                                     {isCurrentRoadmapSaved ? 'Roadmap Saved' : 'Save Roadmap to Profile'}
