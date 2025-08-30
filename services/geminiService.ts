@@ -91,7 +91,7 @@ The suggestions should be tailored to the candidate's existing skills and experi
         prompt += `\n\nResume Text:\n---\n${resumeText}\n---\n\nGenerate 3 project suggestions based on this resume and target job. The output MUST be a valid JSON object matching the provided schema.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.0-flash",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -133,7 +133,7 @@ The user's goal is to learn about or build: "${topic}".`;
         prompt += `\n\nEnsure all URLs are valid and directly lead to the resource. The output MUST be a valid JSON object matching the provided schema.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.0-flash",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
