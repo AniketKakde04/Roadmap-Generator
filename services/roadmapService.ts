@@ -3,13 +3,20 @@ import { Roadmap, SavedRoadmap } from '../types';
 
 // Fetch all saved roadmaps for the current user
 export const getSavedRoadmaps = async (): Promise<SavedRoadmap[]> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
     const { data, error } = await supabase
         .from('roadmaps')
-        .select('*');
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+        console.error("Error fetching roadmaps:", error);
+        throw error;
+    }
     
-    // The data from Supabase needs to be mapped to our SavedRoadmap type
     return data.map(r => ({
         id: r.id,
         title: r.title,
@@ -30,15 +37,19 @@ export const saveRoadmap = async (roadmap: Roadmap): Promise<SavedRoadmap> => {
         title: roadmap.title,
         description: roadmap.description,
         steps: roadmap.steps,
+        completed_steps: [],
     };
 
     const { data, error } = await supabase
         .from('roadmaps')
         .insert(newRoadmap)
         .select()
-        .single(); // .single() returns a single object instead of an array
+        .single();
 
-    if (error) throw error;
+    if (error) {
+        console.error("Error saving roadmap:", error);
+        throw error;
+    }
 
     return {
         id: data.id,
@@ -57,15 +68,22 @@ export const deleteRoadmap = async (roadmapId: string): Promise<void> => {
         .delete()
         .eq('id', roadmapId);
     
-    if (error) throw error;
+    if (error) {
+        console.error("Error deleting roadmap:", error);
+        throw error;
+    }
 };
 
 // Update the progress of a roadmap
-export const updateRoadmapProgress = async (roadmapId: string, completedSteps: number[]): Promise<void> => {
+export async function updateRoadmapProgress(roadmapId: string, completedSteps: number[]): Promise<void> {
     const { error } = await supabase
         .from('roadmaps')
         .update({ completed_steps: completedSteps })
         .eq('id', roadmapId);
-        
-    if (error) throw error;
-};
+
+    if (error) {
+        console.error('Error updating roadmap progress:', error);
+        throw new Error('Could not update roadmap progress in the database.');
+    }
+}
+

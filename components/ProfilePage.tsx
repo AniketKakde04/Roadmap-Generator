@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { SavedRoadmap } from '../types';
 import ResourceLink from './ResourceLink';
@@ -13,8 +12,12 @@ interface ProfilePageProps {
 const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onProgressToggle, onDeleteRoadmap }) => {
     const [selectedRoadmap, setSelectedRoadmap] = useState<SavedRoadmap | null>(null);
 
-    if (selectedRoadmap) {
-        const progressPercent = selectedRoadmap.steps.length > 0 ? Math.round((selectedRoadmap.completedSteps.length / selectedRoadmap.steps.length) * 100) : 0;
+    // This is the crucial fix: It finds the most up-to-date version of the selected roadmap
+    // from the props passed down from App.tsx, ensuring the view is never stale.
+    const currentSelectedRoadmap = selectedRoadmap ? savedRoadmaps.find(r => r.id === selectedRoadmap.id) || null : null;
+
+    if (currentSelectedRoadmap) {
+        const progressPercent = currentSelectedRoadmap.steps.length > 0 ? Math.round((currentSelectedRoadmap.completedSteps.length / currentSelectedRoadmap.steps.length) * 100) : 0;
 
         return (
             <div className="w-full max-w-5xl mx-auto py-8">
@@ -25,8 +28,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                     Back to Profile
                 </button>
                 <div className="text-left mb-8 bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-                    <h1 className="text-3xl font-bold text-slate-100">{selectedRoadmap.title}</h1>
-                    <p className="text-slate-400 mt-2">{selectedRoadmap.description}</p>
+                    <h1 className="text-3xl font-bold text-slate-100">{currentSelectedRoadmap.title}</h1>
+                    <p className="text-slate-400 mt-2">{currentSelectedRoadmap.description}</p>
                     <div className="mt-4">
                         <div className="flex justify-between items-center mb-1">
                             <span className="text-sm font-medium text-sky-400">Progress</span>
@@ -39,18 +42,18 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                 </div>
 
                 <div className="space-y-4">
-                    {selectedRoadmap.steps.map((step, index) => (
-                        <div key={index} className={`bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 transition-all duration-300 ${selectedRoadmap.completedSteps.includes(index) ? 'opacity-60' : ''}`}>
+                    {currentSelectedRoadmap.steps.map((step, index) => (
+                        <div key={index} className={`bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 transition-all duration-300 ${currentSelectedRoadmap.completedSteps.includes(index) ? 'opacity-60' : ''}`}>
                            <div className="flex items-start space-x-4">
                                 <input 
                                     type="checkbox"
-                                    id={`step-${selectedRoadmap.id}-${index}`}
-                                    checked={selectedRoadmap.completedSteps.includes(index)}
-                                    onChange={() => onProgressToggle(selectedRoadmap.id, index)}
+                                    id={`step-${currentSelectedRoadmap.id}-${index}`}
+                                    checked={currentSelectedRoadmap.completedSteps.includes(index)}
+                                    onChange={() => onProgressToggle(currentSelectedRoadmap.id, index)}
                                     className="mt-1.5 h-5 w-5 rounded bg-slate-700 border-slate-600 text-sky-500 focus:ring-sky-600 focus:ring-2 cursor-pointer flex-shrink-0"
                                />
-                               <label htmlFor={`step-${selectedRoadmap.id}-${index}`} className="flex-1 cursor-pointer">
-                                    <h3 className={`font-bold text-slate-100 ${selectedRoadmap.completedSteps.includes(index) ? 'line-through' : ''}`}>{index+1}. {step.title}</h3>
+                               <label htmlFor={`step-${currentSelectedRoadmap.id}-${index}`} className="flex-1 cursor-pointer">
+                                    <h3 className={`font-bold text-slate-100 ${currentSelectedRoadmap.completedSteps.includes(index) ? 'line-through' : ''}`}>{index+1}. {step.title}</h3>
                                     <p className="text-sm text-slate-400 mt-1">{step.description}</p>
                                </label>
                            </div>
@@ -129,3 +132,4 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
 };
 
 export default ProfilePage;
+

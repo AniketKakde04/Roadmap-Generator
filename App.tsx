@@ -137,31 +137,37 @@ const App: React.FC = () => {
     };
 
     const handleDeleteRoadmap = async (roadmapId: string) => {
+        const originalRoadmaps = [...savedRoadmaps];
+        setSavedRoadmaps(prev => prev.filter(r => r.id !== roadmapId));
         try {
             await deleteRoadmap(roadmapId);
-            setSavedRoadmaps(prev => prev.filter(r => r.id !== roadmapId));
         } catch (e: any) {
+            setSavedRoadmaps(originalRoadmaps);
             setError("Failed to delete roadmap. Please try again.");
-            console.error(e.message);
         }
     };
 
     const handleProgressToggle = async (roadmapId: string, stepIndex: number) => {
+        const originalRoadmaps = [...savedRoadmaps];
         const roadmapToUpdate = savedRoadmaps.find(r => r.id === roadmapId);
         if (!roadmapToUpdate) return;
         
-        const newCompletedSteps = roadmapToUpdate.completedSteps.includes(stepIndex)
-            ? roadmapToUpdate.completedSteps.filter(i => i !== stepIndex)
-            : [...roadmapToUpdate.completedSteps, stepIndex];
+        const currentCompleted = roadmapToUpdate.completedSteps || [];
+        const newCompletedSteps = currentCompleted.includes(stepIndex)
+            ? currentCompleted.filter(i => i !== stepIndex)
+            : [...currentCompleted, stepIndex];
+
+        // Optimistic UI update for real-time feedback
+        setSavedRoadmaps(prev => prev.map(r => 
+            r.id === roadmapId ? { ...r, completedSteps: newCompletedSteps } : r
+        ));
 
         try {
             await updateRoadmapProgress(roadmapId, newCompletedSteps);
-            setSavedRoadmaps(prev => prev.map(r => 
-                r.id === roadmapId ? { ...r, completedSteps: newCompletedSteps } : r
-            ));
         } catch (e: any) {
+            // Revert UI on failure
+            setSavedRoadmaps(originalRoadmaps);
             setError("Failed to update progress. Please try again.");
-            console.error(e.message);
         }
     };
 
