@@ -8,7 +8,7 @@ import AuthModal from './components/AuthModal';
 import ResumeAnalyzer from './components/ResumeAnalyzer';
 import ProfilePage from './components/ProfilePage';
 import { getSession, onAuthStateChange, signOutUser } from './services/authService';
-import { getSavedRoadmaps, saveRoadmap, deleteRoadmap, updateRoadmapProgress } from './services/roadmapService';
+import { getSavedRoadmaps, saveRoadmap, deleteRoadmap, updateRoadmapProgress, updateRoadmap } from './services/roadmapService'; // Import updateRoadmap
 
 const exampleTopics = [
     { title: 'Learn Quantum Computing', description: 'From qubits to quantum algorithms, a path for beginners.' },
@@ -147,6 +147,18 @@ const App: React.FC = () => {
         }
     };
 
+    const handleUpdateRoadmap = async (updatedRoadmap: SavedRoadmap) => {
+        const originalRoadmaps = [...savedRoadmaps];
+        // Optimistic update
+        setSavedRoadmaps(prev => prev.map(r => r.id === updatedRoadmap.id ? updatedRoadmap : r));
+        
+        try {
+            await updateRoadmap(updatedRoadmap);
+        } catch (e: any) {
+            setSavedRoadmaps(originalRoadmaps); // Revert on failure
+            setError("Failed to save changes to the roadmap.");
+        }
+    };
     const handleProgressToggle = async (roadmapId: string, stepIndex: number) => {
         const originalRoadmaps = [...savedRoadmaps];
         const roadmapToUpdate = savedRoadmaps.find(r => r.id === roadmapId);
@@ -219,7 +231,9 @@ const App: React.FC = () => {
                         savedRoadmaps={savedRoadmaps} 
                         onProgressToggle={handleProgressToggle}
                         onDeleteRoadmap={handleDeleteRoadmap}
-                    />
+                        onUpdateRoadmap={handleUpdateRoadmap} // Pass down the new handler
+
+                        />
                  ) : null;
             case 'home':
             default:
