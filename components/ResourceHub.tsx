@@ -8,12 +8,7 @@ const getYouTubeId = (url: string): string | null => {
   return (match && match[2].length === 11) ? match[2] : null;
 };
 
-// Props for the ResourceHub component
-interface ResourceHubProps {
-  roadmap: SavedRoadmap;
-}
-
-// A component to render a single resource link
+// --- Reusable Resource Components ---
 const ResourceItem: React.FC<{ resource: Resource }> = ({ resource }) => (
     <a href={resource.url} target="_blank" rel="noopener noreferrer" className="block bg-slate-800/50 border border-slate-700/50 p-4 rounded-lg hover:border-sky-500/50 hover:bg-slate-800 transition-all">
         <p className="font-semibold text-slate-200">{resource.title}</p>
@@ -21,14 +16,13 @@ const ResourceItem: React.FC<{ resource: Resource }> = ({ resource }) => (
     </a>
 );
 
-// A component to render an embedded YouTube video
 const VideoItem: React.FC<{ resource: Resource }> = ({ resource }) => {
     const videoId = getYouTubeId(resource.url);
     if (!videoId) return null; // Don't render if it's not a valid YouTube URL
 
     return (
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden shadow-lg">
-            <div className="aspect-w-16 aspect-h-9">
+            <div className="aspect-w-16 aspect-h-9 bg-black">
                 <iframe
                     src={`https://www.youtube.com/embed/${videoId}`}
                     title={resource.title}
@@ -47,7 +41,8 @@ const VideoItem: React.FC<{ resource: Resource }> = ({ resource }) => {
     );
 };
 
-const ResourceHub: React.FC<ResourceHubProps> = ({ roadmap }) => {
+
+const ResourceHub: React.FC<{ roadmap: SavedRoadmap }> = ({ roadmap }) => {
   return (
     <div className="space-y-12 animate-fadeIn">
       {roadmap.steps.map((step, index) => {
@@ -74,7 +69,7 @@ const ResourceHub: React.FC<ResourceHubProps> = ({ roadmap }) => {
                 </div>
             )}
             
-            {/* Other resources (articles, docs, etc.) for this step */}
+            {/* Other resources for this step */}
             {otherResources.length > 0 && (
                 <div className="space-y-3">
                     {otherResources.map((resource, resourceIndex) => (
