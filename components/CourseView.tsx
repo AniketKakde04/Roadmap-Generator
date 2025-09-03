@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { SavedRoadmap, Resource } from '../types';
+import GraphView from './GraphView'; // 1. Import the new component
 
 // Helper to get YouTube ID (reused for embedding videos)
 const getYouTubeId = (url: string): string | null => {
@@ -52,15 +53,16 @@ interface CourseViewProps {
 
 const CourseView: React.FC<CourseViewProps> = ({ roadmap, onProgressToggle, onBack, onEdit }) => {
     const [activeStepIndex, setActiveStepIndex] = useState(0);
+    const [view, setView] = useState<'list' | 'graph'>('list'); // State for the new view toggle
     const activeStep = roadmap.steps[activeStepIndex];
 
     const progressPercent = roadmap.steps.length > 0 ? Math.round((roadmap.completedSteps.length / roadmap.steps.length) * 100) : 0;
-
+    
     return (
         <div className="w-full max-w-7xl mx-auto py-8 animate-fadeIn">
             {/* Header */}
             <header className="mb-8">
-                <button onClick={onBack} className="mb-6 text-sm font-semibold text-sky-400 hover:text-sky-300 flex items-center">
+                 <button onClick={onBack} className="mb-6 text-sm font-semibold text-sky-400 hover:text-sky-300 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 mr-2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                     </svg>
@@ -89,63 +91,91 @@ const CourseView: React.FC<CourseViewProps> = ({ roadmap, onProgressToggle, onBa
                 </div>
             </header>
 
-            {/* Main Layout */}
-            <div className="flex flex-col md:flex-row gap-8">
-                {/* Left Sidebar: Curriculum */}
-                <aside className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0">
-                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 sticky top-24">
-                        <h3 className="font-bold text-lg text-slate-200 mb-4 px-2">Roadmap Steps</h3>
-                        <nav className="space-y-1">
-                            {roadmap.steps.map((step, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => setActiveStepIndex(index)}
-                                    className={`w-full text-left flex items-start p-3 rounded-lg transition-colors ${activeStepIndex === index ? 'bg-sky-500/20 text-sky-300' : 'hover:bg-slate-700/50 text-slate-300'}`}
-                                >
-                                    <input 
-                                        type="checkbox"
-                                        checked={roadmap.completedSteps.includes(index)}
-                                        onChange={() => onProgressToggle(roadmap.id, index)}
-                                        onClick={(e) => e.stopPropagation()} // Prevent button click when checkbox is clicked
-                                        className="mt-1 h-5 w-5 rounded bg-slate-700 border-slate-600 text-sky-500 focus:ring-sky-600 focus:ring-2 cursor-pointer flex-shrink-0"
-                                    />
-                                    <div className="ml-4">
-                                        <p className="font-semibold">{step.title}</p>
-                                        <p className="text-xs text-slate-400">Step {index + 1}</p>
-                                    </div>
-                                </button>
-                            ))}
-                        </nav>
-                    </div>
-                </aside>
-
-                {/* Right Panel: Content */}
-                <main className="w-full md:w-2/3 lg:w-3/4">
-                    {activeStep ? (
-                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-                            <h2 className="text-2xl font-bold text-slate-100 mb-2">{activeStep.title}</h2>
-                            <p className="text-slate-400 mb-6">{activeStep.description}</p>
-                            
-                            <h4 className="text-lg font-semibold text-slate-200 mb-4 border-t border-slate-700 pt-4">Resources for this step:</h4>
-                            
-                            <div className="space-y-4">
-                                {activeStep.resources.map((resource, index) => 
-                                    resource.type === 'video' ? <VideoItem key={index} resource={resource} /> : <ResourceItem key={index} resource={resource} />
-                                )}
-                                {activeStep.resources.length === 0 && (
-                                    <p className="text-slate-500 italic">No resources listed for this step.</p>
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                         <div className="flex items-center justify-center h-64 bg-slate-800/50 border-2 border-dashed border-slate-700 rounded-xl">
-                            <p className="text-slate-500">Select a step from the left to view its details.</p>
-                        </div>
-                    )}
-                </main>
+            {/* View Toggle */}
+            <div className="mb-6 flex justify-end">
+                <div className="bg-slate-800 p-1 rounded-lg flex items-center space-x-1">
+                    <button
+                        onClick={() => setView('list')}
+                        className={`px-3 py-1 text-sm font-semibold rounded-md transition-colors ${view === 'list' ? 'bg-sky-600 text-white' : 'text-slate-300 hover:bg-slate-700'}`}
+                    >
+                        List View
+                    </button>
+                    <button
+                        onClick={() => setView('graph')}
+                        className={`px-3 py-1 text-sm font-semibold rounded-md transition-colors ${view === 'graph' ? 'bg-sky-600 text-white' : 'text-slate-300 hover:bg-slate-700'}`}
+                    >
+                        Graph View
+                    </button>
+                </div>
             </div>
+
+            {/* Main Layout */}
+            {view === 'list' && (
+                <div className="flex flex-col md:flex-row gap-8 animate-fadeIn">
+                    {/* Left Sidebar: Curriculum */}
+                    <aside className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0">
+                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 sticky top-24">
+                            <h3 className="font-bold text-lg text-slate-200 mb-4 px-2">Roadmap Steps</h3>
+                            <nav className="space-y-1">
+                                {roadmap.steps.map((step, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => setActiveStepIndex(index)}
+                                        className={`w-full text-left flex items-start p-3 rounded-lg transition-colors ${activeStepIndex === index ? 'bg-sky-500/20 text-sky-300' : 'hover:bg-slate-700/50 text-slate-300'}`}
+                                    >
+                                        <input 
+                                            type="checkbox"
+                                            checked={roadmap.completedSteps.includes(index)}
+                                            onChange={() => onProgressToggle(roadmap.id, index)}
+                                            onClick={(e) => e.stopPropagation()} 
+                                            className="mt-1 h-5 w-5 rounded bg-slate-700 border-slate-600 text-sky-500 focus:ring-sky-600 focus:ring-2 cursor-pointer flex-shrink-0"
+                                        />
+                                        <div className="ml-4">
+                                            <p className="font-semibold">{step.title}</p>
+                                            <p className="text-xs text-slate-400">Step {index + 1}</p>
+                                        </div>
+                                    </button>
+                                ))}
+                            </nav>
+                        </div>
+                    </aside>
+
+                    {/* Right Panel: Content */}
+                    <main className="w-full md:w-2/3 lg:w-3/4">
+                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+                            {activeStep ? (
+                                <div className="animate-fadeIn">
+                                    <h2 className="text-2xl font-bold text-slate-100 mb-2">{activeStep.title}</h2>
+                                    <p className="text-slate-400 mb-6">{activeStep.description}</p>
+                                    
+                                    <h4 className="text-lg font-semibold text-slate-200 mb-4 border-t border-slate-700 pt-4">Resources for this step:</h4>
+                                    
+                                    <div className="space-y-4">
+                                        {activeStep.resources.map((resource, index) => 
+                                            resource.type === 'video' ? <VideoItem key={index} resource={resource} /> : <ResourceItem key={index} resource={resource} />
+                                        )}
+                                        {activeStep.resources.length === 0 && (
+                                            <p className="text-slate-500 italic">No resources listed for this step.</p>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                 <div className="flex items-center justify-center h-64">
+                                    <p className="text-slate-500">Select a step from the left to view its details.</p>
+                                </div>
+                            )}
+                        </div>
+                    </main>
+                </div>
+            )}
+            
+            {/* 2. Replace the placeholder with the new GraphView component */}
+            {view === 'graph' && (
+                <GraphView roadmap={roadmap} />
+            )}
         </div>
     );
 };
 
 export default CourseView;
+
