@@ -32,6 +32,16 @@ export interface ProjectSuggestion {
   reasoning: string;
 }
 
+// --- THIS IS THE NEW TYPE FOR THE ANALYSIS REPORT ---
+export interface AnalysisReport {
+    matchScore: number;
+    strengths: string[];
+    gaps: string[];
+    feedback: string[];
+    projectSuggestions: ProjectSuggestion[];
+}
+
+
 export type User = SupabaseUser;
 
 export interface AuthCredentials {

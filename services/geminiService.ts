@@ -50,36 +50,68 @@ const roadmapSchema = {
     required: ["title", "description", "steps"],
 };
 
-const projectSuggestionSchema = {
-    type: Type.ARRAY,
-    items: {
-        type: Type.OBJECT,
-        properties: {
-            title: { type: Type.STRING, description: "A concise, catchy title for the suggested project." },
-            description: { type: Type.STRING, description: "A short, compelling description of the project and why it's valuable for the user's portfolio." },
-            reasoning: { type: Type.STRING, description: "A detailed explanation of why this project is a good fit for the user, referencing their skills and explaining how it addresses skill gaps relative to a target job if provided." },
+
+
+const analysisReportSchema = {
+    type: Type.OBJECT,
+    properties: {
+        matchScore: { 
+            type: Type.NUMBER,
+            description: "A percentage score (0-100) representing how well the resume matches the job description."
         },
-        required: ["title", "description", "reasoning"],
+        strengths: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "A list of key skills found in the resume that are also required by the job."
+        },
+        gaps: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "A list of crucial skills required by the job that are missing from the resume."
+        },
+        feedback: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "2-3 bullet points of direct, actionable feedback on the resume's writing and structure."
+        },
+        projectSuggestions: {
+            type: Type.ARRAY,
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    title: { type: Type.STRING },
+                    description: { type: Type.STRING },
+                    reasoning: { type: Type.STRING, description: "A clear explanation of how this project helps fill the identified skill gaps." },
+                },
+                required: ["title", "description", "reasoning"],
+            },
+        },
     },
+    required: ["matchScore", "strengths", "gaps", "feedback", "projectSuggestions"],
 };
 
-export async function suggestProjectsFromResume(resumeText: string, jobTitle: string, jobDescription: string): Promise<ProjectSuggestion[]> {
+
+// --- THIS FUNCTION IS NOW COMPLETELY OVERHAULED ---
+export async function suggestProjectsFromResume(resumeText: string, jobTitle: string, jobDescription: string): Promise<AnalysisReport> {
     try {
         if (!resumeText.trim()) {
             throw new Error("Resume text cannot be empty.");
         }
 
-        let prompt = `You are an expert career coach and senior hiring manager for a tech company. Your task is to analyze the provided resume text and suggest 3 unique and impactful projects the candidate could build to significantly strengthen their portfolio and fill any potential skill gaps.
+        // The new prompt instructs the AI to perform a comprehensive analysis.
+        let prompt = `You are an expert career coach and senior hiring manager for a top tech company. Your task is to conduct a detailed analysis comparing the provided resume against the target job description.
 
-For each project, provide:
-1. A concise, catchy title.
-2. A short, compelling description of the project.
-3. A clear 'reasoning' explaining *why* this specific project is a great choice for the candidate. This reasoning should connect to their existing skills mentioned in the resume and explain what new, valuable skills they will gain.
+Your analysis must include the following five parts:
+1.  **Match Score:** Calculate a percentage score representing how well the resume aligns with the job requirements.
+2.  **Strengths:** Identify the key skills from the resume that are a strong match for the job.
+3.  **Gaps:** Identify the most critical skills required by the job that are missing from the resume.
+4.  **Resume Feedback:** Provide 2-3 bullet points of actionable advice to improve the resume's language, structure, or impact.
+5.  **Project Suggestions:** Based *only* on the identified "Gaps," suggest 3 unique and impactful projects the candidate could build to gain the missing skills. For each project, explain the reasoning clearly.
 
-The suggestions should be tailored to the candidate's existing skills and experience level.`;
+The output MUST be a valid JSON object matching the provided schema.`;
 
         if (jobTitle.trim() || jobDescription.trim()) {
-            prompt += `\n\nThe candidate is specifically targeting the following job. The project suggestions should be highly relevant to bridging any gaps between their resume and this job description.`;
+            prompt += `\n\nThe candidate is specifically targeting the following job.`;
             if (jobTitle.trim()) {
                 prompt += `\n\nTarget Job Title: ${jobTitle}`;
             }
@@ -88,33 +120,36 @@ The suggestions should be tailored to the candidate's existing skills and experi
             }
         }
         
-        prompt += `\n\nResume Text:\n---\n${resumeText}\n---\n\nGenerate 3 project suggestions based on this resume and target job. The output MUST be a valid JSON object matching the provided schema.`;
+        prompt += `\n\nResume Text:\n---\n${resumeText}\n---\n\nPlease generate the full analysis report now.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
+            model: "gemini-2.0-flash", // Using a more powerful model for better analysis
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
-                responseSchema: projectSuggestionSchema,
+                responseSchema: analysisReportSchema,
             },
         });
 
         const jsonText = response.text.trim();
-        const projectData: ProjectSuggestion[] = JSON.parse(jsonText);
+        const analysisData: AnalysisReport = JSON.parse(jsonText);
 
-        if (!Array.isArray(projectData) || projectData.length === 0) {
-            throw new Error("Invalid project suggestions structure received from AI.");
+        // Basic validation
+        if (!analysisData.matchScore || !Array.isArray(analysisData.strengths)) {
+            throw new Error("Invalid analysis report structure received from AI.");
         }
 
-        return projectData;
+        return analysisData;
     } catch (error) {
-        console.error("Error suggesting projects:", error);
+        console.error("Error generating analysis report:", error);
         if (error instanceof Error) {
-            throw new Error(`Failed to get project suggestions from AI: ${error.message}`);
+            throw new Error(`Failed to get analysis from AI: ${error.message}`);
         }
-        throw new Error("An unknown error occurred while suggesting projects.");
+        throw new Error("An unknown error occurred while analyzing the resume.");
     }
 }
+
+
 
 export async function generateRoadmap(topic: string, level: string, timeline: string): Promise<Roadmap> {
     try {
@@ -133,7 +168,7 @@ The user's goal is to learn about or build: "${topic}".`;
         prompt += `\n\nEnsure all URLs are valid and directly lead to the resource. The output MUST be a valid JSON object matching the provided schema.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-pro",
+            model: "gemini-2.0-flash",
             contents: prompt,
             tools: [{ "google_search": {} }],
             config: {

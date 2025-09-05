@@ -1,13 +1,53 @@
 import React, { useState } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { suggestProjectsFromResume } from '../services/geminiService';
-import { ProjectSuggestion } from '../types';
+import { AnalysisReport } from '../types'; // Updated import
 import Loader from './Loader';
 import ArrowUpTrayIcon from './icons/ArrowUpTrayIcon';
 import LightBulbIcon from './icons/LightBulbIcon';
 
 // Configure the worker for pdfjs-dist
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.5.136/build/pdf.worker.mjs`;
+
+// --- NEW: A component for the Match Score Gauge ---
+const MatchScoreGauge = ({ score }: { score: number }) => {
+    const circumference = 2 * Math.PI * 45; // Circle radius is 45
+    const strokeDashoffset = circumference - (score / 100) * circumference;
+
+    return (
+        <div className="relative flex items-center justify-center w-40 h-40">
+            <svg className="w-full h-full" viewBox="0 0 100 100">
+                {/* Background circle */}
+                <circle
+                    className="text-slate-700"
+                    strokeWidth="10"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="45"
+                    cx="50"
+                    cy="50"
+                />
+                {/* Progress circle */}
+                <circle
+                    className="text-sky-400"
+                    strokeWidth="10"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="45"
+                    cx="50"
+                    cy="50"
+                    transform="rotate(-90 50 50)"
+                    style={{ transition: 'stroke-dashoffset 0.8s ease-out' }}
+                />
+            </svg>
+            <span className="absolute text-3xl font-bold text-slate-100">{score}%</span>
+        </div>
+    );
+};
+
 
 interface ResumeAnalyzerProps {
     onProjectSelect: (projectTitle: string) => void;
@@ -17,7 +57,8 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [jobTitle, setJobTitle] = useState('');
     const [jobDescription, setJobDescription] = useState('');
-    const [suggestions, setSuggestions] = useState<ProjectSuggestion[]>([]);
+    // State now holds the entire analysis report, not just project suggestions
+    const [analysisReport, setAnalysisReport] = useState<AnalysisReport | null>(null); 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +82,7 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
         }
         setIsLoading(true);
         setError(null);
-        setSuggestions([]);
+        setAnalysisReport(null);
 
         try {
             const arrayBuffer = await selectedFile.arrayBuffer();
@@ -51,7 +92,6 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
             for (let i = 1; i <= pdf.numPages; i++) {
                 const page = await pdf.getPage(i);
                 const textContent = await page.getTextContent();
-                // Check if 'str' property exists before accessing it
                 const pageText = textContent.items.map(item => 'str' in item ? item.str : '').join(' ');
                 fullText += pageText + '\n';
             }
@@ -59,9 +99,10 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
             if (!fullText.trim()) {
                 throw new Error("Could not extract text from the PDF. The file might be image-based or empty.");
             }
-
+            
+            // Call the updated service function and set the entire report
             const result = await suggestProjectsFromResume(fullText, jobTitle, jobDescription);
-            setSuggestions(result);
+            setAnalysisReport(result);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An unexpected error occurred while processing the PDF.');
         } finally {
@@ -76,12 +117,13 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                     Resume Analyzer
                 </h1>
                 <p className="mt-4 text-lg text-slate-400">
-                    Upload your resume and let AI suggest personalized projects to boost your portfolio.
+                    Get an instant, AI-powered analysis of your resume against your target job.
                 </p>
             </header>
 
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 md:p-8">
                 <div className="space-y-6">
+                     {/* --- (Input form remains the same) --- */}
                     <div>
                         <label htmlFor="resume-upload" className="block text-sm font-medium text-slate-300 mb-2">
                            1. Upload your resume (PDF only)
@@ -143,8 +185,7 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                             </div>
                         </div>
                     </div>
-
-                    <div>
+                     <div>
                         <button
                             onClick={handleAnalyze}
                             disabled={isLoading || !selectedFile}
@@ -159,36 +200,75 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
 
             {isLoading && <div className="mt-8"><Loader /></div>}
 
-            {suggestions.length > 0 && (
-                <div className="mt-12">
-                     <h2 className="text-2xl font-bold text-center text-slate-200 mb-8 animate-fadeInUp">
-                        Recommended Projects
+            {/* --- THIS IS THE NEW UI FOR THE ANALYSIS REPORT --- */}
+            {analysisReport && (
+                <div className="mt-12 animate-fadeInUp">
+                     <h2 className="text-3xl font-bold text-center text-slate-100 mb-4">
+                        Your Analysis Report
                      </h2>
-                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {suggestions.map((project, index) => (
-                             <button
-                                key={index}
-                                onClick={() => onProjectSelect(project.title)}
-                                className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 text-left hover:bg-slate-800 hover:border-sky-500/50 transition-all duration-300 transform hover:-translate-y-1 group flex flex-col animate-fadeInUp"
-                                style={{ animationDelay: `${index * 150}ms` }}
-                                aria-label={`Select project: ${project.title}`}
-                             >
-                                <div className="flex-grow">
-                                     <h3 className="text-lg font-bold text-slate-100 group-hover:text-sky-400 transition-colors">{project.title}</h3>
-                                     <p className="text-sm text-slate-400 mt-2">{project.description}</p>
-                                     <div className="mt-4 pt-4 border-t border-slate-700/50">
-                                        <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center">
-                                            <LightBulbIcon className="w-4 h-4 mr-2 text-yellow-400" />
-                                            Why this project?
-                                        </h4>
-                                        <p className="text-sm text-slate-400 mt-1">{project.reasoning}</p>
-                                     </div>
-                                </div>
-                                 <span className="block mt-4 text-sm font-semibold text-sky-400 group-hover:underline self-start">
-                                    Generate Roadmap &rarr;
-                                 </span>
-                             </button>
-                        ))}
+                     <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8">
+                        {/* Match Score */}
+                        <div className="flex flex-col items-center mb-8">
+                            <h3 className="text-xl font-semibold text-slate-300 mb-2">Resume Match Score</h3>
+                            <MatchScoreGauge score={analysisReport.matchScore} />
+                            <p className="text-slate-400 mt-2 text-center max-w-md">This score represents the alignment between your resume and the target job description.</p>
+                        </div>
+                        
+                        {/* Strengths vs. Gaps */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                            <div className="bg-slate-700/30 p-4 rounded-lg">
+                                <h4 className="font-semibold text-green-400 mb-3 text-lg">✅ Your Strengths</h4>
+                                <ul className="space-y-2">
+                                    {analysisReport.strengths.map((item, i) => <li key={i} className="text-slate-300">{item}</li>)}
+                                </ul>
+                            </div>
+                             <div className="bg-slate-700/30 p-4 rounded-lg">
+                                <h4 className="font-semibold text-yellow-400 mb-3 text-lg">🎯 Key Gaps & Opportunities</h4>
+                                <ul className="space-y-2">
+                                    {analysisReport.gaps.map((item, i) => <li key={i} className="text-slate-300">{item}</li>)}
+                                </ul>
+                            </div>
+                        </div>
+
+                        {/* AI Feedback */}
+                         <div className="bg-slate-700/30 p-4 rounded-lg mb-12">
+                            <h4 className="font-semibold text-sky-400 mb-3 text-lg">📝 AI Resume Feedback</h4>
+                            <ul className="space-y-2 list-disc list-inside">
+                                {analysisReport.feedback.map((item, i) => <li key={i} className="text-slate-300">{item}</li>)}
+                            </ul>
+                        </div>
+                        
+                        {/* Project Suggestions (at the end) */}
+                        <div>
+                             <h3 className="text-2xl font-bold text-center text-slate-200 mb-8">
+                                Recommended Projects to Fill Your Gaps
+                             </h3>
+                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {analysisReport.projectSuggestions.map((project, index) => (
+                                     <button
+                                        key={index}
+                                        onClick={() => onProjectSelect(project.title)}
+                                        className="bg-slate-800 border border-slate-700/50 rounded-xl p-6 text-left hover:bg-slate-700 hover:border-sky-500/50 transition-all duration-300 transform hover:-translate-y-1 group flex flex-col"
+                                        aria-label={`Select project: ${project.title}`}
+                                     >
+                                        <div className="flex-grow">
+                                             <h4 className="text-lg font-bold text-slate-100 group-hover:text-sky-400 transition-colors">{project.title}</h4>
+                                             <p className="text-sm text-slate-400 mt-2">{project.description}</p>
+                                             <div className="mt-4 pt-4 border-t border-slate-700/50">
+                                                <h5 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center">
+                                                    <LightBulbIcon className="w-4 h-4 mr-2 text-yellow-400" />
+                                                    Why this project?
+                                                </h5>
+                                                <p className="text-sm text-slate-400 mt-1">{project.reasoning}</p>
+                                             </div>
+                                        </div>
+                                         <span className="block mt-4 text-sm font-semibold text-sky-400 group-hover:underline self-start">
+                                            Generate Roadmap &rarr;
+                                         </span>
+                                     </button>
+                                ))}
+                             </div>
+                        </div>
                      </div>
                 </div>
             )}
