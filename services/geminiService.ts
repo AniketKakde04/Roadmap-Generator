@@ -13,8 +13,8 @@ const resourceSchema = {
     properties: {
         title: { type: Type.STRING, description: "The title of the resource." },
         url: { type: Type.STRING, description: "The full URL to the resource." },
-        type: { 
-            type: Type.STRING, 
+        type: {
+            type: Type.STRING,
             enum: ['video', 'article', 'documentation', 'course', 'tool', 'other'],
             description: "The type of the resource."
         },
@@ -133,8 +133,9 @@ The user's goal is to learn about or build: "${topic}".`;
         prompt += `\n\nEnsure all URLs are valid and directly lead to the resource. The output MUST be a valid JSON object matching the provided schema.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
+            model: "gemini-2.0-pro",
             contents: prompt,
+            tools: [{ "google_search": {} }],
             config: {
                 responseMimeType: "application/json",
                 responseSchema: roadmapSchema,
@@ -144,7 +145,6 @@ The user's goal is to learn about or build: "${topic}".`;
         const jsonText = response.text.trim();
         const roadmapData: Roadmap = JSON.parse(jsonText);
         
-        // Basic validation
         if (!roadmapData.title || !Array.isArray(roadmapData.steps) || roadmapData.steps.length === 0) {
             throw new Error("Invalid roadmap structure received from AI.");
         }
@@ -159,24 +159,45 @@ The user's goal is to learn about or build: "${topic}".`;
     }
 }
 
-export async function generateAISummary(existingSummary: string): Promise<string> {
-    const prompt = `You are a professional resume writer. Based on the following summary, rewrite it to be more impactful and professional. Make it concise and highlight key strengths.
-    
-    Existing Summary: "${existingSummary}"
-    
-    Generate a new, improved summary.`;
+// --- THIS IS THE CORRECT, SINGLE FUNCTION FOR AI ASSIST ---
+export const generateAIReply = async (prompt: string): Promise<string[]> => {
+    try {
+        const suggestionSchema = {
+            type: Type.OBJECT,
+            properties: {
+                suggestions: {
+                    type: Type.ARRAY,
+                    items: { type: Type.STRING },
+                    description: "An array of 3 distinct text suggestions based on the prompt."
+                }
+            },
+            required: ["suggestions"]
+        };
 
-    const response = await ai.models.generateContent(prompt);
-    return response.text.trim();
-}
+        const response = await ai.models.generateContent({
+            model: "gemini-2.0-flash",
+            contents: `${prompt} Please provide three distinct options.`,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: suggestionSchema,
+            },
+        });
 
-export async function generateAIExperience(jobTitle: string, company: string, existingSummary: string): Promise<string> {
-    const prompt = `You are a professional resume writer. For a job title of "${jobTitle}" at "${company}", rewrite the following job description points to be more achievement-oriented and professional using the STAR method (Situation, Task, Action, Result).
-    
-    Existing Description: "${existingSummary}"
+        const jsonText = response.text.trim();
+        const parsedResponse = JSON.parse(jsonText);
 
-    Generate 3-4 improved, bulleted points for a resume.`;
+        if (parsedResponse.suggestions && Array.isArray(parsedResponse.suggestions)) {
+            return parsedResponse.suggestions;
+        }
 
-    const response = await ai.models.generateContent(prompt);
-    return response.text.trim();
-}
+        throw new Error("Invalid response structure from AI.");
+
+    } catch (error) {
+        console.error("Error generating AI reply:", error);
+        if (error instanceof Error) {
+            throw new Error(`Failed to get AI reply: ${error.message}`);
+        }
+        throw new Error("An unknown error occurred while generating AI reply.");
+    }
+};
+

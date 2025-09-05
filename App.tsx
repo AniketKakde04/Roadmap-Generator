@@ -9,12 +9,10 @@ import ResumeAnalyzer from './components/ResumeAnalyzer';
 import ProfilePage from './components/ProfilePage';
 import ResumeBuilderPage from './components/ResumeBuilderPage';
 import { getSession, onAuthStateChange, signOutUser } from './services/authService';
-// REMOVED 'setRoadmapPublicStatus' from this import
 import { getSavedRoadmaps, saveRoadmap, deleteRoadmap, updateRoadmapProgress, updateRoadmap } from './services/roadmapService';
 
 
 const App: React.FC = () => {
-    // ... (state variables remain the same)
     const [view, setView] = useState<'home' | 'resume' | 'profile' | 'resumeBuilder'>('home');
     const [topic, setTopic] = useState<string>('');
     const [level, setLevel] = useState<'Beginner' | 'Intermediate' | 'Professional'>('Beginner');
@@ -51,8 +49,7 @@ const App: React.FC = () => {
             setSavedRoadmaps([]);
         }
     }, [user]);
-    
-    // ... (handleGenerateRoadmap, handleSaveRoadmap, etc. remain the same)
+
     const handleGenerateRoadmap = useCallback(async () => {
         if (!topic.trim()) {
             setError('Please enter a topic to generate a roadmap.');
@@ -141,8 +138,6 @@ const App: React.FC = () => {
         }
     };
     
-    // REMOVED the handlePublishToggle function entirely
-
     const handleProjectSelect = (projectTitle: string) => {
         setTopic(projectTitle);
         setView('home');
@@ -159,7 +154,6 @@ const App: React.FC = () => {
     };
 
     const renderContent = () => {
-        // ... (renderContent logic remains the same)
         const isLoggedIn = !!user;
         const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0];
         
@@ -186,7 +180,6 @@ const App: React.FC = () => {
                         onProgressToggle={handleProgressToggle}
                         onDeleteRoadmap={handleDeleteRoadmap}
                         onUpdateRoadmap={handleUpdateRoadmap}
-                        // REMOVED the onPublishToggle prop
                     />;
             case 'resumeBuilder':
                 return <ResumeBuilderPage />;
