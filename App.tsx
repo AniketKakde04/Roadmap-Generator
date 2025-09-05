@@ -180,6 +180,7 @@ const App: React.FC = () => {
                         onProgressToggle={handleProgressToggle}
                         onDeleteRoadmap={handleDeleteRoadmap}
                         onUpdateRoadmap={handleUpdateRoadmap}
+                        onNavigate={setView}
                     />;
             case 'resumeBuilder':
                 return <ResumeBuilderPage />;

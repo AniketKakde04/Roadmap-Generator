@@ -1,119 +1,201 @@
 import React, { useState, useEffect } from 'react';
-import { SavedRoadmap } from '../types';
-import ResourceLink from './ResourceLink';
+import { SavedRoadmap, ResumeData } from '../types';
+import CourseView from './CourseView';
 import {RoadmapEditor} from './RoadmapEditor';
-import CourseView from './CourseView'; // Import the new CourseView component
+import ResumePreview from './ResumePreview';
+import EditProfileModal from './EditProfileModal';
+import { getResume, upsertResume } from '../services/resumeService';
+import Loader from './Loader';
+import { supabase } from '../services/supabase';
 
-// Define the types for the props
 interface ProfilePageProps {
     userName: string;
     savedRoadmaps: SavedRoadmap[];
     onProgressToggle: (roadmapId: string, stepIndex: number) => void;
     onDeleteRoadmap: (roadmapId: string) => void;
     onUpdateRoadmap: (updatedRoadmap: SavedRoadmap) => void;
+    onNavigate: (view: 'home' | 'resume' | 'profile' | 'resumeBuilder') => void;
 }
 
-const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onProgressToggle, onDeleteRoadmap, onUpdateRoadmap }) => {
+const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onProgressToggle, onDeleteRoadmap, onUpdateRoadmap, onNavigate }) => {
     const [selectedRoadmap, setSelectedRoadmap] = useState<SavedRoadmap | null>(null);
-    const [editingRoadmap, setEditingRoadmap] = useState<SavedRoadmap | null>(null);
+    const [editMode, setEditMode] = useState(false);
+    const [activeTab, setActiveTab] = useState<'roadmaps' | 'resume'>('roadmaps');
+    
+    const [resumeData, setResumeData] = useState<ResumeData | null>(null);
+    const [loadingResume, setLoadingResume] = useState(true);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    // This ensures the view is never stale by finding the fresh roadmap data from props
-    const currentSelectedRoadmap = selectedRoadmap ? savedRoadmaps.find(r => r.id === selectedRoadmap.id) || null : null;
-    const currentEditingRoadmap = editingRoadmap ? savedRoadmaps.find(r => r.id === editingRoadmap.id) || null : null;
+    useEffect(() => {
+        const fetchResumeData = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const data = await getResume(user.id);
+                    if (data) setResumeData(data);
+                }
+            } catch (error) {
+                console.error("Failed to fetch resume data for profile:", error);
+            } finally {
+                setLoadingResume(false);
+            }
+        };
+        fetchResumeData();
+    }, []);
 
-    // --- RENDER LOGIC ---
+    useEffect(() => {
+        if (selectedRoadmap) {
+            const updatedVersion = savedRoadmaps.find(r => r.id === selectedRoadmap.id);
+            if (updatedVersion) {
+                setSelectedRoadmap(updatedVersion);
+            } else {
+                setSelectedRoadmap(null);
+                setEditMode(false);
+            }
+        }
+    }, [savedRoadmaps, selectedRoadmap]);
 
-    // If in "Edit Mode"
-    if (currentEditingRoadmap) {
-        return (
-            <RoadmapEditor 
-                roadmap={currentEditingRoadmap}
-                onSave={(updatedRoadmap) => {
-                    onUpdateRoadmap(updatedRoadmap);
-                    setEditingRoadmap(null); // Exit edit mode
-                    setSelectedRoadmap(updatedRoadmap); // Go back to viewing the roadmap
-                }}
-                onCancel={() => {
-                    setEditingRoadmap(null); // Exit edit mode
-                    setSelectedRoadmap(currentEditingRoadmap); // Go back to viewing the roadmap
-                }}
-            />
-        );
+    const handleProfileSave = async (updatedData: Partial<ResumeData>) => {
+        try {
+            const currentData = resumeData || {};
+            const dataToSave = { ...currentData, ...updatedData } as ResumeData;
+            const saved = await upsertResume(dataToSave);
+            setResumeData(saved);
+            setIsEditModalOpen(false);
+        } catch (error) {
+            console.error("Failed to save profile:", error);
+            alert("Could not save profile changes. Please try again.");
+        }
+    };
+
+    if (editMode && selectedRoadmap) {
+        return <RoadmapEditor
+            roadmap={selectedRoadmap}
+            onSave={(updatedRoadmap) => {
+                onUpdateRoadmap(updatedRoadmap);
+                setEditMode(false);
+            }}
+            onCancel={() => setEditMode(false)}
+        />
     }
 
-    // If a roadmap is selected for viewing, show the new CourseView
-    if (currentSelectedRoadmap) {
-        return (
-            <CourseView 
-                roadmap={currentSelectedRoadmap}
-                onBack={() => setSelectedRoadmap(null)}
-                onProgressToggle={onProgressToggle}
-                onEdit={() => {
-                    setEditingRoadmap(currentSelectedRoadmap); // Enter edit mode
-                    setSelectedRoadmap(null); // Exit view mode to ensure only one is active
-                }}
-            />
-        );
+    if (selectedRoadmap) {
+        return <CourseView
+            roadmap={selectedRoadmap}
+            onBack={() => setSelectedRoadmap(null)}
+            onEdit={() => setEditMode(true)}
+            onProgressToggle={onProgressToggle}
+        />
     }
-
-    // Default view: The list of all saved roadmaps
+    
     return (
-        <div className="w-full max-w-5xl mx-auto py-8">
-            <header className="text-center mb-12">
-                <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-indigo-400 mb-2">
-                    {userName}'s Profile
-                </h1>
-                <p className="mt-4 text-lg text-slate-400">
-                    Your saved roadmaps and progress.
-                </p>
-            </header>
-            
-            {savedRoadmaps.length > 0 ? (
-                <div className="space-y-4">
-                    {savedRoadmaps.slice().reverse().map((roadmap, index) => {
-                        const completedSteps = roadmap.completedSteps || [];
-                        const progressPercent = roadmap.steps.length > 0 ? Math.round((completedSteps.length / roadmap.steps.length) * 100) : 0;
-                        return (
-                            <div 
-                                key={roadmap.id} 
-                                className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 transition-all duration-300 group animate-fadeInUp"
-                                style={{ animationDelay: `${index * 100}ms` }}
-                            >
-                                <div className="flex justify-between items-start">
-                                    <button onClick={() => setSelectedRoadmap(roadmap)} className="text-left flex-grow pr-4">
-                                        <h3 className="text-lg font-bold text-slate-100 group-hover:text-sky-400 transition-colors">{roadmap.title}</h3>
-                                        <p className="text-xs text-slate-500 mt-1">Saved on: {new Date(roadmap.savedAt).toLocaleDateString()}</p>
-                                    </button>
-                                    <button 
-                                        onClick={() => onDeleteRoadmap(roadmap.id)} 
-                                        className="text-slate-500 hover:text-red-400 transition-colors p-1 flex-shrink-0"
-                                        aria-label="Delete roadmap"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                          <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div className="mt-4">
-                                    <div className="flex justify-between items-center mb-1">
-                                        <span className="text-sm font-medium text-sky-400">Progress</span>
-                                        <span className="text-sm font-medium text-slate-300">{progressPercent}%</span>
-                                    </div>
-                                    <div className="w-full bg-slate-700 rounded-full h-2.5">
-                                        <div className="bg-sky-500 h-2.5 rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }}></div>
-                                    </div>
+        <>
+            {isEditModalOpen && resumeData && (
+                <EditProfileModal 
+                    initialData={resumeData}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onSave={handleProfileSave}
+                />
+            )}
+            <div className="w-full max-w-5xl mx-auto py-8">
+                {/* --- NEW PROFILE HEADER --- */}
+                <header className="mb-8 p-6 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+                    {loadingResume ? <Loader /> : (
+                        <div className="flex flex-col sm:flex-row items-start gap-6">
+                            <div className="flex-grow">
+                                <h1 className="text-3xl font-bold text-white">{resumeData?.full_name || userName}</h1>
+                                <p className="text-sky-400 mt-1">{resumeData?.job_title || 'No job title set'}</p>
+                                <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4 text-sm text-slate-400">
+                                    <span className="flex items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg>
+                                        {resumeData?.email || 'No email set'}
+                                    </span>
+                                    <span className="flex items-center gap-2">
+                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" /></svg>
+                                        {resumeData?.phone || 'No phone set'}
+                                    </span>
                                 </div>
                             </div>
-                        )
-                    })}
+                            <button onClick={() => setIsEditModalOpen(true)} className="flex-shrink-0 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-md text-sm">
+                                Edit Profile
+                            </button>
+                        </div>
+                    )}
+                </header>
+
+                {/* --- NEW TABBED CONTENT --- */}
+                <div>
+                    <div className="border-b border-slate-700 mb-6">
+                        <nav className="flex space-x-4">
+                            <button onClick={() => setActiveTab('roadmaps')} className={`py-2 px-4 font-semibold ${activeTab === 'roadmaps' ? 'text-sky-400 border-b-2 border-sky-400' : 'text-slate-400 hover:text-white'}`}>
+                                My Roadmaps
+                            </button>
+                             <button onClick={() => setActiveTab('resume')} className={`py-2 px-4 font-semibold ${activeTab === 'resume' ? 'text-sky-400 border-b-2 border-sky-400' : 'text-slate-400 hover:text-white'}`}>
+                                My Resume
+                            </button>
+                        </nav>
+                    </div>
+
+                    {activeTab === 'roadmaps' && (
+                        <div>
+                             {savedRoadmaps.length > 0 ? (
+                                <div className="space-y-4">
+                                    {savedRoadmaps.map((roadmap, index) => {
+                                        const completedSteps = roadmap.completedSteps || [];
+                                        const progressPercent = roadmap.steps.length > 0 ? Math.round((completedSteps.length / roadmap.steps.length) * 100) : 0;
+                                        return (
+                                            <div key={roadmap.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 transition-all duration-300 group">
+                                                <div className="flex justify-between items-start">
+                                                    <button onClick={() => setSelectedRoadmap(roadmap)} className="text-left flex-grow pr-4">
+                                                        <h3 className="text-lg font-bold text-slate-100 group-hover:text-sky-400 transition-colors">{roadmap.title}</h3>
+                                                        <p className="text-xs text-slate-500 mt-1">Saved on: {new Date(roadmap.savedAt).toLocaleDateString()}</p>
+                                                    </button>
+                                                </div>
+                                                <div className="mt-4">
+                                                    <div className="flex justify-between items-center mb-1">
+                                                        <span className="text-sm font-medium text-sky-400">Progress</span>
+                                                        <span className="text-sm font-medium text-slate-300">{progressPercent}%</span>
+                                                    </div>
+                                                    <div className="w-full bg-slate-700 rounded-full h-2.5">
+                                                        <div className="bg-sky-500 h-2.5 rounded-full" style={{ width: `${progressPercent}%` }}></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="text-center py-16 border-2 border-dashed border-slate-700 rounded-xl">
+                                    <p className="text-slate-400">You haven't saved any roadmaps yet.</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    {activeTab === 'resume' && (
+                        <div className="animate-fadeIn">
+                           {resumeData ? (
+                                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+                                    <h3 className="font-semibold text-lg text-white mb-4">Your Resume</h3>
+                                    <div className="p-4 bg-white rounded-md max-h-[500px] overflow-y-auto">
+                                        <ResumePreview resumeData={resumeData} />
+                                    </div>
+                                     <button onClick={() => onNavigate('resumeBuilder')} className="mt-4 w-full bg-sky-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-sky-500">
+                                        Edit in Builder
+                                    </button>
+                                </div>
+                           ) : (
+                                <div className="text-center py-16 border-2 border-dashed border-slate-700 rounded-xl">
+                                    <p className="text-slate-400">You haven't created a resume yet.</p>
+                                    <button onClick={() => onNavigate('resumeBuilder')} className="mt-4 bg-sky-600 text-white font-semibold py-2 px-6 rounded-md hover:bg-sky-500">
+                                        Create Your Resume
+                                    </button>
+                                </div>
+                           )}
+                        </div>
+                    )}
                 </div>
-            ) : (
-                <div className="text-center py-16 border-2 border-dashed border-slate-700 rounded-xl">
-                    <p className="text-slate-400">You haven't saved any roadmaps yet.</p>
-                    <p className="text-slate-500 text-sm mt-2">Generate a roadmap from the home page and save it to see it here.</p>
-                </div>
-            )}
-        </div>
+            </div>
+        </>
     );
 };
 
