@@ -8,12 +8,14 @@ import AuthModal from './components/AuthModal';
 import ResumeAnalyzer from './components/ResumeAnalyzer';
 import ProfilePage from './components/ProfilePage';
 import ResumeBuilderPage from './components/ResumeBuilderPage';
+import HomePage from './components/HomePage'; // 1. Import the new HomePage component
 import { getSession, onAuthStateChange, signOutUser } from './services/authService';
 import { getSavedRoadmaps, saveRoadmap, deleteRoadmap, updateRoadmapProgress, updateRoadmap } from './services/roadmapService';
 
 
 const App: React.FC = () => {
-    const [view, setView] = useState<'home' | 'resume' | 'profile' | 'resumeBuilder'>('home');
+    // 2. Update the view state to include the new 'roadmapGenerator' view
+    const [view, setView] = useState<'home' | 'roadmapGenerator' | 'resume' | 'profile' | 'resumeBuilder'>('home');
     const [topic, setTopic] = useState<string>('');
     const [level, setLevel] = useState<'Beginner' | 'Intermediate' | 'Professional'>('Beginner');
     const [timeline, setTimeline] = useState<string>('');
@@ -29,12 +31,25 @@ const App: React.FC = () => {
     useEffect(() => {
         const checkUser = async () => {
             const session = await getSession();
-            setUser(session?.user ?? null);
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
+            // 3. If user is logged in, default to their profile dashboard, otherwise show the homepage
+            if (currentUser) {
+                setView('profile');
+            } else {
+                setView('home');
+            }
         };
         checkUser();
 
         const { data: authListener } = onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
+             if (currentUser) {
+                setView('profile');
+            } else {
+                setView('home');
+            }
         });
 
         return () => {
@@ -55,11 +70,9 @@ const App: React.FC = () => {
             setError('Please enter a topic to generate a roadmap.');
             return;
         }
-
         setIsLoading(true);
         setError(null);
         setRoadmap(null);
-
         try {
             const result = await generateRoadmap(topic, level, timeline);
             setRoadmap(result);
@@ -73,6 +86,7 @@ const App: React.FC = () => {
     
     useEffect(() => {
         if (autoGenerate && topic) {
+            setView('roadmapGenerator');
             handleGenerateRoadmap();
             setAutoGenerate(false);
         }
@@ -80,10 +94,6 @@ const App: React.FC = () => {
     
     const handleSaveRoadmap = async () => {
         if (!roadmap || !user) return;
-
-        const isAlreadySaved = savedRoadmaps.some(r => r.title === roadmap.title && r.description === roadmap.description);
-        if (isAlreadySaved) return;
-
         try {
             const newSavedRoadmap = await saveRoadmap(roadmap);
             setSavedRoadmaps(prev => [...prev, newSavedRoadmap]);
@@ -120,16 +130,13 @@ const App: React.FC = () => {
         const originalRoadmaps = [...savedRoadmaps];
         const roadmapToUpdate = originalRoadmaps.find(r => r.id === roadmapId);
         if (!roadmapToUpdate) return;
-        
         const newCompletedSteps = roadmapToUpdate.completedSteps.includes(stepIndex)
             ? roadmapToUpdate.completedSteps.filter(i => i !== stepIndex)
             : [...roadmapToUpdate.completedSteps, stepIndex];
-
         const updatedRoadmaps = originalRoadmaps.map(r => 
             r.id === roadmapId ? { ...r, completedSteps: newCompletedSteps } : r
         );
         setSavedRoadmaps(updatedRoadmaps);
-
         try {
             await updateRoadmapProgress(roadmapId, newCompletedSteps);
         } catch (e: any) {
@@ -140,8 +147,7 @@ const App: React.FC = () => {
     
     const handleProjectSelect = (projectTitle: string) => {
         setTopic(projectTitle);
-        setView('home');
-        setAutoGenerate(true);
+        setAutoGenerate(true); // This will now trigger the roadmap generator view
     };
 
     const handleAuthSuccess = () => {
@@ -157,44 +163,35 @@ const App: React.FC = () => {
         const isLoggedIn = !!user;
         const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0];
         
-        if (!isLoggedIn && (view === 'profile' || view === 'resumeBuilder')) {
-            return (
-                 <div className="text-center py-20 animate-fadeInUp">
-                    <h2 className="text-2xl font-bold mb-4">Please sign in to continue</h2>
-                    <p className="text-slate-400 mb-6">This feature requires an account.</p>
-                    <button onClick={() => setModalView('signIn')} className="bg-sky-600 text-white font-semibold py-2 px-6 rounded-md hover:bg-sky-500 transition-colors">
-                        Sign In / Sign Up
-                    </button>
-                </div>
-            )
-        }
-
-
         switch (view) {
+            case 'home':
+                // The new default for logged-out users
+                return <HomePage onSignUpClick={() => setModalView('signUp')} />;
             case 'resume':
                 return <ResumeAnalyzer onProjectSelect={handleProjectSelect} />;
             case 'profile':
-                 return <ProfilePage 
+                 return isLoggedIn ? <ProfilePage 
                         userName={userName} 
                         savedRoadmaps={savedRoadmaps} 
                         onProgressToggle={handleProgressToggle}
                         onDeleteRoadmap={handleDeleteRoadmap}
                         onUpdateRoadmap={handleUpdateRoadmap}
                         onNavigate={setView}
-                    />;
+                    /> : <HomePage onSignUpClick={() => setModalView('signUp')} />;
             case 'resumeBuilder':
-                return <ResumeBuilderPage />;
-            case 'home':
+                return isLoggedIn ? <ResumeBuilderPage /> : <HomePage onSignUpClick={() => setModalView('signUp')} />;
+            // This is now the dedicated view for the generator form and its results
+            case 'roadmapGenerator':
             default:
                 const isCurrentRoadmapSaved = !!(roadmap && savedRoadmaps.some(r => r.title === roadmap.title && r.description === roadmap.description));
                 return (
                     <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
                          <header className="w-full text-center pt-8 md:pt-12">
                             <h1 className="text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-500">
-                                Placement Preparation
+                                AI Roadmap Generator
                             </h1>
                             <p className="mt-4 text-lg text-slate-400">
-                                Your AI-powered guide to career readiness.
+                                Enter anything you want to learn or build, and let AI chart your course.
                             </p>
                         </header>
 
@@ -203,7 +200,7 @@ const App: React.FC = () => {
                                <div className="space-y-4">
                                     <div>
                                         <label htmlFor="topic" className="block text-sm font-medium text-slate-300 mb-2">
-                                            What do you want to learn or build?
+                                            Topic
                                         </label>
                                         <input
                                             id="topic"
@@ -212,20 +209,18 @@ const App: React.FC = () => {
                                             onChange={(e) => setTopic(e.target.value)}
                                             onKeyPress={(e) => e.key === 'Enter' && handleGenerateRoadmap()}
                                             placeholder="e.g., 'Learn React Native' or 'Master System Design'"
-                                            className="w-full bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-500 rounded-md py-3 px-4 focus:ring-2 focus:ring-sky-500 focus:outline-none transition duration-200"
+                                            className="w-full bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-500 rounded-md py-3 px-4"
                                             disabled={isLoading}
-                                            aria-required="true"
                                         />
                                     </div>
-
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
-                                            <label htmlFor="level" className="block text-sm font-medium text-slate-300 mb-2">Your Level</label>
+                                            <label htmlFor="level" className="block text-sm font-medium text-slate-300 mb-2">Level</label>
                                             <select
                                                 id="level"
                                                 value={level}
                                                 onChange={(e) => setLevel(e.target.value as 'Beginner' | 'Intermediate' | 'Professional')}
-                                                className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-md py-3 px-4 focus:ring-2 focus:ring-sky-500 focus:outline-none transition duration-200"
+                                                className="w-full bg-slate-800 border border-slate-700 text-slate-200 rounded-md py-3 px-4"
                                                 disabled={isLoading}
                                             >
                                                 <option>Beginner</option>
@@ -234,30 +229,27 @@ const App: React.FC = () => {
                                             </select>
                                         </div>
                                         <div>
-                                            <label htmlFor="timeline" className="block text-sm font-medium text-slate-300 mb-2">Timeline (Optional)</label>
+                                            <label htmlFor="timeline" className="block text-sm font-medium text-slate-300 mb-2">Timeline</label>
                                             <input
                                                 id="timeline"
                                                 type="text"
                                                 value={timeline}
                                                 onChange={(e) => setTimeline(e.target.value)}
                                                 placeholder="e.g., '3 months'"
-                                                className="w-full bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-500 rounded-md py-3 px-4 focus:ring-2 focus:ring-sky-500 focus:outline-none transition duration-200"
+                                                className="w-full bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-500 rounded-md py-3 px-4"
                                                 disabled={isLoading}
                                             />
                                         </div>
                                     </div>
-
-                                    <div>
-                                        <button
-                                            onClick={handleGenerateRoadmap}
-                                            disabled={isLoading || !topic.trim()}
-                                            className="w-full bg-sky-600 text-white font-semibold py-3 px-6 rounded-md hover:bg-sky-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed transition-all duration-200"
-                                        >
-                                            {isLoading ? 'Generating...' : 'Generate Roadmap'}
-                                        </button>
-                                    </div>
+                                    <button
+                                        onClick={handleGenerateRoadmap}
+                                        disabled={isLoading || !topic.trim()}
+                                        className="w-full bg-sky-600 text-white font-semibold py-3 px-6 rounded-md hover:bg-sky-500"
+                                    >
+                                        {isLoading ? 'Generating...' : 'Generate Roadmap'}
+                                    </button>
                                 </div>
-                                {error && <p className="text-red-400 mt-3 text-center" role="alert">{error}</p>}
+                                {error && <p className="text-red-400 mt-3 text-center">{error}</p>}
                             </div>
 
                             <div className="w-full mt-8">
@@ -271,7 +263,7 @@ const App: React.FC = () => {
                                                     disabled={isCurrentRoadmapSaved}
                                                     className="bg-green-600 text-white font-semibold py-2 px-5 rounded-md hover:bg-green-500 disabled:bg-slate-600"
                                                 >
-                                                     {isCurrentRoadmapSaved ? 'Saved' : 'Save Roadmap to Profile'}
+                                                     {isCurrentRoadmapSaved ? 'Saved' : 'Save Roadmap'}
                                                 </button>
                                             </div>
                                         )}
@@ -291,7 +283,6 @@ const App: React.FC = () => {
                 currentView={view} 
                 onNavigate={setView}
                 isLoggedIn={!!user}
-                userName={user?.user_metadata?.full_name || user?.email?.split('@')[0]}
                 onSignInClick={() => setModalView('signIn')}
                 onSignUpClick={() => setModalView('signUp')}
                 onSignOut={handleSignOut}
