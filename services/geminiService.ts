@@ -158,3 +158,25 @@ The user's goal is to learn about or build: "${topic}".`;
         throw new Error("An unknown error occurred while generating the roadmap.");
     }
 }
+
+export async function generateAISummary(existingSummary: string): Promise<string> {
+    const prompt = `You are a professional resume writer. Based on the following summary, rewrite it to be more impactful and professional. Make it concise and highlight key strengths.
+    
+    Existing Summary: "${existingSummary}"
+    
+    Generate a new, improved summary.`;
+
+    const response = await ai.models.generateContent(prompt);
+    return response.text.trim();
+}
+
+export async function generateAIExperience(jobTitle: string, company: string, existingSummary: string): Promise<string> {
+    const prompt = `You are a professional resume writer. For a job title of "${jobTitle}" at "${company}", rewrite the following job description points to be more achievement-oriented and professional using the STAR method (Situation, Task, Action, Result).
+    
+    Existing Description: "${existingSummary}"
+
+    Generate 3-4 improved, bulleted points for a resume.`;
+
+    const response = await ai.models.generateContent(prompt);
+    return response.text.trim();
+}

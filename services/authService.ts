@@ -35,9 +35,10 @@ export const getSession = async () => {
     return session;
 }
 
-export const onAuthStateChange = (callback: (session: any) => void) => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-        callback(session);
-    });
-    return subscription;
+// THIS FUNCTION IS UPDATED
+// It now directly returns the subscription object from Supabase, which is what App.tsx needs.
+export const onAuthStateChange = (callback: (event: string, session: any) => void) => {
+    const { data } = supabase.auth.onAuthStateChange(callback);
+    return data.subscription;
 };
+
