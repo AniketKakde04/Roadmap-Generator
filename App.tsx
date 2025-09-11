@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { generateRoadmap } from './services/geminiService';
-import { Roadmap as RoadmapType, SavedRoadmap, User } from './types';
+import { Roadmap as RoadmapType, SavedRoadmap, User, ResumeData, AnalysisReport } from './types';
 import Loader from './components/Loader';
 import Roadmap from './components/Roadmap';
 import Navbar from './components/Navbar';
@@ -8,13 +8,12 @@ import AuthModal from './components/AuthModal';
 import ResumeAnalyzer from './components/ResumeAnalyzer';
 import ProfilePage from './components/ProfilePage';
 import ResumeBuilderPage from './components/ResumeBuilderPage';
-import HomePage from './components/HomePage'; // 1. Import the new HomePage component
+import HomePage from './components/HomePage';
 import { getSession, onAuthStateChange, signOutUser } from './services/authService';
 import { getSavedRoadmaps, saveRoadmap, deleteRoadmap, updateRoadmapProgress, updateRoadmap } from './services/roadmapService';
 
 
 const App: React.FC = () => {
-    // 2. Update the view state to include the new 'roadmapGenerator' view
     const [view, setView] = useState<'home' | 'roadmapGenerator' | 'resume' | 'profile' | 'resumeBuilder'>('home');
     const [topic, setTopic] = useState<string>('');
     const [level, setLevel] = useState<'Beginner' | 'Intermediate' | 'Professional'>('Beginner');
@@ -33,10 +32,7 @@ const App: React.FC = () => {
             const session = await getSession();
             const currentUser = session?.user ?? null;
             setUser(currentUser);
-            // 3. If user is logged in, default to their profile dashboard, otherwise show the homepage
-            if (currentUser) {
-                setView('profile');
-            } else {
+            if (!currentUser) {
                 setView('home');
             }
         };
@@ -45,9 +41,7 @@ const App: React.FC = () => {
         const { data: authListener } = onAuthStateChange((_event, session) => {
             const currentUser = session?.user ?? null;
             setUser(currentUser);
-             if (currentUser) {
-                setView('profile');
-            } else {
+             if (!currentUser) {
                 setView('home');
             }
         });
@@ -147,11 +141,12 @@ const App: React.FC = () => {
     
     const handleProjectSelect = (projectTitle: string) => {
         setTopic(projectTitle);
-        setAutoGenerate(true); // This will now trigger the roadmap generator view
+        setAutoGenerate(true);
     };
 
     const handleAuthSuccess = () => {
         setModalView(null);
+        setView('profile'); // Go to profile after successful sign-in/up
     };
     
     const handleSignOut = async () => {
@@ -165,8 +160,7 @@ const App: React.FC = () => {
         
         switch (view) {
             case 'home':
-                // The new default for logged-out users
-                return <HomePage onSignUpClick={() => setModalView('signUp')} />;
+                return <HomePage onSignUpClick={() => setModalView('signUp')} onNavigate={setView} isLoggedIn={isLoggedIn} />;
             case 'resume':
                 return <ResumeAnalyzer onProjectSelect={handleProjectSelect} />;
             case 'profile':
@@ -177,10 +171,9 @@ const App: React.FC = () => {
                         onDeleteRoadmap={handleDeleteRoadmap}
                         onUpdateRoadmap={handleUpdateRoadmap}
                         onNavigate={setView}
-                    /> : <HomePage onSignUpClick={() => setModalView('signUp')} />;
+                    /> : <HomePage onSignUpClick={() => setModalView('signUp')} onNavigate={setView} isLoggedIn={isLoggedIn} />;
             case 'resumeBuilder':
-                return isLoggedIn ? <ResumeBuilderPage /> : <HomePage onSignUpClick={() => setModalView('signUp')} />;
-            // This is now the dedicated view for the generator form and its results
+                return isLoggedIn ? <ResumeBuilderPage /> : <HomePage onSignUpClick={() => setModalView('signUp')} onNavigate={setView} isLoggedIn={isLoggedIn} />;
             case 'roadmapGenerator':
             default:
                 const isCurrentRoadmapSaved = !!(roadmap && savedRoadmaps.some(r => r.title === roadmap.title && r.description === roadmap.description));

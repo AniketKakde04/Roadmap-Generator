@@ -12,7 +12,7 @@ const FeatureCard = ({ icon, title, description }: { icon: JSX.Element, title: s
 );
 
 // Main HomePage Component
-const HomePage: React.FC<{ onSignUpClick: () => void }> = ({ onSignUpClick }) => {
+const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string) => void, isLoggedIn: boolean }> = ({ onSignUpClick, onNavigate, isLoggedIn }) => {
     // Icons for feature cards
     const RoadmapIcon = <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 16.382V5.618a1 1 0 00-1.447-.894L15 7m-6 3l6-3m0 0l-6-3m6 3v10" /></svg>;
     const ResumeIcon = <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>;
@@ -28,12 +28,23 @@ const HomePage: React.FC<{ onSignUpClick: () => void }> = ({ onSignUpClick }) =>
                 <p className="mt-6 text-lg max-w-2xl mx-auto text-slate-400">
                     From crafting the perfect resume to generating personalized learning roadmaps, our platform provides the tools you need to launch your dream career.
                 </p>
-                <button 
-                    onClick={onSignUpClick}
-                    className="mt-8 bg-sky-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-sky-500 transition-all duration-300 transform hover:scale-105"
-                >
-                    Get Started for Free
-                </button>
+                <div className="mt-8">
+                    {isLoggedIn ? (
+                         <button 
+                            onClick={() => onNavigate('profile')}
+                            className="bg-sky-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-sky-500 transition-all duration-300 transform hover:scale-105"
+                        >
+                            Go to Your Dashboard
+                        </button>
+                    ) : (
+                        <button 
+                            onClick={onSignUpClick}
+                            className="bg-sky-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-sky-500 transition-all duration-300 transform hover:scale-105"
+                        >
+                            Get Started for Free
+                        </button>
+                    )}
+                </div>
             </section>
 
             {/* --- Feature Showcase --- */}
