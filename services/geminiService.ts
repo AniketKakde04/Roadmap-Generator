@@ -235,4 +235,3 @@ export const generateAIReply = async (prompt: string): Promise<string[]> => {
         throw new Error("An unknown error occurred while generating AI reply.");
     }
 };
-

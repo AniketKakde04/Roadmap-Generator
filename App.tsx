@@ -11,6 +11,7 @@ import ResumeBuilderPage from './components/ResumeBuilderPage';
 import HomePage from './components/HomePage';
 import { getSession, onAuthStateChange, signOutUser } from './services/authService';
 import { getSavedRoadmaps, saveRoadmap, deleteRoadmap, updateRoadmapProgress, updateRoadmap } from './services/roadmapService';
+import AptitudeDashboard from './components/AptitudeDashboard'; // --- IMPORT NEW COMPONENT ---
 
 
 const App: React.FC = () => {
@@ -174,6 +175,8 @@ const App: React.FC = () => {
                     /> : <HomePage onSignUpClick={() => setModalView('signUp')} onNavigate={setView} isLoggedIn={isLoggedIn} />;
             case 'resumeBuilder':
                 return isLoggedIn ? <ResumeBuilderPage /> : <HomePage onSignUpClick={() => setModalView('signUp')} onNavigate={setView} isLoggedIn={isLoggedIn} />;
+            case 'aptitude':
+                return isLoggedIn ? <AptitudeDashboard /> : <HomePage onSignUpClick={() => setModalView('signUp')} onNavigate={setView} isLoggedIn={isLoggedIn} />;
             case 'roadmapGenerator':
             default:
                 const isCurrentRoadmapSaved = !!(roadmap && savedRoadmaps.some(r => r.title === roadmap.title && r.description === roadmap.description));

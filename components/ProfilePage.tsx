@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { SavedRoadmap, ResumeData } from '../types';
-import CourseView from './CourseView';
-import {RoadmapEditor} from './RoadmapEditor';
-import ResumePreview from './ResumePreview';
-import EditProfileModal from './EditProfileModal';
-import { getResume, upsertResume } from '../services/resumeService';
-import Loader from './Loader';
-import { supabase } from '../services/supabase';
+import { SavedRoadmap, ResumeData } from '../types'; // Changed path
+import CourseView from './CourseView'; // Changed path
+import {RoadmapEditor} from './RoadmapEditor'; // Changed path
+import ResumePreview from './ResumePreview'; // Changed path
+import EditProfileModal from './EditProfileModal'; // Changed path
+import { getResume, upsertResume } from '../services/resumeService'; // Changed path
+import Loader from './Loader'; // Changed path
+import { supabase } from '../services/supabase'; // Changed path
+import XMarkIcon from './icons/XMarkIcon'; // Changed path
 
 interface ProfilePageProps {
     userName: string;
@@ -64,8 +65,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
             setIsEditModalOpen(false);
         } catch (error) {
             console.error("Failed to save profile:", error);
-            alert("Could not save profile changes. Please try again.");
+            // Removed alert
         }
+    };
+
+    // Handle Delete Click without confirmation
+    const handleDeleteClick = (roadmapId: string) => {
+        // Removed window.confirm
+        onDeleteRoadmap(roadmapId);
     };
 
     if (editMode && selectedRoadmap) {
@@ -98,7 +105,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                 />
             )}
             <div className="w-full max-w-5xl mx-auto py-8">
-                {/* --- NEW PROFILE HEADER --- */}
+                {/* --- PROFILE HEADER --- */}
                 <header className="mb-8 p-6 bg-slate-800/50 border border-slate-700/50 rounded-xl">
                     {loadingResume ? <Loader /> : (
                         <div className="flex flex-col sm:flex-row items-start gap-6">
@@ -123,7 +130,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                     )}
                 </header>
 
-                {/* --- NEW TABBED CONTENT --- */}
+                {/* --- TABBED CONTENT --- */}
                 <div>
                     <div className="border-b border-slate-700 mb-6">
                         <nav className="flex space-x-4">
@@ -150,6 +157,18 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                                                         <h3 className="text-lg font-bold text-slate-100 group-hover:text-sky-400 transition-colors">{roadmap.title}</h3>
                                                         <p className="text-xs text-slate-500 mt-1">Saved on: {new Date(roadmap.savedAt).toLocaleDateString()}</p>
                                                     </button>
+                                                    {/* --- DELETE BUTTON --- */}
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation(); // Prevent card from opening
+                                                            handleDeleteClick(roadmap.id);
+                                                        }}
+                                                        className="flex-shrink-0 text-slate-500 hover:text-red-400 transition-colors p-2 -mr-2 -mt-2"
+                                                        aria-label="Delete roadmap"
+                                                    >
+                                                        <XMarkIcon className="w-5 h-5" />
+                                                    </button>
+                                                    {/* --- END OF DELETE BUTTON --- */}
                                                 </div>
                                                 <div className="mt-4">
                                                     <div className="flex justify-between items-center mb-1">
