@@ -8,7 +8,8 @@ import { ResumeData, EducationEntry, ExperienceEntry, ProjectEntry, SkillEntry }
 import ResumePreview from './ResumePreview';
 import Loader from './Loader';
 import { supabase } from '../services/supabase';
-import AccordionSection from './AccordionSection'; // Import the new component
+import AccordionSection from './AccordionSection';
+import { FiLayout, FiColumns, FiMinimize2, FiZap } from 'react-icons/fi';
 
 const initialResumeState: ResumeData = {
     full_name: '', job_title: '', email: '', phone: '', linkedin_url: '', github_url: '',
@@ -93,9 +94,19 @@ const ResumeBuilderPage: React.FC = () => {
         setResumeData(prev => ({ ...prev, [name]: value }));
     };
     
-    const handleArrayChange = <T extends { id: string }>(section: 'education' | 'experience' | 'projects' | 'skills', index: number, field: keyof T, value: string) => {
+    type EducationKeys = keyof EducationEntry;
+    type ExperienceKeys = keyof ExperienceEntry;
+    type ProjectKeys = keyof ProjectEntry;
+    type SkillKeys = keyof SkillEntry;
+
+    const handleArrayChange = (
+        section: 'education' | 'experience' | 'projects' | 'skills',
+        index: number,
+        field: EducationKeys | ExperienceKeys | ProjectKeys | SkillKeys,
+        value: string
+    ) => {
         setResumeData(prev => {
-            const newSection = [...(prev[section] as T[])];
+            const newSection = [...(prev[section] as any[])];
             newSection[index] = { ...newSection[index], [field]: value };
             return { ...prev, [section]: newSection };
         });
@@ -308,8 +319,38 @@ const ResumeBuilderPage: React.FC = () => {
                 </div>
 
                 {/* Right Side: Preview */}
-                <div className="w-full lg:w-1/2 xl:w-3/5 overflow-y-auto">
-                    <ResumePreview resumeData={resumeData} />
+                <div className="w-full lg:w-1/2 xl:w-3/5 overflow-y-auto flex flex-col">
+                    <div className="flex items-center justify-between mb-4 p-2 bg-slate-800/50 rounded-lg">
+                        <h3 className="text-lg font-semibold">Template</h3>
+                        <div className="flex gap-2">
+                            {[
+                                { id: 1, name: 'Professional', icon: <FiLayout className="w-4 h-4" />, type: 'single-column' },
+                                { id: 2, name: 'Two-Column', icon: <FiColumns className="w-4 h-4" />, type: 'two-column' },
+                                { id: 3, name: 'Minimalist', icon: <FiMinimize2 className="w-4 h-4" />, type: 'minimalist' },
+                                { id: 4, name: 'Creative', icon: <FiZap className="w-4 h-4" />, type: 'creative' }
+                            ].map(template => (
+                                <button
+                                    key={template.id}
+                                    onClick={() => setResumeData(prev => ({
+                                        ...prev,
+                                        templateType: template.type
+                                    }))}
+                                    className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-md transition-colors ${
+                                        (resumeData as any).templateType === template.type || 
+                                        (!(resumeData as any).templateType && template.type === 'single-column')
+                                            ? 'bg-sky-600 text-white' 
+                                            : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                    }`}
+                                >
+                                    {template.icon}
+                                    <span>{template.name}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto">
+                        <ResumePreview resumeData={resumeData} />
+                    </div>
                 </div>
             </div>
         </>

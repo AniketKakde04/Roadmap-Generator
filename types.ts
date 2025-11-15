@@ -102,22 +102,26 @@ export interface SkillEntry {
 export interface AptitudeTopic {
   id: string;
   name: string;
-  category: 'Quantitative' | 'Logical' | 'Verbal' | 'Other';
-  created_at: string;
+  category: string;
 }
-
 // Matches the 'aptitude_questions' table
 export interface AptitudeQuestion {
   id: string;
   topic_id: string;
   question_text: string;
-  options: string[]; // This will be parsed from JSONB
+  options: string[];
   correct_answer_index: number;
   explanation: string;
   source_tag?: string;
   difficulty?: number;
-  is_ai_generated: boolean;
-  created_at: string;
+  is_ai_generated?: boolean;
+}
+
+export interface GeneratedAptitudeQuestion {
+  question_text: string;
+  options: string[];
+  correct_answer_index: number;
+  explanation: string;
 }
 
 // --- (Existing Database type is updated automatically by Supabase CLI, but this is a manual representation) ---
