@@ -435,3 +435,71 @@ If the topic is not found in the text, return a simple message: "No specific stu
         return "An unknown error occurred while generating the study guide.";
     }
 };
+
+export async function generatePersonalizedRoadmap(
+    resumeText: string, 
+    jobTitle: string, 
+    jobDescription: string, 
+    timeline: string
+): Promise<Roadmap> {
+    try {
+        if (!resumeText.trim() || !jobTitle.trim() || !jobDescription.trim()) {
+            throw new Error("Resume, Job Title, and Job Description are all required.");
+        }
+
+        const prompt = `You are an expert career coach and senior technical recruiter.
+Your task is to create a personalized, step-by-step learning roadmap for a user trying to get a new job.
+
+1.  **Analyze** the provided RESUME against the JOB DESCRIPTION.
+2.  **Identify** the key skill and experience GAPS.
+3.  **Generate** a comprehensive, step-by-step roadmap to fill exactly those gaps.
+4.  The roadmap should be realistically achievable within the user's TIMELINE.
+5.  Each step must include a clear description and a list of high-quality, free online resources (articles, videos, docs).
+
+The output MUST be a valid JSON object matching the \`roadmapSchema\`.
+
+---
+**User's Timeline:**
+${timeline}
+
+**Target Job Title:**
+${jobTitle}
+
+**Target Job Description:**
+${jobDescription}
+
+**User's Resume Text:**
+${resumeText}
+---
+
+Please generate the personalized roadmap now.`;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.0-flash",
+            contents: prompt,
+            tools: [{ "google_search": {} }], // Enable Google Search for finding resources
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: roadmapSchema, // Re-use the existing roadmap schema
+            },
+        });
+
+        const jsonText = response.text.trim();
+        const roadmapData: Roadmap = JSON.parse(jsonText);
+        
+        if (!roadmapData.title || !Array.isArray(roadmapData.steps)) {
+            throw new Error("Invalid roadmap structure received from AI.");
+        }
+
+        // Prepend the Job Title to the roadmap title
+        roadmapData.title = `Your Personalized Roadmap to become a ${jobTitle}`;
+
+        return roadmapData;
+    } catch (error) {
+        console.error("Error generating personalized roadmap:", error);
+        if (error instanceof Error) {
+            throw new Error(`Failed to generate personalized roadmap from AI: ${error.message}`);
+        }
+        throw new Error("An unknown error occurred while generating the roadmap.");
+    }
+}

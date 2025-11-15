@@ -13,6 +13,7 @@
     "@supabase/supabase-js": "^2.45.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
+    "lucide-react": "^0.553.0",
     "pdfjs-dist": "^4.5.136",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
