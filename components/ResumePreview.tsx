@@ -115,7 +115,19 @@ const SectionTitle = ({ children, templateType }: { children: React.ReactNode, t
 };
 
 const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData }) => {
-  const templateType = (resumeData as any).templateType || 'single-column';
+  // Ensure resumeData and its arrays are not null/undefined
+  const data = {
+    ...resumeData,
+    experience: resumeData.experience || [],
+    projects: resumeData.projects || [],
+    education: resumeData.education || [],
+    skills: resumeData.skills || [],
+    achievements: resumeData.achievements || [],
+    certifications: resumeData.certifications || [],
+  };
+
+  const templateType = (data as any).templateType || 'single-column';
+
   return (
     <div 
       id="resume-preview" 
@@ -123,19 +135,19 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData }) => {
         templateType === 'minimalist' ? 'bg-gray-50' : ''
       }`}
     >
-      <HeaderSection resumeData={resumeData} templateType={templateType} />
+      <HeaderSection resumeData={data} templateType={templateType} />
 
-      {resumeData.summary && (
+      {data.summary && (
         <div className="mb-6">
           <SectionTitle templateType={templateType}>Summary</SectionTitle>
-          <p className="text-sm text-gray-700">{resumeData.summary}</p>
+          <p className="text-sm text-gray-700">{data.summary}</p>
         </div>
       )}
 
-       {resumeData.experience.length > 0 && (
+       {data.experience.length > 0 && (
             <div className="mb-6">
                 <SectionTitle templateType={templateType}>Experience</SectionTitle>
-                {resumeData.experience.map(exp => (
+                {data.experience.map(exp => (
                     <div key={exp.id} className="mb-3">
                         <div className="flex justify-between items-baseline">
                         <h3 className="text-md font-bold">{exp.title}</h3>
@@ -150,10 +162,10 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData }) => {
             </div>
         )}
 
-      {resumeData.projects.length > 0 && (
+      {data.projects.length > 0 && (
          <div className="mb-6">
             <SectionTitle templateType={templateType}>Projects</SectionTitle>
-            {resumeData.projects.map(proj => (
+            {data.projects.map(proj => (
             <div key={proj.id} className="mb-3">
                 <h3 className="text-md font-bold">{proj.name}</h3>
                 <ul className="list-disc pl-5 mt-1 text-sm text-gray-700">
@@ -164,10 +176,10 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData }) => {
         </div>
       )}
       
-       {resumeData.education.length > 0 && (
-            <div>
+       {data.education.length > 0 && (
+            <div className="mb-6">
                 <SectionTitle templateType={templateType}>Education</SectionTitle>
-                {resumeData.education.map(edu => (
+                {data.education.map(edu => (
                 <div key={edu.id} className="mb-3">
                     <div className="flex justify-between items-baseline">
                     <h3 className="text-md font-bold">{edu.university}</h3>
@@ -179,12 +191,40 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData }) => {
             </div>
         )}
 
-       {resumeData.skills.length > 0 && (
-            <div className="mt-6">
+       {data.skills.length > 0 && (
+            <div className="mb-6">
                 <SectionTitle templateType={templateType}>Skills</SectionTitle>
                 <p className="text-sm text-gray-700">
-                 {resumeData.skills.map(s => s.name).join(' | ')}
+                 {data.skills.map(s => s.name).join(' | ')}
                 </p>
+            </div>
+        )}
+
+        {/* --- NEWLY ADDED CERTIFICATIONS --- */}
+        {data.certifications.length > 0 && (
+            <div className="mb-6">
+                <SectionTitle templateType={templateType}>Certifications</SectionTitle>
+                {data.certifications.map(cert => (
+                <div key={cert.id} className="mb-3">
+                    <div className="flex justify-between items-baseline">
+                    <h3 className="text-md font-bold">{cert.name}</h3>
+                    <p className="text-xs font-medium text-gray-600">{cert.date}</p>
+                    </div>
+                    <p className="text-sm font-semibold text-gray-800">{cert.issuer}</p>
+                </div>
+                ))}
+            </div>
+        )}
+
+        {/* --- NEWLY ADDED ACHIEVEMENTS --- */}
+        {data.achievements.length > 0 && (
+            <div className="mb-6">
+                <SectionTitle templateType={templateType}>Achievements</SectionTitle>
+                <ul className="list-disc pl-5 mt-1 text-sm text-gray-700">
+                    {data.achievements.map(ach => (
+                        <li key={ach.id}>{ach.description}</li>
+                    ))}
+                </ul>
             </div>
         )}
     </div>
@@ -192,4 +232,3 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData }) => {
 };
 
 export default ResumePreview;
-

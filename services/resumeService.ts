@@ -4,7 +4,8 @@ import { ResumeData } from '../types';
 // Default state for a new or empty resume
 const initialResumeState: ResumeData = {
     full_name: '', job_title: '', email: '', phone: '', linkedin_url: '', github_url: '',
-    summary: '', education: [], experience: [], projects: [], skills: []
+    summary: '', education: [], experience: [], projects: [], skills: [],
+    achievements: [], certifications: [] // <-- ADDED
 };
 
 // THIS IS THE NEW FUNCTION THAT WAS MISSING
@@ -35,6 +36,8 @@ export const getResume = async (userId: string): Promise<ResumeData | null> => {
         experience: Array.isArray(data.experience) ? data.experience : [],
         projects: Array.isArray(data.projects) ? data.projects : [],
         skills: Array.isArray(data.skills) ? data.skills : [],
+        achievements: Array.isArray(data.achievements) ? data.achievements : [], // <-- ADDED
+        certifications: Array.isArray(data.certifications) ? data.certifications : [], // <-- ADDED
     };
 };
 
@@ -63,6 +66,7 @@ export const upsertResume = async (resumeData: Partial<ResumeData>): Promise<Res
         experience: Array.isArray(data.experience) ? data.experience : [],
         projects: Array.isArray(data.projects) ? data.projects : [],
         skills: Array.isArray(data.skills) ? data.skills : [],
+        achievements: Array.isArray(data.achievements) ? data.achievements : [], // <-- ADDED
+        certifications: Array.isArray(data.certifications) ? data.certifications : [], // <-- ADDED
     };
 };
-

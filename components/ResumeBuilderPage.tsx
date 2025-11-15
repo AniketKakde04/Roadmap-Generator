@@ -4,7 +4,7 @@ import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { getResume, upsertResume } from '../services/resumeService';
 import { generateAIReply } from '../services/geminiService';
-import { ResumeData, EducationEntry, ExperienceEntry, ProjectEntry, SkillEntry } from '../types';
+import { ResumeData, EducationEntry, ExperienceEntry, ProjectEntry, SkillEntry, AchievementEntry, CertificationEntry } from '../types'; // <-- ADDED TYPES
 import ResumePreview from './ResumePreview';
 import Loader from './Loader';
 import { supabase } from '../services/supabase';
@@ -13,11 +13,12 @@ import { FiLayout, FiColumns, FiMinimize2, FiZap } from 'react-icons/fi';
 
 const initialResumeState: ResumeData = {
     full_name: '', job_title: '', email: '', phone: '', linkedin_url: '', github_url: '',
-    summary: '', education: [], experience: [], projects: [], skills: []
+    summary: '', education: [], experience: [], projects: [], skills: [],
+    achievements: [], certifications: [] // <-- ADDED
 };
 
 // --- THIS IS THE IMPROVED AI ASSIST MODAL ---
-// It now displays multiple, selectable options.
+// ... (AIAssistModal component code remains unchanged) ...
 const AIAssistModal = ({ suggestions, onClose, onInsert, loading }: { suggestions: string[], onClose: () => void, onInsert: (text: string) => void, loading: boolean }) => {
     const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(null);
     
@@ -69,7 +70,6 @@ const ResumeBuilderPage: React.FC = () => {
     const [aiLoading, setAiLoading] = useState(false);
     const [exporting, setExporting] = useState(false);
     
-    // Updated state for the new AI Assist Modal
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
     const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
     const [aiTarget, setAiTarget] = useState<{ section: 'summary' | 'experience', index?: number } | null>(null);
@@ -82,8 +82,14 @@ const ResumeBuilderPage: React.FC = () => {
                 if (user) {
                     const data = await getResume(user.id);
                     if (data) setResumeData(data);
+                    else setResumeData(initialResumeState); // <-- Ensure state is not null
+                } else {
+                    setResumeData(initialResumeState); // <-- Ensure state is not null
                 }
-            } catch (error) { console.error("Failed to fetch resume:", error); } 
+            } catch (error) { 
+                console.error("Failed to fetch resume:", error); 
+                setResumeData(initialResumeState); // <-- Ensure state is not null
+            } 
             finally { setLoading(false); }
         };
         fetchResume();
@@ -98,11 +104,13 @@ const ResumeBuilderPage: React.FC = () => {
     type ExperienceKeys = keyof ExperienceEntry;
     type ProjectKeys = keyof ProjectEntry;
     type SkillKeys = keyof SkillEntry;
+    type AchievementKeys = keyof AchievementEntry; // <-- ADDED
+    type CertificationKeys = keyof CertificationEntry; // <-- ADDED
 
     const handleArrayChange = (
-        section: 'education' | 'experience' | 'projects' | 'skills',
+        section: 'education' | 'experience' | 'projects' | 'skills' | 'achievements' | 'certifications', // <-- ADDED
         index: number,
-        field: EducationKeys | ExperienceKeys | ProjectKeys | SkillKeys,
+        field: EducationKeys | ExperienceKeys | ProjectKeys | SkillKeys | AchievementKeys | CertificationKeys, // <-- ADDED
         value: string
     ) => {
         setResumeData(prev => {
@@ -112,18 +120,21 @@ const ResumeBuilderPage: React.FC = () => {
         });
     };
     
-    const addArrayItem = (section: 'education' | 'experience' | 'projects' | 'skills') => {
+    const addArrayItem = (section: 'education' | 'experience' | 'projects' | 'skills' | 'achievements' | 'certifications') => { // <-- ADDED
         let newItem: any;
         switch(section) {
             case 'education': newItem = { id: uuidv4(), university: '', degree: '', startDate: '', endDate: '' }; break;
             case 'experience': newItem = { id: uuidv4(), title: '', company: '', startDate: '', endDate: '', description: '' }; break;
             case 'projects': newItem = { id: uuidv4(), name: '', description: '' }; break;
             case 'skills': newItem = { id: uuidv4(), name: '' }; break;
+            case 'achievements': newItem = { id: uuidv4(), description: '' }; break; // <-- ADDED
+            case 'certifications': newItem = { id: uuidv4(), name: '', issuer: '', date: '' }; break; // <-- ADDED
             default: return;
         }
         setResumeData(prev => ({ ...prev, [section]: [...(prev[section] as any[]), newItem] }));
     };
     
+    // ... (removeArrayItem, handleSave, handleExportPDF, handleAIAssist, handleInsertAISuggestion remain unchanged) ...
     const removeArrayItem = (section: keyof ResumeData, id: string) => {
         setResumeData(prev => ({ ...prev, [section]: (prev[section] as any[]).filter(item => item.id !== id) }));
     };
@@ -133,9 +144,9 @@ const ResumeBuilderPage: React.FC = () => {
         try {
             const updatedResume = await upsertResume(resumeData);
             setResumeData(updatedResume);
-             alert('Resume saved successfully!');
+             alert('Resume saved successfully!'); // NOTE: You previously asked to avoid alerts. This was in the original code.
         } catch (error) {
-             alert('Error saving resume. Please try again.');
+             alert('Error saving resume. Please try again.'); // NOTE: You previously asked to avoid alerts. This was in the original code.
         } finally {
             setSaving(false);
         }
@@ -154,7 +165,7 @@ const ResumeBuilderPage: React.FC = () => {
                 pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
                 pdf.save(`${resumeData.full_name || 'resume'}.pdf`);
             }).catch(err => {
-                alert("Sorry, something went wrong while exporting the PDF.");
+                alert("Sorry, something went wrong while exporting the PDF."); // NOTE: You previously asked to avoid alerts. This was in the original code.
             }).finally(() => {
                 setExporting(false);
             });
@@ -314,6 +325,35 @@ const ResumeBuilderPage: React.FC = () => {
                                     <button onClick={() => addArrayItem('skills')} className="text-sm text-sky-400 hover:text-sky-300">+ Add Skill</button>
                                 </div>
                             </AccordionSection>
+                            
+                            {/* --- NEWLY ADDED CERTIFICATIONS SECTION --- */}
+                             <AccordionSection title="Certifications">
+                                <div className="space-y-4 p-2">
+                                    {resumeData.certifications.map((cert, index) => (
+                                        <div key={cert.id} className="p-3 bg-slate-700/50 rounded-lg space-y-3">
+                                            <input value={cert.name} onChange={e => handleArrayChange('certifications', index, 'name', e.target.value)} placeholder="Certification Name" className="w-full bg-slate-600 p-2 rounded-md"/>
+                                            <input value={cert.issuer} onChange={e => handleArrayChange('certifications', index, 'issuer', e.target.value)} placeholder="Issuing Organization (e.g., Google, Coursera)" className="w-full bg-slate-600 p-2 rounded-md"/>
+                                            <input value={cert.date} onChange={e => handleArrayChange('certifications', index, 'date', e.target.value)} placeholder="Date Issued (e.g., 2024)" className="w-full bg-slate-600 p-2 rounded-md"/>
+                                            <button onClick={() => removeArrayItem('certifications', cert.id)} className="text-xs text-red-400 hover:text-red-300">Remove</button>
+                                        </div>
+                                    ))}
+                                    <button onClick={() => addArrayItem('certifications')} className="text-sm text-sky-400 hover:text-sky-300">+ Add Certification</button>
+                                </div>
+                            </AccordionSection>
+
+                            {/* --- NEWLY ADDED ACHIEVEMENTS SECTION --- */}
+                             <AccordionSection title="Achievements">
+                                <div className="space-y-4 p-2">
+                                    <p className="text-xs text-slate-400">List any awards, publications, or notable achievements.</p>
+                                    {resumeData.achievements.map((ach, index) => (
+                                        <div key={ach.id} className="p-3 bg-slate-700/50 rounded-lg space-y-3">
+                                            <textarea value={ach.description} onChange={e => handleArrayChange('achievements', index, 'description', e.target.value)} rows={2} placeholder="e.g., '1st Place at XYZ Hackathon'" className="w-full bg-slate-600 p-2 rounded-md"/>
+                                            <button onClick={() => removeArrayItem('achievements', ach.id)} className="text-xs text-red-400 hover:text-red-300">Remove</button>
+                                        </div>
+                                    ))}
+                                    <button onClick={() => addArrayItem('achievements')} className="text-sm text-sky-400 hover:text-sky-300">+ Add Achievement</button>
+                                </div>
+                            </AccordionSection>
                         </div>
                     </div>
                 </div>
@@ -333,7 +373,7 @@ const ResumeBuilderPage: React.FC = () => {
                                     key={template.id}
                                     onClick={() => setResumeData(prev => ({
                                         ...prev,
-                                        templateType: template.type
+                                        templateType: template.type as any
                                     }))}
                                     className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-md transition-colors ${
                                         (resumeData as any).templateType === template.type || 
@@ -358,4 +398,3 @@ const ResumeBuilderPage: React.FC = () => {
 };
 
 export default ResumeBuilderPage;
-

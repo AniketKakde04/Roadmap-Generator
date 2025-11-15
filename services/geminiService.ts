@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Roadmap, ProjectSuggestion } from '../types';
+import { Roadmap, ProjectSuggestion, AnalysisReport, AptitudeQuestion, GeneratedAptitudeQuestion } from '../types';
 
 const BROWSER_API_KEY = process.env.API_KEY;
 if (!BROWSER_API_KEY) {
@@ -8,97 +8,250 @@ if (!BROWSER_API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: BROWSER_API_KEY });
 
+// --- NEW: Text content extracted from 'Master Formula Sheets.pdf' ---
+// This is used as the context for the AI to generate study guides.
+const PDF_TEXT_CONTENT = `
+CHAPTER WISE FORMULAS
+
+Chapter 1: Number System - Important Formulas
+1. Divisibility Rules:
+   - Div by 2: last digit even
+   - Div by 3: sum of digits divisible by 3
+   - Div by 4: last 2 digits divisible by 4
+   - Div by 5: ends in 0 or 5
+   - Div by 6: divisible by 2 and 3
+   - Div by 8: last 3 digits divisible by 8
+   - Div by 9: sum of digits divisible by 9
+   - Div by 10: ends in 0
+   - Div by 11: alt. sum of digits divisible by 11
+2. HCF & LCM:
+   - Product of two numbers = HCF x LCM
+   - LCM of fractions = LCM of numerators / HCF of denominators
+   - HCF of fractions = HCF of numerators / LCM of denominators
+3. Number Types:
+   - Prime = divisible by only 1 and itself
+   - Composite = more than 2 factors
+
+Chapter 2: Percentages - Important Formulas
+1. Percentage = (Part/Whole) x 100
+2. x increased by y% = x * (1 + y/100)
+3. x decreased by y% = x * (1 - y/100)
+4. Successive change: Net % = x + y + (xy/100)
+5. Population change:
+   - After n years = P * (1 ± R/100)^n
+6. % Change = [(New - Old) / Old] * 100
+7. If A is R% more than B, B is less than A by [R / (100+R)] * 100 %
+
+Chapter 3: Profit and Loss - Important Formulas
+1. Profit = S.P. - C.P.
+2. Loss = C.P. - S.P.
+3. Profit % = (Profit / C.P.) * 100
+4. Loss % = (Loss / C.P.) * 100
+5. S.P. = C.P. * (1 + Profit%/100)
+6. S.P. = C.P. * (1 - Loss%/100)
+7. Discount = M.P. - S.P. (M.P. = Marked Price)
+8. Dishonest Dealer: Profit % = (Error / (True Value - Error)) * 100
+
+Chapter 4: Simple & Compound Interest
+1. Simple Interest (S.I.) = (P * R * T) / 100
+2. Amount (Simple) = P + S.I.
+3. Compound Interest (C.I.) = P * (1 + R/100)^T - P
+4. Amount (Compound) = P * (1 + R/100)^T
+5. Compounded Half-yearly: Amount = P * (1 + (R/2)/100)^(2*T)
+6. Compounded Quarterly: Amount = P * (1 + (R/4)/100)^(4*T)
+7. Difference b/w C.I. & S.I. for 2 years = P * (R/100)^2
+
+Chapter 5: Ratio and Proportion
+1. Ratio A:B = A/B
+2. Proportion a:b :: c:d => a*d = b*c
+3. Compounded Ratio = (a/b) * (c/d) * (e/f)
+4. Duplicate ratio = a^2 : b^2
+5. Triplicate ratio = a^3 : b^3
+6. Mean proportional (b/w a and c) = sqrt(a*c)
+
+Chapter 6: Time and Work
+1. (Work from) 1 day = 1 / (Total days to complete)
+2. If A takes 'x' days, B takes 'y' days, (A+B) together = (x*y) / (x+y) days
+3. M1*D1*H1 / W1 = M2*D2*H2 / W2 (M=Men, D=Days, H=Hours, W=Work)
+4. Efficiency is inversely proportional to Time taken.
+
+Chapter 7: Time, Speed and Distance
+1. Speed = Distance / Time
+2. 1 km/hr = 5/18 m/s
+3. 1 m/s = 18/5 km/hr
+4. Average Speed = Total Distance / Total Time
+5. Avg. speed (equal distances) = (2*x*y) / (x+y)
+6. Relative speed (same direction) = s1 - s2
+7. Relative speed (opposite direction) = s1 + s2
+8. Train crossing pole: Distance = length of train
+9. Train crossing platform: Distance = length of train + length of platform
+
+Chapter 8: Boats and Streams
+1. Downstream speed (v) = u + s (u=boat speed, s=stream speed)
+2. Upstream speed (u) = u - s
+3. Speed of boat (u) = (v + u) / 2
+4. Speed of stream (s) = (v - u) / 2
+
+Chapter 9: Permutation & Combination
+1. Factorial n! = n * (n-1) * ... * 1
+2. Permutation (Arrangement): nPr = n! / (n-r)!
+3. Combination (Selection): nCr = n! / (r! * (n-r)!)
+4. Circular permutation = (n-1)!
+5. nCr = nC(n-r)
+
+Chapter 10: Probability
+1. P(E) = (Number of favorable outcomes) / (Total number of outcomes)
+2. 0 <= P(E) <= 1
+3. P(Not E) = 1 - P(E)
+4. P(A or B) = P(A) + P(B) - P(A and B)
+5. Mutually Exclusive P(A or B) = P(A) + P(B)
+6. Independent Events P(A and B) = P(A) * P(B)
+7. Odds in favor = Favorable / Unfavorable
+8. Odds against = Unfavorable / Favorable
+
+Chapter 11: Averages
+1. Average = (Sum of observations) / (Number of observations)
+2. Sum = Average * Number
+
+Chapter 12: Problems on Ages
+1. Use linear equations (e.g., Let age be x)
+2. 'n' years ago: Age = x - n
+3. 'n' years hence: Age = x + n
+4. Ratio logic: e.g., 5:6 => 5x and 6x
+
+Chapter 13: Clocks
+1. Angle b/w hands = |30*H - (11/2)*M|
+2. Hands coincide (0 deg) = 22 times in 24 hrs
+3. Hands opposite (180 deg) = 22 times in 24 hrs
+4. Hands perpendicular (90 deg) = 44 times in 24 hrs
+
+Chapter 14: Calendars
+1. Odd days = (Total days) % 7
+2. Leap year: Divisible by 4 (or 400 for centuries)
+3. Non-leap year = 1 odd day
+4. Leap year = 2 odd days
+5. Day codes: Sun=0, Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6
+
+Chapter 15: Direction Sense
+1. Pythagoras theorem: (a^2 + b^2) = c^2
+2. Shortest distance = sqrt(x^2 + y^2)
+3. Always keep track of N, S, E, W
+4. Angle turns: Left turn = 90 deg anticlockwise, Right turn = 90 deg clockwise
+5. Opposite directions = 180 deg, perpendicular = 90 deg
+
+Chapter 16: Coding & Decoding
+1. Letter shifting (e.g., A+1=B)
+2. Reverse position: Z=1, A=26
+3. Pattern-based substitution
+4. Word-letter mapping
+5. Symbol/numeric code interpretation
+
+Chapter 17: Blood Relations
+1. Tree diagram helps
+2. Gender clues (e.g., "his", "her")
+3. Direct and indirect relation types
+4. Chain logic: A is B's son's...
+5. Shortcut terms: Brother's/Sister's husband = Brother-in-law
+
+Chapter 18: Data Arrangements
+1. Linear/seating arrangements
+2. Circle arrangements (clockwise/anticlockwise)
+3. Use condition-first statements
+4. Elimination technique
+5. Always draw table/diagrams
+
+Chapter 19: Statement & Assumption
+1. Assumption is what must be true for statement
+2. General assumptions > specific ones
+3. Avoid extreme/biased language
+4. Common trap: confusing assumption with inference
+5. Focus on underlying beliefs, not facts
+
+Chapter 20: Series & Progressions
+1. Arithmetic Progression (AP):
+   - a_n = a + (n-1)d
+   - Sum = (n/2) * [2a + (n-1)d]
+2. Geometric Progression (GP):
+   - a_n = a * r^(n-1)
+   - Sum = a * (1 - r^n) / (1 - r)
+   - Sum (infinite) = a / (1 - r) [if |r| < 1]
+`;
+
+// --- (Existing Schemas: resourceSchema, stepSchema, roadmapSchema, analysisReportSchema) ... ---
+// (Copy them from your existing file)
 const resourceSchema = {
     type: Type.OBJECT,
     properties: {
-        title: { type: Type.STRING, description: "The title of the resource." },
-        url: { type: Type.STRING, description: "The full URL to the resource." },
-        type: {
-            type: Type.STRING,
-            enum: ['video', 'article', 'documentation', 'course', 'tool', 'other'],
-            description: "The type of the resource."
-        },
-    },
-    required: ["title", "url", "type"],
+        title: { type: Type.STRING }, url: { type: Type.STRING },
+        type: { type: Type.STRING, enum: ['video', 'article', 'documentation', 'course', 'tool', 'other']},
+    }, required: ["title", "url", "type"],
 };
-
 const stepSchema = {
     type: Type.OBJECT,
     properties: {
-        title: { type: Type.STRING, description: "A concise title for this step of the roadmap." },
-        description: { type: Type.STRING, description: "A detailed, beginner-friendly explanation of what to learn or do in this step." },
-        resources: {
-            type: Type.ARRAY,
-            items: resourceSchema,
-            description: "A list of high-quality, free-to-access online resources for this step.",
-        },
-    },
-    required: ["title", "description", "resources"],
+        title: { type: Type.STRING }, description: { type: Type.STRING },
+        resources: { type: Type.ARRAY, items: resourceSchema },
+    }, required: ["title", "description", "resources"],
 };
-
 const roadmapSchema = {
     type: Type.OBJECT,
     properties: {
-        title: { type: Type.STRING, description: "A creative and engaging title for the entire roadmap." },
-        description: { type: Type.STRING, description: "A brief, encouraging overview of the learning journey." },
-        steps: {
-            type: Type.ARRAY,
-            items: stepSchema,
-            description: "The sequence of steps that make up the roadmap.",
-        },
-    },
-    required: ["title", "description", "steps"],
+        title: { type: Type.STRING }, description: { type: Type.STRING },
+        steps: { type: Type.ARRAY, items: stepSchema },
+    }, required: ["title", "description", "steps"],
 };
-
-
-
 const analysisReportSchema = {
     type: Type.OBJECT,
     properties: {
-        matchScore: { 
-            type: Type.NUMBER,
-            description: "A percentage score (0-100) representing how well the resume matches the job description."
-        },
-        strengths: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING },
-            description: "A list of key skills found in the resume that are also required by the job."
-        },
-        gaps: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING },
-            description: "A list of crucial skills required by the job that are missing from the resume."
-        },
-        feedback: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING },
-            description: "2-3 bullet points of direct, actionable feedback on the resume's writing and structure."
-        },
-        projectSuggestions: {
-            type: Type.ARRAY,
-            items: {
-                type: Type.OBJECT,
-                properties: {
-                    title: { type: Type.STRING },
-                    description: { type: Type.STRING },
-                    reasoning: { type: Type.STRING, description: "A clear explanation of how this project helps fill the identified skill gaps." },
-                },
-                required: ["title", "description", "reasoning"],
-            },
-        },
+        matchScore: { type: Type.NUMBER },
+        strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+        gaps: { type: Type.ARRAY, items: { type: Type.STRING } },
+        feedback: { type: Type.ARRAY, items: { type: Type.STRING } },
+        projectSuggestions: { type: Type.ARRAY, items: {
+            type: Type.OBJECT,
+            properties: { title: { type: Type.STRING }, description: { type: Type.STRING }, reasoning: { type: Type.STRING } },
+            required: ["title", "description", "reasoning"],
+        }},
+    }, required: ["matchScore", "strengths", "gaps", "feedback", "projectSuggestions"],
+};
+// --- (Existing Schemas: generatedQuestionSchema, aptitudeQuizSchema) ... ---
+// (Copy them from your existing file)
+const generatedQuestionSchema = {
+    type: Type.OBJECT,
+    properties: {
+        question_text: { type: Type.STRING },
+        options: { type: Type.ARRAY, items: { type: Type.STRING } },
+        correct_answer_index: { type: Type.NUMBER },
+        explanation: { type: Type.STRING },
+    }, required: ["question_text", "options", "correct_answer_index", "explanation"],
+};
+const aptitudeQuizSchema = {
+    type: Type.OBJECT,
+    properties: {
+        new_questions: { type: Type.ARRAY, items: generatedQuestionSchema }
+    }, required: ["new_questions"]
+};
+
+// --- NEW: Schema for the Study Guide ---
+const studyGuideSchema = {
+    type: Type.OBJECT,
+    properties: {
+        study_guide_markdown: {
+            type: Type.STRING,
+            description: "A string containing the extracted formulas and theory formatted as simple Markdown. Use headings, bullet points, and bold text for clarity."
+        }
     },
-    required: ["matchScore", "strengths", "gaps", "feedback", "projectSuggestions"],
+    required: ["study_guide_markdown"]
 };
 
 
-// --- THIS FUNCTION IS NOW COMPLETELY OVERHAULED ---
+// --- (Existing functions: suggestProjectsFromResume, generateRoadmap, generateAIReply, generateAptitudeQuestions) ... ---
+// (Copy all of them from your existing file)
+
 export async function suggestProjectsFromResume(resumeText: string, jobTitle: string, jobDescription: string): Promise<AnalysisReport> {
     try {
-        if (!resumeText.trim()) {
-            throw new Error("Resume text cannot be empty.");
-        }
-
-        // The new prompt instructs the AI to perform a comprehensive analysis.
+        if (!resumeText.trim()) { throw new Error("Resume text cannot be empty."); }
+        
         let prompt = `You are an expert career coach and senior hiring manager for a top tech company. Your task is to conduct a detailed analysis comparing the provided resume against the target job description.
 
 Your analysis must include the following five parts:
@@ -123,33 +276,17 @@ The output MUST be a valid JSON object matching the provided schema.`;
         prompt += `\n\nResume Text:\n---\n${resumeText}\n---\n\nPlease generate the full analysis report now.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash", // Using a more powerful model for better analysis
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: analysisReportSchema,
-            },
+            model: "gemini-2.0-flash", contents: prompt,
+            config: { responseMimeType: "application/json", responseSchema: analysisReportSchema },
         });
-
         const jsonText = response.text.trim();
-        const analysisData: AnalysisReport = JSON.parse(jsonText);
-
-        // Basic validation
-        if (!analysisData.matchScore || !Array.isArray(analysisData.strengths)) {
-            throw new Error("Invalid analysis report structure received from AI.");
-        }
-
-        return analysisData;
+        return JSON.parse(jsonText);
     } catch (error) {
         console.error("Error generating analysis report:", error);
-        if (error instanceof Error) {
-            throw new Error(`Failed to get analysis from AI: ${error.message}`);
-        }
+        if (error instanceof Error) { throw new Error(`Failed to get analysis from AI: ${error.message}`); }
         throw new Error("An unknown error occurred while analyzing the resume.");
     }
 }
-
-
 
 export async function generateRoadmap(topic: string, level: string, timeline: string): Promise<Roadmap> {
     try {
@@ -168,70 +305,133 @@ The user's goal is to learn about or build: "${topic}".`;
         prompt += `\n\nEnsure all URLs are valid and directly lead to the resource. The output MUST be a valid JSON object matching the provided schema.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
-            contents: prompt,
-            tools: [{ "google_search": {} }],
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: roadmapSchema,
-            },
+            model: "gemini-2.0-flash", contents: prompt, tools: [{ "google_search": {} }],
+            config: { responseMimeType: "application/json", responseSchema: roadmapSchema },
         });
-
         const jsonText = response.text.trim();
-        const roadmapData: Roadmap = JSON.parse(jsonText);
-        
-        if (!roadmapData.title || !Array.isArray(roadmapData.steps) || roadmapData.steps.length === 0) {
-            throw new Error("Invalid roadmap structure received from AI.");
-        }
-
-        return roadmapData;
+        return JSON.parse(jsonText);
     } catch (error) {
         console.error("Error generating roadmap:", error);
-        if (error instanceof Error) {
-            throw new Error(`Failed to generate roadmap from AI: ${error.message}`);
-        }
+        if (error instanceof Error) { throw new Error(`Failed to generate roadmap from AI: ${error.message}`); }
         throw new Error("An unknown error occurred while generating the roadmap.");
     }
 }
 
-// --- THIS IS THE CORRECT, SINGLE FUNCTION FOR AI ASSIST ---
 export const generateAIReply = async (prompt: string): Promise<string[]> => {
     try {
         const suggestionSchema = {
             type: Type.OBJECT,
-            properties: {
-                suggestions: {
-                    type: Type.ARRAY,
-                    items: { type: Type.STRING },
-                    description: "An array of 3 distinct text suggestions based on the prompt."
-                }
-            },
+            properties: { suggestions: { type: Type.ARRAY, items: { type: Type.STRING }}},
             required: ["suggestions"]
         };
+        const response = await ai.models.generateContent({
+            model: "gemini-2.0-flash", contents: `${prompt} Please provide three distinct options.`,
+            config: { responseMimeType: "application/json", responseSchema: suggestionSchema },
+        });
+        const jsonText = response.text.trim();
+        return JSON.parse(jsonText).suggestions;
+    } catch (error) {
+        console.error("Error generating AI reply:", error);
+        if (error instanceof Error) { throw new Error(`Failed to get AI reply: ${error.message}`); }
+        throw new Error("An unknown error occurred while generating AI reply.");
+    }
+};
+
+// --- UPDATED FUNCTION ---
+export const generateAptitudeQuestions = async (
+    referenceQuestions: AptitudeQuestion[], 
+    topicName: string,
+    topicCategory: string, // <-- NEW PARAMETER
+    count: number
+): Promise<GeneratedAptitudeQuestion[]> => {
+    try {
+        const referenceText = referenceQuestions.map(q => 
+            `Q: ${q.question_text}\nOptions: ${q.options.join(', ')}\nAnswer: ${q.options[q.correct_answer_index]}`
+        ).join('\n\n');
+
+        // --- NEW, STRONGER PROMPT ---
+        const prompt = `You are an expert in creating aptitude test questions for job placement exams.
+Your task is to generate ${count} new, unique questions for the topic: "${topicName}".
+
+The category for this topic is: "${topicCategory}".
+
+IMPORTANT:
+- If the category is 'Quantitative', the question MUST be a math problem (e.g., percentages, time/work, algebra).
+- If the category is 'Logical', the question MUST be a logical reasoning puzzle (e.g., series, blood relations, directions).
+- If the category is 'Verbal', the question MUST test vocabulary, grammar, or reading comprehension.
+- **ABSOLUTELY NO general knowledge trivia** (e.g., "What is the capital of France?").
+
+These questions should be similar in style, difficulty, and format to the following examples:
+
+--- EXAMPLES ---
+${referenceText || "No examples available. Please generate standard " + topicCategory + " aptitude questions for the topic."}
+--- END EXAMPLES ---
+
+Please generate ${count} new questions now. Ensure the options are plausible and there is only one correct answer.
+The output MUST be a valid JSON object matching the provided schema.`;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.0-flash", 
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: aptitudeQuizSchema,
+            },
+        });
+
+        const jsonText = response.text.trim();
+        const quizData: { new_questions: GeneratedAptitudeQuestion[] } = JSON.parse(jsonText);
+
+        if (!quizData.new_questions || quizData.new_questions.length === 0) {
+            throw new Error("AI failed to generate new questions.");
+        }
+
+        return quizData.new_questions;
+
+    } catch (error) {
+        console.error("Error generating aptitude questions:", error);
+        if (error instanceof Error) {
+            throw new Error(`Failed to get questions from AI: ${error.message}`);
+        }
+        throw new Error("An unknown error occurred while generating questions.");
+    }
+};
+
+
+// --- (generateStudyGuide function remains exactly the same) ---
+export const generateStudyGuide = async (topicName: string): Promise<string> => {
+    try {
+        const prompt = `You are an expert tutor. Your task is to extract all relevant formulas, definitions, and key concepts for a specific topic from the provided master formula sheet text.
+Topic to extract: "${topicName}"
+
+Master Formula Sheet Text:
+---
+${PDF_TEXT_CONTENT}
+---
+
+Extract *only* the formulas and key concepts for "${topicName}".
+Format the output as simple, clean Markdown. Use headings, bullet points, and bold text for clarity.
+If the topic is not found in the text, return a simple message: "No specific study guide found for this topic."`;
 
         const response = await ai.models.generateContent({
             model: "gemini-2.0-flash",
-            contents: `${prompt} Please provide three distinct options.`,
+            contents: prompt,
             config: {
                 responseMimeType: "application/json",
-                responseSchema: suggestionSchema,
+                responseSchema: studyGuideSchema,
             },
         });
 
         const jsonText = response.text.trim();
         const parsedResponse = JSON.parse(jsonText);
-
-        if (parsedResponse.suggestions && Array.isArray(parsedResponse.suggestions)) {
-            return parsedResponse.suggestions;
-        }
-
-        throw new Error("Invalid response structure from AI.");
+        
+        return parsedResponse.study_guide_markdown || "Could not generate study guide.";
 
     } catch (error) {
-        console.error("Error generating AI reply:", error);
+        console.error("Error generating study guide:", error);
         if (error instanceof Error) {
-            throw new Error(`Failed to get AI reply: ${error.message}`);
+            return `Error generating study guide: ${error.message}`;
         }
-        throw new Error("An unknown error occurred while generating AI reply.");
+        return "An unknown error occurred while generating the study guide.";
     }
 };

@@ -67,6 +67,7 @@ export interface ResumeData {
   projects: ProjectEntry[];
   skills: SkillEntry[];
   updated_at?: string;
+  templateType?: 'single-column' | 'two-column' | 'minimalist' | 'creative'; 
 }
 
 export interface EducationEntry {
@@ -103,6 +104,7 @@ export interface AptitudeTopic {
   id: string;
   name: string;
   category: string;
+  study_guide?: string | null; // <-- THIS FIELD IS UPDATED/ADDED
 }
 // Matches the 'aptitude_questions' table
 export interface AptitudeQuestion {
@@ -220,6 +222,7 @@ export type Database = {
           skills: Json | null;
           created_at: string;
           updated_at: string;
+          templateType: string | null;
         };
         Insert: {
           id?: string;
@@ -237,6 +240,7 @@ export type Database = {
           skills?: Json | null;
           created_at?: string;
           updated_at?: string;
+          templateType: string | null;
         };
         Update: {
           id?: string;
@@ -254,6 +258,7 @@ export type Database = {
           skills?: Json | null;
           created_at?: string;
           updated_at?: string;
+          templateType: string | null;
         };
       }
       aptitude_topics: {
@@ -262,18 +267,21 @@ export type Database = {
           name: string
           category: 'Quantitative' | 'Logical' | 'Verbal' | 'Other'
           created_at: string
+          study_guide: string | null // <-- THIS FIELD IS ADDED
         }
         Insert: {
           id?: string
           name: string
           category: 'Quantitative' | 'Logical' | 'Verbal' | 'Other'
           created_at?: string
+          study_guide?: string | null // <-- THIS FIELD IS ADDED
         }
         Update: {
           id?: string
           name?: string
           category?: 'Quantitative' | 'Logical' | 'Verbal' | 'Other'
           created_at?: string
+          study_guide?: string | null // <-- THIS FIELD IS ADDED
         }
       }
       aptitude_questions: {
@@ -330,4 +338,3 @@ export type Database = {
     }
   }
 }
-
