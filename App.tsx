@@ -16,9 +16,12 @@ import AptitudeDashboard from './components/AptitudeDashboard';
 // --- NEW: Import for PDF parsing ---
 import * as pdfjsLib from 'pdfjs-dist';
 import ArrowUpTrayIcon from './components/icons/ArrowUpTrayIcon';
+import MockInterviewPage from './components/MockInterviewPage';
+
 
 // Configure the worker for pdfjs-dist
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.5.136/build/pdf.worker.mjs`;
+type View = 'home' | 'roadmapGenerator' | 'resume' | 'profile' | 'resumeBuilder' | 'aptitude' | 'mockInterview';
 
 
 const App: React.FC = () => {
@@ -250,7 +253,8 @@ const App: React.FC = () => {
                 return isLoggedIn ? <ResumeBuilderPage /> : <HomePage onSignUpClick={() => setModalView('signUp')} onNavigate={setView} isLoggedIn={isLoggedIn} />;
             case 'aptitude':
                 return isLoggedIn ? <AptitudeDashboard /> : <HomePage onSignUpClick={() => setModalView('signUp')} onNavigate={setView} isLoggedIn={isLoggedIn} />;
-            
+            case 'mockInterview':
+                return isLoggedIn ? <MockInterviewPage /> : <HomePage onSignUpClick={() => setModalView('signUp')} onNavigate={setView} isLoggedIn={isLoggedIn} />;
             // --- UPDATED: This entire view is new ---
             case 'roadmapGenerator':
             default:

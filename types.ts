@@ -126,6 +126,17 @@ export interface GeneratedAptitudeQuestion {
   explanation: string;
 }
 
+export interface ChatMessage {
+  role: 'user' | 'model';
+  text: string;
+}
+
+export interface InterviewFeedback {
+  overall_feedback: string;
+  strengths: string[];
+  areas_for_improvement: string[];
+}
+
 // --- (Existing Database type is updated automatically by Supabase CLI, but this is a manual representation) ---
 export type Json =
   | string

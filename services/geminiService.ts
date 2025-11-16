@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Roadmap, ProjectSuggestion, AnalysisReport } from '../types';
+import { Roadmap, ProjectSuggestion, AnalysisReport ,ChatMessage, InterviewFeedback} from '../types';
+import { base64ToArrayBuffer, pcmToWav } from './audioUtils';
 
 const BROWSER_API_KEY = process.env.API_KEY;
 if (!BROWSER_API_KEY) {
@@ -227,7 +228,26 @@ const studyGuideSchema = {
     required: ["study_guide_markdown"]
 };
 
-
+const interviewFeedbackSchema = {
+    type: Type.OBJECT,
+    properties: {
+        overall_feedback: { 
+            type: Type.STRING,
+            description: "A brief, 2-3 sentence overall summary of the candidate's performance."
+        },
+        strengths: { 
+            type: Type.ARRAY, 
+            items: { type: Type.STRING },
+            description: "A list of 2-3 key strengths the candidate demonstrated."
+        },
+        areas_for_improvement: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+            description: "A list of 2-3 specific, actionable areas for improvement."
+        }
+    },
+    required: ["overall_feedback", "strengths", "areas_for_improvement"],
+};
 // --- (Existing functions: suggestProjectsFromResume, generateRoadmap, generateAIReply, generateAptitudeQuestions) ... ---
 // (Copy all of them from your existing file)
 
@@ -486,3 +506,200 @@ Please generate the personalized roadmap now.`;
         throw new Error("An unknown error occurred while generating the roadmap.");
     }
 }
+export const startInterview = async (resumeText: string, jobTitle: string, jobDescription: string): Promise<string> => {
+    try {
+        const prompt = `You are 'Alex', an expert hiring manager and career coach. You are about to start a mock interview for a "${jobTitle}" position.
+The candidate's resume is:
+---
+${resumeText}
+---
+${jobDescription ? `The job description is:\n---\n${jobDescription}\n---` : ''}
+
+Your task is to start the interview *now*.
+Introduce yourself briefly and ask your first warm-up question (e.g., "Tell me about yourself" or "Walk me through your resume").
+Respond with *only* your greeting and the first question. Do not add any other text or pleasantries.`;
+        
+        // --- SYNTAX FIX ---
+        // Your package version expects an object with 'model' and 'contents'
+        const response = await ai.models.generateContent({
+            model: "gemini-2.0-flash",
+            contents: prompt,
+            config: {}
+        });
+        // --- END FIX ---
+        
+        return response.text.trim();
+        
+    } catch (error) {
+        console.error("Error starting interview:", error);
+        throw new Error("Failed to start the interview. Please try again.");
+    }
+};
+
+/**
+ * Continues the interview conversation.
+ */
+export const continueInterview = async (
+    conversationHistory: ChatMessage[],
+    resumeText: string,
+    jobTitle: string
+): Promise<string> => {
+    try {
+        // --- SYNTAX FIX ---
+        // We will manually build a single prompt string, which is more reliable
+        // with your version of the AI library.
+        
+        let prompt = `You are 'Alex', an expert hiring manager for a "${jobTitle}" role, and you are continuing a mock interview.
+The user's resume is:
+---
+${resumeText}
+---
+Below is the conversation history so far. Your task is to:
+1.  Briefly acknowledge their last answer (e.g., "Got it, thanks for sharing.").
+2.  Ask the *next* logical question. Ask a good mix of behavioral (STAR method) and technical questions based on their resume and the job title.
+3.  You will ask **5 questions in total**.
+4.  After you ask your 5th and final question and the user answers it, your *only* response must be: "That's all the questions I have. I'm now compiling your feedback. Please wait a moment."
+5.  Do not add any other text to that final response. Just that exact sentence.
+6.  Until then, just ask your next question.
+
+**Conversation History:**
+`;
+        
+        // Manually build the history string
+        conversationHistory.forEach(msg => {
+            if (msg.role === 'user') {
+                prompt += `Candidate: ${msg.text}\n`;
+            } else {
+                prompt += `Alex (Interviewer): ${msg.text}\n`;
+            }
+        });
+        
+        prompt += "\nAlex (Interviewer):"; // Prompt the AI for its next line
+
+        // --- END FIX ---
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.0-flash",
+            contents: prompt ,
+            config:{}// Send the single, combined prompt
+        });
+        
+        return response.text.trim();
+
+    } catch (error) {
+        console.error("Error continuing interview:", error);
+        throw new Error("The AI interviewer is having trouble. Please try again.");
+    }
+};
+
+/**
+ * Generates a final feedback report for the interview.
+ * --- THIS FUNCTION IS NOW FIXED ---
+ */
+export const getInterviewFeedback = async (
+    conversationHistory: ChatMessage[],
+    jobTitle: string
+): Promise<InterviewFeedback> => {
+    try {
+        // --- SYNTAX FIX ---
+        // We will manually build a single prompt string
+        
+        let prompt = `You are an expert interview coach. Analyze this interview transcript for a "${jobTitle}" role.
+The user's responses are the 'Candidate' role.
+Your task is to provide a final, constructive feedback report.
+Please analyze the user's answers and provide:
+1.  **overall_feedback**: A brief, 2-3 sentence summary of their performance.
+2.  **strengths**: A list of 2-3 key strengths they demonstrated.
+3.  **areas_for_improvement**: A list of 2-3 specific, actionable areas for improvement.
+
+The output MUST be a valid JSON object matching the provided schema.
+
+**Interview Transcript:**
+`;
+        
+        // Manually build the history string
+        conversationHistory.forEach(msg => {
+            if (msg.role === 'user') {
+                prompt += `Candidate: ${msg.text}\n`;
+            } else {
+                prompt += `Alex (Interviewer): ${msg.text}\n`;
+            }
+        });
+
+        // --- END FIX ---
+        
+        const response = await ai.models.generateContent({
+            model: "gemini-2.0-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: interviewFeedbackSchema,
+            },
+        });
+        
+        const jsonText = response.text.trim();
+        
+        return JSON.parse(jsonText) as InterviewFeedback;
+
+    } catch (error) {
+        console.error("Error getting interview feedback:", error);
+        throw new Error("Failed to generate feedback. Please try again.");
+    }
+};
+
+export const getAIAudio = async (textToSpeak: string): Promise<string> => {
+    try {
+        const payload = {
+            contents: [{
+                parts: [{ text: textToSpeak }]
+            }],
+            generationConfig: {
+                responseModalities: ["AUDIO"],
+                speechConfig: {
+                    voiceConfig: {
+                        // We can choose a voice. 'Kore' is a good, professional male voice.
+                        prebuiltVoiceConfig: { voiceName: "Kore" } 
+                    }
+                }
+            },
+            model: "gemini-2.5-flash-preview-tts"
+        };
+        
+        const apiKey = BROWSER_API_KEY;// Leave as-is, will be handled by the environment
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+
+        const apiResponse = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!apiResponse.ok) {
+            throw new Error(`TTS API failed with status: ${apiResponse.status}`);
+        }
+
+        const result = await apiResponse.json();
+        const part = result?.candidates?.[0]?.content?.parts?.[0];
+        const audioData = part?.inlineData?.data; // base64 audio
+        const mimeType = part?.inlineData?.mimeType; // "audio/L16;rate=24000"
+
+        if (audioData && mimeType && mimeType.startsWith("audio/L16")) {
+            // Extract sample rate from mimeType
+            const sampleRate = parseInt(mimeType.match(/rate=(\d+)/)?.[1] || "24000", 10);
+            
+            // Convert base64 PCM to a playable WAV Blob URL
+            const pcmData = base64ToArrayBuffer(audioData);
+            const pcm16 = new Int16Array(pcmData);
+            const wavBlob = pcmToWav(pcm16, sampleRate);
+            const audioUrl = URL.createObjectURL(wavBlob);
+            
+            return audioUrl;
+        } else {
+            throw new Error("Invalid audio data received from TTS API.");
+        }
+
+    } catch (error) {
+        console.error("Error generating AI audio:", error);
+        throw new Error("Failed to generate AI voice. Please try again.");
+    }
+};
