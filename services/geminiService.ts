@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Roadmap, ProjectSuggestion, AnalysisReport, AptitudeQuestion, GeneratedAptitudeQuestion } from '../types';
+import { Roadmap, ProjectSuggestion, AnalysisReport } from '../types';
 
 const BROWSER_API_KEY = process.env.API_KEY;
 if (!BROWSER_API_KEY) {
@@ -213,23 +213,6 @@ const analysisReportSchema = {
             required: ["title", "description", "reasoning"],
         }},
     }, required: ["matchScore", "strengths", "gaps", "feedback", "projectSuggestions"],
-};
-// --- (Existing Schemas: generatedQuestionSchema, aptitudeQuizSchema) ... ---
-// (Copy them from your existing file)
-const generatedQuestionSchema = {
-    type: Type.OBJECT,
-    properties: {
-        question_text: { type: Type.STRING },
-        options: { type: Type.ARRAY, items: { type: Type.STRING } },
-        correct_answer_index: { type: Type.NUMBER },
-        explanation: { type: Type.STRING },
-    }, required: ["question_text", "options", "correct_answer_index", "explanation"],
-};
-const aptitudeQuizSchema = {
-    type: Type.OBJECT,
-    properties: {
-        new_questions: { type: Type.ARRAY, items: generatedQuestionSchema }
-    }, required: ["new_questions"]
 };
 
 // --- NEW: Schema for the Study Guide ---
