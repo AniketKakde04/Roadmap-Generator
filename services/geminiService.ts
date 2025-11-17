@@ -3,6 +3,7 @@ import { Roadmap, ProjectSuggestion, AnalysisReport ,ChatMessage, InterviewFeedb
 import { base64ToArrayBuffer, pcmToWav } from './audioUtils';
 
 const BROWSER_API_KEY = process.env.API_KEY;
+const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
 if (!BROWSER_API_KEY) {
     throw new Error("API_KEY is not set in environment variables");
 }
@@ -293,29 +294,51 @@ The output MUST be a valid JSON object matching the provided schema.`;
 
 export async function generateRoadmap(topic: string, level: string, timeline: string): Promise<Roadmap> {
     try {
-        let prompt = `You are an expert educator and curriculum designer. Your task is to generate a comprehensive, step-by-step learning roadmap for the given topic. The roadmap should be logical, starting from fundamentals and progressing to advanced concepts. For each step, provide a clear title, a concise description of what to learn, and a curated list of at least 3 high-quality, free-to-access online resources.
-
-The user's goal is to learn about or build: "${topic}".`;
-
-        if (level) {
-            prompt += `\n\nThe user's self-assessed expertise level is "${level}". Please tailor the starting point and complexity of the roadmap to be appropriate for this level. For a beginner, start with the absolute basics. For an intermediate learner, assume some foundational knowledge. For a professional, focus on advanced topics, specializations, or alternative technologies.`;
+        // Check if the webhook URL is configured
+        if (!N8N_WEBHOOK_URL) {
+            throw new Error("N8N_WEBHOOK_URL is not defined in environment variables.");
         }
 
-        if (timeline.trim()) {
-            prompt += `\n\nThe user aims to complete this roadmap within a timeframe of "${timeline}". While this is a guideline, please try to structure the number and intensity of the steps to be realistically achievable within this period.`;
-        }
+        console.log(`Calling N8N Workflow for topic: ${topic}`);
 
-        prompt += `\n\nEnsure all URLs are valid and directly lead to the resource. The output MUST be a valid JSON object matching the provided schema.`;
-
-        const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash", contents: prompt, tools: [{ "google_search": {} }],
-            config: { responseMimeType: "application/json", responseSchema: roadmapSchema },
+        const response = await fetch(N8N_WEBHOOK_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                topic,
+                level,
+                timeline
+            })
         });
-        const jsonText = response.text.trim();
-        return JSON.parse(jsonText);
+
+        if (!response.ok) {
+    const errorText = await response.text();
+    console.error("N8N Error Response:", errorText);
+    throw new Error(`N8N Workflow failed with status: ${response.status} - ${errorText}`);
+}
+const text = await response.text(); // Get raw text first
+console.log("Raw N8N Response:", text); // Log it to see what's happening
+
+if (!text) {
+    throw new Error("N8N returned an empty response. Check the 'Respond to Webhook' node.");
+}
+
+const data = JSON.parse(text); // Now parse it safely
+
+        // Ensure the response from N8N matches the Roadmap type
+        // The N8N workflow usually returns the JSON object in the body or a specific property
+        // Adjust 'data' below if your N8N workflow returns { "roadmap": { ... } }
+        const roadmapData: Roadmap = data; 
+
+        return roadmapData;
+
     } catch (error) {
-        console.error("Error generating roadmap:", error);
-        if (error instanceof Error) { throw new Error(`Failed to generate roadmap from AI: ${error.message}`); }
+        console.error("Error generating roadmap via N8N:", error);
+        if (error instanceof Error) { 
+            throw new Error(`Failed to generate roadmap: ${error.message}`); 
+        }
         throw new Error("An unknown error occurred while generating the roadmap.");
     }
 }
