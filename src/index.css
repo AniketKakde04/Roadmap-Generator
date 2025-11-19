@@ -4,44 +4,30 @@
 
 /* THEME: Professional Light (Default) */
 :root {
-  /* Main Background: Pure White */
+  /* Base Colors */
   --color-bg: #ffffff;
+  --color-bg-secondary: #f8fafc; /* Slate 50 */
+  --color-bg-accent: #f1f5f9;    /* Slate 100 */
+  --color-bg-hover: #e2e8f0;     /* Slate 200 */
   
-  /* Secondary Background: Very light slate (for Sidebar/Cards) */
-  --color-bg-secondary: #f8fafc; 
+  /* Text Colors */
+  --color-text-primary: #0f172a;   /* Slate 900 */
+  --color-text-secondary: #475569; /* Slate 600 */
   
-  /* Accent Background: Light gray (for inputs/hovers) */
-  --color-bg-accent: #f1f5f9;
+  /* Brand Colors */
+  --color-primary: #2563eb;    /* Blue 600 */
+  --color-secondary: #1d4ed8;  /* Blue 700 */
+  --color-accent: #4f46e5;     /* Indigo 600 */
   
-  /* Hover State */
-  --color-bg-hover: #e2e8f0;
-  
-  /* Primary Text: Dark Slate (High Contrast, Professional) */
-  --color-text-primary: #0f172a;
-  
-  /* Secondary Text: Medium Slate (for descriptions) */
-  --color-text-secondary: #475569;
-  
-  /* Brand Primary: Royal Blue (Trustworthy) */
-  --color-primary: #2563eb;
-  
-  /* Brand Hover: Darker Blue */
-  --color-secondary: #1d4ed8;
-  
-  /* Accent: Indigo */
-  --color-accent: #4f46e5;
-  
-  /* Borders: Subtle Gray */
-  --color-border: #cbd5e1;
-  
-  /* Functional Colors */
+  /* UI Colors */
+  --color-border: #cbd5e1;     /* Slate 300 */
   --color-success: #059669;
   --color-warning: #d97706;
   --color-error: #dc2626;
   --color-info: #0284c7;
 }
 
-/* Dark Mode (Optional - defined but won't be default) */
+/* Dark Mode Overrides */
 .dark {
   --color-bg: #020617;
   --color-bg-secondary: #0f172a;
@@ -59,6 +45,13 @@
   --color-info: #38bdf8;
 }
 
+/* Apply theme to body immediately */
+@layer base {
+  body {
+    @apply bg-background text-text-primary;
+  }
+}
+
 @layer components {
   .scrollbar-hide::-webkit-scrollbar {
       display: none;
@@ -68,21 +61,28 @@
       scrollbar-width: none;
   }
   
+  /* Animations */
   .animate-fadeIn {
     animation: fadeIn 0.5s ease-out forwards;
   }
-  
   .animate-fadeInUp {
     animation: fadeInUp 0.6s ease-out forwards;
   }
-
+  
   @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
   }
-
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
+}
+/* Standard CSS for scrollbar hiding */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }

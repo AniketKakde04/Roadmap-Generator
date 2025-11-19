@@ -1,25 +1,22 @@
 import React, { useState } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { suggestProjectsFromResume } from '../services/geminiService';
-import { AnalysisReport } from '../types'; // Updated import
+import { AnalysisReport } from '../types';
 import Loader from './Loader';
 import ArrowUpTrayIcon from './icons/ArrowUpTrayIcon';
 import LightBulbIcon from './icons/LightBulbIcon';
 
-// Configure the worker for pdfjs-dist
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.5.136/build/pdf.worker.mjs`;
 
-// --- NEW: A component for the Match Score Gauge ---
 const MatchScoreGauge = ({ score }: { score: number }) => {
-    const circumference = 2 * Math.PI * 45; // Circle radius is 45
+    const circumference = 2 * Math.PI * 45;
     const strokeDashoffset = circumference - (score / 100) * circumference;
 
     return (
         <div className="relative flex items-center justify-center w-40 h-40">
             <svg className="w-full h-full" viewBox="0 0 100 100">
-                {/* Background circle */}
                 <circle
-                    className="text-slate-700"
+                    className="text-background-accent"
                     strokeWidth="10"
                     stroke="currentColor"
                     fill="transparent"
@@ -27,9 +24,8 @@ const MatchScoreGauge = ({ score }: { score: number }) => {
                     cx="50"
                     cy="50"
                 />
-                {/* Progress circle */}
                 <circle
-                    className="text-sky-400"
+                    className="text-primary"
                     strokeWidth="10"
                     strokeDasharray={circumference}
                     strokeDashoffset={strokeDashoffset}
@@ -43,7 +39,7 @@ const MatchScoreGauge = ({ score }: { score: number }) => {
                     style={{ transition: 'stroke-dashoffset 0.8s ease-out' }}
                 />
             </svg>
-            <span className="absolute text-3xl font-bold text-slate-100">{score}%</span>
+            <span className="absolute text-3xl font-bold text-text-primary">{score}%</span>
         </div>
     );
 };
@@ -57,7 +53,6 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [jobTitle, setJobTitle] = useState('');
     const [jobDescription, setJobDescription] = useState('');
-    // State now holds the entire analysis report, not just project suggestions
     const [analysisReport, setAnalysisReport] = useState<AnalysisReport | null>(null); 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -100,7 +95,6 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                 throw new Error("Could not extract text from the PDF. The file might be image-based or empty.");
             }
             
-            // Call the updated service function and set the entire report
             const result = await suggestProjectsFromResume(fullText, jobTitle, jobDescription);
             setAnalysisReport(result);
         } catch (err) {
@@ -113,28 +107,27 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
     return (
         <div className="w-full max-w-5xl mx-auto py-8">
             <header className="text-center mb-12">
-                <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-sky-300 to-indigo-400 mb-2">
+                <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-2">
                     Resume Analyzer
                 </h1>
-                <p className="mt-4 text-lg text-slate-400">
+                <p className="mt-4 text-lg text-text-secondary">
                     Get an instant, AI-powered analysis of your resume against your target job.
                 </p>
             </header>
 
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 md:p-8">
+            <div className="bg-background-secondary border border-border rounded-xl p-6 md:p-8 shadow-sm">
                 <div className="space-y-6">
-                     {/* --- (Input form remains the same) --- */}
                     <div>
-                        <label htmlFor="resume-upload" className="block text-sm font-medium text-slate-300 mb-2">
+                        <label htmlFor="resume-upload" className="block text-sm font-medium text-text-primary mb-2">
                            1. Upload your resume (PDF only)
                         </label>
-                        <div className="mt-2 flex justify-center rounded-lg border border-dashed border-slate-600 px-6 py-10">
+                        <div className="mt-2 flex justify-center rounded-lg border-2 border-dashed border-border px-6 py-10 bg-background hover:bg-background-hover transition-colors">
                             <div className="text-center">
-                                <ArrowUpTrayIcon className="mx-auto h-12 w-12 text-slate-500" />
-                                <div className="mt-4 flex text-sm leading-6 text-slate-400">
+                                <ArrowUpTrayIcon className="mx-auto h-12 w-12 text-text-secondary" />
+                                <div className="mt-4 flex text-sm leading-6 text-text-secondary">
                                     <label
                                         htmlFor="resume-upload"
-                                        className="relative cursor-pointer rounded-md bg-transparent font-semibold text-sky-400 focus-within:outline-none focus-within:ring-2 focus-within:ring-sky-600 focus-within:ring-offset-2 focus-within:ring-offset-slate-900 hover:text-sky-300 p-1 -m-1"
+                                        className="relative cursor-pointer rounded-md bg-transparent font-semibold text-primary focus-within:outline-none hover:text-secondary p-1 -m-1"
                                     >
                                         <span>Upload a file</span>
                                         <input id="resume-upload" name="resume-upload" type="file" className="sr-only" accept=".pdf" onChange={handleFileChange} disabled={isLoading} />
@@ -142,21 +135,21 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                                     <p className="pl-1">or drag and drop</p>
                                 </div>
                                 {selectedFile ? (
-                                    <p className="text-sm text-slate-300 mt-2">{selectedFile.name}</p>
+                                    <p className="text-sm text-success mt-2 font-medium">{selectedFile.name}</p>
                                 ) : (
-                                    <p className="text-xs leading-5 text-slate-500">PDF up to 10MB</p>
+                                    <p className="text-xs leading-5 text-text-secondary/70">PDF up to 10MB</p>
                                 )}
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <h3 className="block text-sm font-medium text-slate-300 mb-2">
+                        <h3 className="block text-sm font-medium text-text-primary mb-2">
                            2. Add a target job for tailored suggestions (Optional)
                         </h3>
-                        <div className="space-y-4 rounded-lg border border-slate-600 p-4">
+                        <div className="space-y-4 rounded-lg border border-border bg-background p-4">
                              <div>
-                                <label htmlFor="job-title" className="block text-sm font-medium text-slate-400 mb-1">
+                                <label htmlFor="job-title" className="block text-sm font-medium text-text-secondary mb-1">
                                     Target Job Title
                                 </label>
                                 <input
@@ -165,12 +158,12 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                                     value={jobTitle}
                                     onChange={(e) => setJobTitle(e.target.value)}
                                     placeholder="e.g., 'Senior Frontend Developer'"
-                                    className="w-full bg-slate-700/50 border border-slate-600 text-slate-200 placeholder-slate-500 rounded-md py-2 px-3 focus:ring-2 focus:ring-sky-500 focus:outline-none transition"
+                                    className="w-full bg-background-accent border border-transparent text-text-primary placeholder-text-secondary rounded-md py-2 px-3 focus:bg-background focus:ring-2 focus:ring-primary focus:outline-none transition"
                                     disabled={isLoading}
                                 />
                             </div>
                             <div>
-                                <label htmlFor="job-description" className="block text-sm font-medium text-slate-400 mb-1">
+                                <label htmlFor="job-description" className="block text-sm font-medium text-text-secondary mb-1">
                                     Job Description
                                 </label>
                                 <textarea
@@ -179,7 +172,7 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                                     value={jobDescription}
                                     onChange={(e) => setJobDescription(e.target.value)}
                                     placeholder="Paste the job description here for more tailored project suggestions..."
-                                    className="w-full bg-slate-700/50 border border-slate-600 text-slate-200 placeholder-slate-500 rounded-md py-2 px-3 focus:ring-2 focus:ring-sky-500 focus:outline-none transition"
+                                    className="w-full bg-background-accent border border-transparent text-text-primary placeholder-text-secondary rounded-md py-2 px-3 focus:bg-background focus:ring-2 focus:ring-primary focus:outline-none transition"
                                     disabled={isLoading}
                                 />
                             </div>
@@ -189,58 +182,57 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                         <button
                             onClick={handleAnalyze}
                             disabled={isLoading || !selectedFile}
-                            className="w-full sm:w-auto bg-sky-600 text-white font-semibold py-3 px-8 rounded-md hover:bg-sky-500 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center"
+                            className="w-full sm:w-auto bg-primary text-white font-semibold py-3 px-8 rounded-md hover:bg-secondary disabled:bg-background-accent disabled:text-text-secondary disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center shadow-md shadow-primary/20"
                         >
                              {isLoading ? 'Analyzing...' : 'Analyze & Suggest Projects'}
                         </button>
                     </div>
                 </div>
-                 {error && <p className="text-red-400 mt-4 text-center" role="alert">{error}</p>}
+                 {error && <p className="text-error mt-4 text-center bg-error/10 p-2 rounded-lg" role="alert">{error}</p>}
             </div>
 
             {isLoading && <div className="mt-8"><Loader /></div>}
 
-            {/* --- THIS IS THE NEW UI FOR THE ANALYSIS REPORT --- */}
             {analysisReport && (
                 <div className="mt-12 animate-fadeInUp">
-                     <h2 className="text-3xl font-bold text-center text-slate-100 mb-4">
+                     <h2 className="text-3xl font-bold text-center text-text-primary mb-4">
                         Your Analysis Report
                      </h2>
-                     <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8">
+                     <div className="bg-background-secondary border border-border rounded-xl p-8 shadow-sm">
                         {/* Match Score */}
                         <div className="flex flex-col items-center mb-8">
-                            <h3 className="text-xl font-semibold text-slate-300 mb-2">Resume Match Score</h3>
+                            <h3 className="text-xl font-semibold text-text-primary mb-2">Resume Match Score</h3>
                             <MatchScoreGauge score={analysisReport.matchScore} />
-                            <p className="text-slate-400 mt-2 text-center max-w-md">This score represents the alignment between your resume and the target job description.</p>
+                            <p className="text-text-secondary mt-2 text-center max-w-md">This score represents the alignment between your resume and the target job description.</p>
                         </div>
                         
                         {/* Strengths vs. Gaps */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                            <div className="bg-slate-700/30 p-4 rounded-lg">
-                                <h4 className="font-semibold text-green-400 mb-3 text-lg">✅ Your Strengths</h4>
+                            <div className="bg-background border border-border p-4 rounded-lg shadow-sm">
+                                <h4 className="font-semibold text-success mb-3 text-lg">✅ Your Strengths</h4>
                                 <ul className="space-y-2">
-                                    {analysisReport.strengths.map((item, i) => <li key={i} className="text-slate-300">{item}</li>)}
+                                    {analysisReport.strengths.map((item, i) => <li key={i} className="text-text-secondary">{item}</li>)}
                                 </ul>
                             </div>
-                             <div className="bg-slate-700/30 p-4 rounded-lg">
-                                <h4 className="font-semibold text-yellow-400 mb-3 text-lg">🎯 Key Gaps & Opportunities</h4>
+                             <div className="bg-background border border-border p-4 rounded-lg shadow-sm">
+                                <h4 className="font-semibold text-warning mb-3 text-lg">🎯 Key Gaps & Opportunities</h4>
                                 <ul className="space-y-2">
-                                    {analysisReport.gaps.map((item, i) => <li key={i} className="text-slate-300">{item}</li>)}
+                                    {analysisReport.gaps.map((item, i) => <li key={i} className="text-text-secondary">{item}</li>)}
                                 </ul>
                             </div>
                         </div>
 
                         {/* AI Feedback */}
-                         <div className="bg-slate-700/30 p-4 rounded-lg mb-12">
-                            <h4 className="font-semibold text-sky-400 mb-3 text-lg">📝 AI Resume Feedback</h4>
+                         <div className="bg-background border border-border p-4 rounded-lg mb-12 shadow-sm">
+                            <h4 className="font-semibold text-info mb-3 text-lg">📝 AI Resume Feedback</h4>
                             <ul className="space-y-2 list-disc list-inside">
-                                {analysisReport.feedback.map((item, i) => <li key={i} className="text-slate-300">{item}</li>)}
+                                {analysisReport.feedback.map((item, i) => <li key={i} className="text-text-secondary">{item}</li>)}
                             </ul>
                         </div>
                         
-                        {/* Project Suggestions (at the end) */}
+                        {/* Project Suggestions */}
                         <div>
-                             <h3 className="text-2xl font-bold text-center text-slate-200 mb-8">
+                             <h3 className="text-2xl font-bold text-center text-text-primary mb-8">
                                 Recommended Projects to Fill Your Gaps
                              </h3>
                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -248,21 +240,21 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                                      <button
                                         key={index}
                                         onClick={() => onProjectSelect(project.title)}
-                                        className="bg-slate-800 border border-slate-700/50 rounded-xl p-6 text-left hover:bg-slate-700 hover:border-sky-500/50 transition-all duration-300 transform hover:-translate-y-1 group flex flex-col"
+                                        className="bg-background border border-border rounded-xl p-6 text-left hover:border-primary transition-all duration-300 transform hover:-translate-y-1 group flex flex-col shadow-sm hover:shadow-md"
                                         aria-label={`Select project: ${project.title}`}
                                      >
                                         <div className="flex-grow">
-                                             <h4 className="text-lg font-bold text-slate-100 group-hover:text-sky-400 transition-colors">{project.title}</h4>
-                                             <p className="text-sm text-slate-400 mt-2">{project.description}</p>
-                                             <div className="mt-4 pt-4 border-t border-slate-700/50">
-                                                <h5 className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center">
-                                                    <LightBulbIcon className="w-4 h-4 mr-2 text-yellow-400" />
+                                             <h4 className="text-lg font-bold text-text-primary group-hover:text-primary transition-colors">{project.title}</h4>
+                                             <p className="text-sm text-text-secondary mt-2">{project.description}</p>
+                                             <div className="mt-4 pt-4 border-t border-border">
+                                                <h5 className="text-xs font-semibold text-text-secondary uppercase tracking-wider flex items-center">
+                                                    <LightBulbIcon className="w-4 h-4 mr-2 text-warning" />
                                                     Why this project?
                                                 </h5>
-                                                <p className="text-sm text-slate-400 mt-1">{project.reasoning}</p>
+                                                <p className="text-sm text-text-secondary mt-1">{project.reasoning}</p>
                                              </div>
                                         </div>
-                                         <span className="block mt-4 text-sm font-semibold text-sky-400 group-hover:underline self-start">
+                                         <span className="block mt-4 text-sm font-semibold text-primary group-hover:underline self-start">
                                             Generate Roadmap &rarr;
                                          </span>
                                      </button>

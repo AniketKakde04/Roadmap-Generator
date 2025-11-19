@@ -21,7 +21,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.
 
 type InterviewStage = 'setup' | 'interviewing' | 'feedback';
 
-// @ts-ignore (to support webkitSpeechRecognition)
+// @ts-ignore
 const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 let recognition: SpeechRecognition | null = null;
 if (SpeechRecognition) {
@@ -47,7 +47,6 @@ const MockInterviewPage: React.FC = () => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [feedback, setFeedback] = useState<InterviewFeedback | null>(null);
 
-  // New UI states
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [recordingStart, setRecordingStart] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState<string>('00:00');
@@ -286,35 +285,35 @@ const MockInterviewPage: React.FC = () => {
     switch (stage) {
       case 'setup':
         return (
-          <div className="w-full max-w-2xl mx-auto p-8 bg-slate-800/50 border border-slate-700/50 rounded-xl shadow-lg animate-fadeIn">
+          <div className="w-full max-w-2xl mx-auto p-8 bg-background-secondary border border-border rounded-xl shadow-lg animate-fadeIn">
             <div className="flex items-center mb-6">
-              <AIAgentIcon className="w-8 h-8 text-sky-400 mr-3" />
-              <h1 className="text-3xl font-bold text-white">AI Mock Interview</h1>
+              <AIAgentIcon className="w-8 h-8 text-primary mr-3" />
+              <h1 className="text-3xl font-bold text-text-primary">AI Mock Interview</h1>
             </div>
-            <p className="text-slate-400 mb-6">
+            <p className="text-text-secondary mb-6">
               Upload resume, set role, and run a live mock interview — speak using your mic and receive AI feedback.
             </p>
             <div className="space-y-6">
               <div>
-                <label htmlFor="resume-upload" className="block text-sm font-medium text-slate-300 mb-2">
+                <label htmlFor="resume-upload" className="block text-sm font-medium text-text-secondary mb-2">
                   1. Upload Your Resume (PDF)
                 </label>
                 <label
                   htmlFor="resume-upload"
                   className={`relative cursor-pointer flex justify-center w-full rounded-lg border-2 border-dashed ${
-                    error ? 'border-red-500' : 'border-slate-600'
-                  } px-6 py-10 hover:border-sky-500 transition-colors`}
+                    error ? 'border-error' : 'border-border'
+                  } px-6 py-10 hover:border-primary transition-colors bg-background`}
                 >
                   <div className="text-center">
-                    <ArrowUpTrayIcon className="mx-auto h-12 w-12 text-slate-500" />
-                    <span className="mt-2 block text-sm font-semibold text-sky-400">{resumeFile ? resumeFile.name : 'Click to upload a file'}</span>
-                    <span className="block text-xs text-slate-500">{isParsing ? 'Parsing PDF...' : '(PDF only)'}</span>
+                    <ArrowUpTrayIcon className="mx-auto h-12 w-12 text-text-secondary" />
+                    <span className="mt-2 block text-sm font-semibold text-primary">{resumeFile ? resumeFile.name : 'Click to upload a file'}</span>
+                    <span className="block text-xs text-text-secondary">{isParsing ? 'Parsing PDF...' : '(PDF only)'}</span>
                     <input id="resume-upload" name="resume-upload" type="file" className="sr-only" accept=".pdf" onChange={handleFileChange} disabled={isParsing} />
                   </div>
                 </label>
               </div>
               <div>
-                <label htmlFor="job-title" className="block text-sm font-medium text-slate-300 mb-2">
+                <label htmlFor="job-title" className="block text-sm font-medium text-text-secondary mb-2">
                   2. Job Title You're Interviewing For
                 </label>
                 <input
@@ -323,11 +322,11 @@ const MockInterviewPage: React.FC = () => {
                   value={jobTitle}
                   onChange={e => setJobTitle(e.target.value)}
                   placeholder="e.g., 'Senior Frontend Developer'"
-                  className="w-full bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-500 rounded-md py-3 px-4"
+                  className="w-full bg-background border border-border text-text-primary placeholder-text-secondary rounded-md py-3 px-4 focus:ring-2 focus:ring-primary outline-none"
                 />
               </div>
               <div>
-                <label htmlFor="job-description" className="block text-sm font-medium text-slate-300 mb-2">
+                <label htmlFor="job-description" className="block text-sm font-medium text-text-secondary mb-2">
                   3. Job Description (Optional)
                 </label>
                 <textarea
@@ -336,14 +335,14 @@ const MockInterviewPage: React.FC = () => {
                   value={jobDescription}
                   onChange={e => setJobDescription(e.target.value)}
                   placeholder="Paste job description..."
-                  className="w-full bg-slate-800 border border-slate-700 text-slate-200 placeholder-slate-500 rounded-md py-3 px-4"
+                  className="w-full bg-background border border-border text-text-primary placeholder-text-secondary rounded-md py-3 px-4 focus:ring-2 focus:ring-primary outline-none"
                 />
               </div>
-              {error && <p className="text-red-400 text-center">{error}</p>}
+              {error && <p className="text-error text-center">{error}</p>}
               <button
                 onClick={handleStartInterview}
                 disabled={!canStart}
-                className="w-full bg-sky-600 text-white font-semibold py-3 px-6 rounded-md hover:bg-sky-500 transition-all shadow-lg disabled:bg-slate-600"
+                className="w-full bg-primary text-white font-semibold py-3 px-6 rounded-md hover:bg-secondary transition-all shadow-lg disabled:bg-background-accent disabled:text-text-secondary"
               >
                 Start Interview
               </button>
@@ -354,29 +353,29 @@ const MockInterviewPage: React.FC = () => {
       case 'interviewing': {
         return (
           <div
-            className="w-full max-w-5xl mx-auto p-4 md:p-8 bg-slate-800/50 border border-slate-700/50 rounded-xl shadow-lg animate-fadeIn flex flex-col"
+            className="w-full max-w-5xl mx-auto p-4 md:p-8 bg-background-secondary border border-border rounded-xl shadow-lg animate-fadeIn flex flex-col"
             style={{ height: 'calc(100vh - 6rem)' }}
           >
             <div className="flex-1 grid grid-cols-2 gap-4 mb-4 overflow-hidden">
               {/* Left: Interviewer */}
-              <div className="flex flex-col bg-slate-800 rounded-lg border border-slate-700 p-6 items-center justify-center">
-                <div className="w-36 h-36 rounded-full bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center mb-4 drop-shadow-lg">
+              <div className="flex flex-col bg-background rounded-lg border border-border p-6 items-center justify-center shadow-sm">
+                <div className="w-36 h-36 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4 drop-shadow-lg">
                   <AIAgentIcon className="w-16 h-16 text-white" />
                 </div>
-                <div className="text-white font-semibold">Interviewer</div>
-                <div className="text-slate-400 text-sm mt-1">AI Hiring Manager</div>
-                <div className="mt-4 text-center text-slate-300 text-sm max-w-xs">The AI will ask role-focused questions. Speak when the mic is active.</div>
+                <div className="text-text-primary font-semibold">Interviewer</div>
+                <div className="text-text-secondary text-sm mt-1">AI Hiring Manager</div>
+                <div className="mt-4 text-center text-text-secondary text-sm max-w-xs">The AI will ask role-focused questions. Speak when the mic is active.</div>
               </div>
 
               {/* Right: Student / Chat */}
-              <div className="flex flex-col bg-slate-800 rounded-lg border border-slate-700 p-4 overflow-hidden">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center">
-                    <UserIcon className="w-5 h-5 text-white" />
+              <div className="flex flex-col bg-background rounded-lg border border-border p-4 overflow-hidden shadow-sm">
+                <div className="flex items-center gap-3 mb-3 border-b border-border pb-2">
+                  <div className="w-10 h-10 rounded-full bg-background-accent flex items-center justify-center">
+                    <UserIcon className="w-5 h-5 text-text-primary" />
                   </div>
                   <div>
-                    <div className="text-white font-semibold">You</div>
-                    <div className="text-slate-400 text-xs">{jobTitle || 'Candidate'}</div>
+                    <div className="text-text-primary font-semibold">You</div>
+                    <div className="text-text-secondary text-xs">{jobTitle || 'Candidate'}</div>
                   </div>
                 </div>
 
@@ -384,26 +383,26 @@ const MockInterviewPage: React.FC = () => {
                   {chatHistory.map((msg, index) => (
                     <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       {msg.role !== 'user' && (
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-sky-600 flex items-center justify-center mr-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center mr-3 shadow-sm">
                           <AIAgentIcon className="w-4 h-4 text-white" />
                         </div>
                       )}
-                      <div className={`p-3 rounded-lg max-w-[70%] ${msg.role === 'user' ? 'bg-slate-700 text-slate-200' : 'bg-slate-600 text-slate-100'}`}>
+                      <div className={`p-3 rounded-lg max-w-[70%] shadow-sm ${msg.role === 'user' ? 'bg-primary text-white' : 'bg-background-accent text-text-primary'}`}>
                         <p className="text-sm">{msg.text}</p>
                       </div>
                       {msg.role === 'user' && (
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center ml-3">
-                          <UserIcon className="w-4 h-4 text-white" />
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-background-accent flex items-center justify-center ml-3 shadow-sm">
+                          <UserIcon className="w-4 h-4 text-text-primary" />
                         </div>
                       )}
                     </div>
                   ))}
                   {isAILoading && (
                     <div className="flex justify-start">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-sky-600 flex items-center justify-center mr-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center mr-3">
                         <AIAgentIcon className="w-4 h-4 text-white" />
                       </div>
-                      <div className="p-3 rounded-lg bg-slate-600 text-slate-100">
+                      <div className="p-3 rounded-lg bg-background-accent text-text-primary">
                         <Loader />
                       </div>
                     </div>
@@ -413,8 +412,8 @@ const MockInterviewPage: React.FC = () => {
             </div>
 
             {/* status & small hint */}
-            <div className="text-slate-400 text-sm mb-2">Tip: Press the mic to speak. Use the floating toolbar for controls.</div>
-            {error && <div className="text-red-400 text-center mt-3">{error}</div>}
+            <div className="text-text-secondary text-sm mb-2 text-center">Tip: Press the mic to speak. Use the floating toolbar for controls.</div>
+            {error && <div className="text-error text-center mt-3 bg-error/10 p-2 rounded">{error}</div>}
           </div>
         );
       }
@@ -422,57 +421,57 @@ const MockInterviewPage: React.FC = () => {
       case 'feedback':
         if (isAILoading || !feedback) {
           return (
-            <div className="w-full max-w-2xl mx-auto p-8 bg-slate-800/50 border border-slate-700/50 rounded-xl shadow-lg animate-fadeIn flex flex-col items-center">
-              <h2 className="text-2xl font-bold text-white mb-4">Analyzing your interview...</h2>
-              <p className="text-slate-400 mb-6">Your AI coach is compiling your feedback report.</p>
+            <div className="w-full max-w-2xl mx-auto p-8 bg-background-secondary border border-border rounded-xl shadow-lg animate-fadeIn flex flex-col items-center">
+              <h2 className="text-2xl font-bold text-text-primary mb-4">Analyzing your interview...</h2>
+              <p className="text-text-secondary mb-6">Your AI coach is compiling your feedback report.</p>
               <Loader />
             </div>
           );
         }
 
         return (
-          <div className="w-full max-w-3xl mx-auto p-8 bg-slate-800/50 border border-slate-700/50 rounded-xl shadow-lg animate-fadeIn">
-            <h1 className="text-3xl font-bold text-white mb-4">Interview Feedback Report</h1>
-            <p className="text-slate-400 mb-6">Here's the analysis of your performance for the "{jobTitle}" role.</p>
+          <div className="w-full max-w-3xl mx-auto p-8 bg-background-secondary border border-border rounded-xl shadow-lg animate-fadeIn">
+            <h1 className="text-3xl font-bold text-text-primary mb-4">Interview Feedback Report</h1>
+            <p className="text-text-secondary mb-6">Here's the analysis of your performance for the "{jobTitle}" role.</p>
 
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold text-sky-400 mb-3">Overall Feedback</h2>
-                <div className="p-4 bg-slate-700/50 rounded-lg">
-                  <p className="text-slate-300 leading-relaxed">{feedback.overall_feedback}</p>
+                <h2 className="text-xl font-semibold text-info mb-3">Overall Feedback</h2>
+                <div className="p-4 bg-background border border-border rounded-lg shadow-sm">
+                  <p className="text-text-secondary leading-relaxed">{feedback.overall_feedback}</p>
                 </div>
               </div>
 
               <div>
-                <h2 className="text-xl font-semibold text-green-400 mb-3">Strengths</h2>
+                <h2 className="text-xl font-semibold text-success mb-3">Strengths</h2>
                 <ul className="space-y-2">
                   {feedback.strengths.map((strength, index) => (
-                    <li key={index} className="flex items-start p-3 bg-slate-700/50 rounded-lg">
-                      <HandThumbUpIcon className="w-5 h-5 text-green-400 mr-3 flex-shrink-0 mt-1" />
-                      <span className="text-slate-300">{strength}</span>
+                    <li key={index} className="flex items-start p-3 bg-background border border-border rounded-lg shadow-sm">
+                      <HandThumbUpIcon className="w-5 h-5 text-success mr-3 flex-shrink-0 mt-1" />
+                      <span className="text-text-secondary">{strength}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               <div>
-                <h2 className="text-xl font-semibold text-yellow-400 mb-3">Areas for Improvement</h2>
+                <h2 className="text-xl font-semibold text-warning mb-3">Areas for Improvement</h2>
                 <ul className="space-y-2">
                   {feedback.areas_for_improvement.map((area, index) => (
-                    <li key={index} className="flex items-start p-3 bg-slate-700/50 rounded-lg">
-                      <ExclamationTriangleIcon className="w-5 h-5 text-yellow-400 mr-3 flex-shrink-0 mt-1" />
-                      <span className="text-slate-300">{area}</span>
+                    <li key={index} className="flex items-start p-3 bg-background border border-border rounded-lg shadow-sm">
+                      <ExclamationTriangleIcon className="w-5 h-5 text-warning mr-3 flex-shrink-0 mt-1" />
+                      <span className="text-text-secondary">{area}</span>
                     </li>
                   ))}
                 </ul>
               </div>
             </div>
 
-            {error && <p className="text-red-400 text-center mt-6">{error}</p>}
+            {error && <p className="text-error text-center mt-6 bg-error/10 p-2 rounded">{error}</p>}
 
             <button
               onClick={handleRestart}
-              className="w-full bg-sky-600 text-white font-semibold py-3 px-6 rounded-md hover:bg-sky-500 transition-all shadow-lg shadow-sky-600/30 mt-8 flex items-center justify-center"
+              className="w-full bg-primary text-white font-semibold py-3 px-6 rounded-md hover:bg-secondary transition-all shadow-lg shadow-primary/30 mt-8 flex items-center justify-center"
             >
               <ArrowPathIcon className="w-5 h-5 mr-2" />
               Start a New Interview
@@ -492,7 +491,7 @@ const MockInterviewPage: React.FC = () => {
       {/* Floating central toolbar (Google Meet style) */}
       {stage === 'interviewing' && (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-full px-4 py-3 flex items-center gap-4 shadow-lg">
+          <div className="bg-slate-900/90 backdrop-blur-sm border border-slate-700 rounded-full px-4 py-3 flex items-center gap-4 shadow-xl">
             {/* Recording indicator */}
             <div className="flex items-center gap-2">
               <span className={`w-3 h-3 rounded-full ${isUserListening ? 'bg-red-500 animate-pulse' : 'bg-slate-600'}`} />
@@ -504,7 +503,7 @@ const MockInterviewPage: React.FC = () => {
               <button
                 onClick={startListening}
                 disabled={isAILoading || !recognition}
-                className="w-12 h-12 bg-sky-600 rounded-full flex items-center justify-center shadow hover:bg-sky-500 disabled:bg-slate-600"
+                className="w-12 h-12 bg-sky-600 rounded-full flex items-center justify-center shadow hover:bg-sky-500 disabled:bg-slate-600 transition-colors"
                 aria-label="Start speaking"
               >
                 <MicrophoneIcon className="w-6 h-6 text-white" />
@@ -512,7 +511,7 @@ const MockInterviewPage: React.FC = () => {
             ) : (
               <button
                 onClick={stopListening}
-                className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center shadow hover:bg-red-500"
+                className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center shadow hover:bg-red-500 transition-colors"
                 aria-label="Stop speaking"
               >
                 <StopIcon className="w-6 h-6 text-white" />
@@ -522,7 +521,7 @@ const MockInterviewPage: React.FC = () => {
             {/* Mute toggle */}
             <button
               onClick={toggleMute}
-              className={`w-10 h-10 rounded-full flex items-center justify-center ${isMuted ? 'bg-slate-700' : 'bg-slate-800 hover:bg-slate-700'}`}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isMuted ? 'bg-slate-700' : 'bg-slate-800 hover:bg-slate-700'}`}
               aria-pressed={isMuted}
               aria-label="Mute AI audio"
             >
@@ -539,7 +538,7 @@ const MockInterviewPage: React.FC = () => {
             <button
               onClick={handleManualEnd}
               disabled={isAILoading}
-              className="ml-2 bg-red-600 text-white px-4 py-2 rounded-full font-semibold hover:bg-red-500 disabled:bg-slate-600"
+              className="ml-2 bg-red-600 text-white px-4 py-2 rounded-full font-semibold hover:bg-red-500 disabled:bg-slate-600 transition-colors"
             >
               End & Feedback
             </button>

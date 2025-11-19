@@ -5,43 +5,72 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Roadmap Generator</title>
+    
+    <!-- Tailwind CSS CDN (Restored for immediate styling fix) -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              background: {
+                DEFAULT: 'var(--color-bg)',
+                secondary: 'var(--color-bg-secondary)',
+                accent: 'var(--color-bg-accent)',
+                hover: 'var(--color-bg-hover)',
+              },
+              text: {
+                primary: 'var(--color-text-primary)',
+                secondary: 'var(--color-text-secondary)',
+              },
+              primary: {
+                DEFAULT: 'var(--color-primary)',
+                hover: 'var(--color-secondary)',
+              },
+              secondary: 'var(--color-secondary)',
+              accent: 'var(--color-accent)',
+              border: 'var(--color-border)',
+              success: 'var(--color-success)',
+              warning: 'var(--color-warning)',
+              error: 'var(--color-error)',
+              info: 'var(--color-info)',
+            },
+            animation: {
+              fadeIn: 'fadeIn 0.5s ease-out forwards',
+              fadeInUp: 'fadeInUp 0.6s ease-out forwards',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              fadeInUp: {
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+            },
+          },
+        },
+      }
+    </script>
+    
   <script type="importmap">
-{
-  "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.1.1/",
-    "react": "https://aistudiocdn.com/react@^19.1.1",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.16.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
-    "pdfjs-dist": "https://aistudiocdn.com/pdfjs-dist@^4.5.136"
-  }
-}
-</script>
-<style>
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
+  {
+    "imports": {
+      "react/": "https://aistudiocdn.com/react@^19.1.1/",
+      "react": "https://aistudiocdn.com/react@^19.1.1",
+      "@google/genai": "https://aistudiocdn.com/@google/genai@^1.16.0",
+      "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+      "pdfjs-dist": "https://aistudiocdn.com/pdfjs-dist@^4.5.136"
     }
   }
-  .animate-fadeIn {
-    animation: fadeIn 0.5s ease-in-out forwards;
-  }
-  .animate-fadeInUp {
-    opacity: 0; /* Start hidden */
-    animation: fadeInUp 0.6s ease-in-out forwards;
-  }
-</style>
-</head>
-  <body class="bg-slate-900">
+  </script>
+  </head>
+  <body class="bg-background text-text-primary transition-colors duration-300">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

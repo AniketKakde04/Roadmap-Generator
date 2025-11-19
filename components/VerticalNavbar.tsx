@@ -10,6 +10,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon
 } from '@heroicons/react/24/outline';
+import ThemeToggle from '../src/components/ThemeToggle';
 
 interface NavItemProps {
   icon: React.ReactNode;
@@ -95,7 +96,13 @@ const VerticalNavbar: React.FC<VerticalNavbarProps> = ({ currentView, onNavigate
       </div>
 
       {/* Footer / Sign Out */}
-      <div className="p-4 border-t border-border">
+      <div className="p-4 border-t border-border space-y-4">
+        {/* Theme Toggle Section */}
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-3'} p-2 rounded-xl bg-background/50 border border-border/50 transition-all`}>
+            {!isCollapsed && <span className="text-sm font-medium text-text-secondary">Theme</span>}
+            <ThemeToggle />
+        </div>
+
         <button
             onClick={onSignOut}
             className="w-full flex items-center p-3 text-text-secondary hover:bg-error/10 hover:text-error rounded-xl transition-all duration-200 group"

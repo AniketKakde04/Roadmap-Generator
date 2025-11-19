@@ -13,15 +13,18 @@ import ResumeBuilderPage from './components/ResumeBuilderPage';
 import HomePage from './components/HomePage';
 import AptitudeDashboard from './components/AptitudeDashboard'; 
 import MockInterviewPage from './components/MockInterviewPage';
+import PortfolioPreview from './components/PortfolioPreview'; // <-- Import
 import { getSession, onAuthStateChange, signOutUser } from './services/authService';
 import { getSavedRoadmaps, saveRoadmap, deleteRoadmap, updateRoadmapProgress, updateRoadmap } from './services/roadmapService';
+import { getResume } from './services/resumeService'; // <-- Import to fetch resume for public view
 import * as pdfjsLib from 'pdfjs-dist';
 import ArrowUpTrayIcon from './components/icons/ArrowUpTrayIcon';
+import { ResumeData } from './types';
 
 // Configure the worker for pdfjs-dist
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.5.136/build/pdf.worker.mjs`;
 
-type View = 'home' | 'dashboard' | 'roadmapGenerator' | 'resume' | 'profile' | 'resumeBuilder' | 'aptitude' | 'mockInterview';
+type View = 'home' | 'dashboard' | 'roadmapGenerator' | 'resume' | 'profile' | 'resumeBuilder' | 'aptitude' | 'mockInterview' | 'sharedPortfolio';
 
 const App: React.FC = () => {
     const [view, setView] = useState<View>('home');
@@ -46,13 +49,36 @@ const App: React.FC = () => {
     const [modalView, setModalView] = useState<'signIn' | 'signUp' | null>(null);
     const [savedRoadmaps, setSavedRoadmaps] = useState<SavedRoadmap[]>([]);
     
+    // Public Portfolio Data
+    const [publicResumeData, setPublicResumeData] = useState<ResumeData | null>(null);
+
     useEffect(() => {
+        // Check URL params for public portfolio view
+        const params = new URLSearchParams(window.location.search);
+        const publicView = params.get('view');
+        // In a real app, we'd fetch by username/ID from params.get('user')
+        // For this demo, we'll just show the current user's data if logged in, or a mock if not
+        
+        if (publicView === 'sharedPortfolio') {
+            setView('sharedPortfolio');
+            // Mock fetching public data (in real app use params.get('userId'))
+            // For now, we will rely on the user being logged in OR just fetch the resume if we have a user
+        }
+
         const checkUser = async () => {
             const session = await getSession();
             const currentUser = session?.user ?? null;
             setUser(currentUser);
-            if (currentUser && view === 'home') {
-                 setView('dashboard');
+            
+            if (publicView !== 'sharedPortfolio') {
+                if (currentUser && view === 'home') {
+                     setView('dashboard');
+                }
+            } else if (currentUser) {
+                 // If viewing portfolio and logged in, fetch own resume to display as 'public'
+                 // In production, this would fetch ANY user's resume by ID
+                 const data = await getResume(currentUser.id);
+                 if (data) setPublicResumeData(data);
             }
         };
         checkUser();
@@ -60,7 +86,7 @@ const App: React.FC = () => {
         const { data: authListener } = onAuthStateChange((_event, session) => {
             const currentUser = session?.user ?? null;
             setUser(currentUser);
-            if (currentUser && view === 'home') {
+            if (currentUser && view === 'home' && !publicView) {
                  setView('dashboard');
             }
         });
@@ -78,6 +104,7 @@ const App: React.FC = () => {
         }
     }, [user]);
 
+    // ... (handleFileChange, handleGenerateRoadmap, handleSaveRoadmap, etc. remain exactly the same)
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
             const file = event.target.files[0];
@@ -221,6 +248,21 @@ const App: React.FC = () => {
     const renderContent = () => {
         const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
         
+        // Public Portfolio View (No Sidebar)
+        if (view === 'sharedPortfolio') {
+             if (!publicResumeData) return <Loader />;
+             return (
+                <div className="w-full min-h-screen bg-white">
+                    {/* Simple Public Nav */}
+                    <nav className="p-4 border-b border-gray-100 flex justify-between items-center">
+                        <span className="font-bold text-xl text-primary">EduPath Portfolio</span>
+                        <a href="/" className="text-sm font-medium text-gray-600 hover:text-primary">Create Your Own</a>
+                    </nav>
+                    <PortfolioPreview data={publicResumeData} readOnly={true} />
+                </div>
+             );
+        }
+
         if (!user && view !== 'home') {
              return <HomePage onSignUpClick={() => setModalView('signUp')} onNavigate={setView as any} isLoggedIn={false} />;
         }
@@ -271,7 +313,7 @@ const App: React.FC = () => {
 
                         <main className="w-full flex-grow flex flex-col items-center">
                             <div className="w-full max-w-3xl p-6 bg-background-secondary/80 backdrop-blur-md rounded-xl shadow-xl border border-border mt-8">
-                                
+                                {/* ... (Roadmap Form Inputs - Same as before) ... */}
                                 <div className="flex mb-6 p-1 bg-background-accent rounded-lg">
                                     <button
                                         onClick={() => setGenerationMode('topic')}
@@ -418,7 +460,9 @@ const App: React.FC = () => {
     
     return (
         <div className="min-h-screen bg-background text-text-primary font-sans transition-colors duration-300 selection:bg-primary/30">
-            {user ? (
+            {view === 'sharedPortfolio' ? (
+                renderContent()
+            ) : user ? (
                 <div className="flex h-screen overflow-hidden">
                     <VerticalNavbar 
                         currentView={view}

@@ -2,7 +2,10 @@
 module.exports = {
   content: [
     "./index.html",
-    "./**/*.{js,ts,jsx,tsx}", // Broad catch-all for any file in the project
+    "./*.{js,ts,jsx,tsx}",            // Files in root (App.tsx, index.tsx)
+    "./src/**/*.{js,ts,jsx,tsx}",     // Files in src
+    "./components/**/*.{js,ts,jsx,tsx}", // Files in components
+    "./services/**/*.{js,ts,jsx,tsx}",   // Files in services
   ],
   darkMode: 'class',
   theme: {
