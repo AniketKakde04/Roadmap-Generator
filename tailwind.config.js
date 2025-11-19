@@ -1,19 +1,51 @@
-// tailwind.config.js
+/** @type {import('tailwindcss').Config} */
 module.exports = {
+  content: [
+    "./index.html",
+    "./**/*.{js,ts,jsx,tsx}", // Broad catch-all for any file in the project
+  ],
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+      },
       colors: {
-        background: 'var(--color-bg)',
-        'background-secondary': 'var(--color-bg-secondary)',
-        'background-accent': 'var(--color-bg-accent)',
-        'background-hover': 'var(--color-bg-hover)',
-        'text-primary': 'var(--color-text-primary)',
-        'text-secondary': 'var(--color-text-secondary)',
-        primary: 'var(--color-primary)',
+        background: {
+          DEFAULT: 'var(--color-bg)',
+          secondary: 'var(--color-bg-secondary)',
+          accent: 'var(--color-bg-accent)',
+          hover: 'var(--color-bg-hover)',
+        },
+        text: {
+          primary: 'var(--color-text-primary)',
+          secondary: 'var(--color-text-secondary)',
+        },
+        primary: {
+          DEFAULT: 'var(--color-primary)',
+          hover: 'var(--color-secondary)',
+        },
         secondary: 'var(--color-secondary)',
         accent: 'var(--color-accent)',
         border: 'var(--color-border)',
+        success: 'var(--color-success)',
+        warning: 'var(--color-warning)',
+        error: 'var(--color-error)',
+        info: 'var(--color-info)',
+      },
+      animation: {
+        fadeIn: 'fadeIn 0.5s ease-out forwards',
+        fadeInUp: 'fadeInUp 0.6s ease-out forwards',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        fadeInUp: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
       },
     },
   },

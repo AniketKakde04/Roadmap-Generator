@@ -10,32 +10,34 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Initialize with 'light' to prevent flash of dark content
   const [theme, setTheme] = useState<Theme>('light');
 
   useEffect(() => {
-    // Check for saved user preference, or use system preference
-    const savedTheme = localStorage.getItem('theme') as Theme | null;
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // FORCE RESET to Light Mode to fix the "No Change" issue
+    setTheme('light');
+    localStorage.setItem('theme', 'light');
     
-    if (savedTheme) {
-      setTheme(savedTheme);
-    } else if (prefersDark) {
-      setTheme('dark');
-    } else {
-      setTheme('light');
-    }
+    // Apply to document immediately
+    const root = document.documentElement;
+    root.classList.remove('dark');
+    root.style.colorScheme = 'light';
+    root.setAttribute('data-theme', 'light');
   }, []);
 
   useEffect(() => {
-    // Update the class on the html element
+    const root = document.documentElement;
+    
     if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.style.colorScheme = 'dark';
+      root.classList.add('dark');
+      root.style.colorScheme = 'dark';
+      root.setAttribute('data-theme', 'dark');
     } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.style.colorScheme = 'light';
+      root.classList.remove('dark');
+      root.style.colorScheme = 'light';
+      root.setAttribute('data-theme', 'light');
     }
-    // Save the theme preference
+    
     localStorage.setItem('theme', theme);
   }, [theme]);
 
@@ -57,9 +59,3 @@ export const useTheme = (): ThemeContextType => {
   }
   return context;
 };
-
-// Add this type declaration to fix the CSS module import
-declare module '*.module.css' {
-  const classes: { [key: string]: string };
-  export default classes;
-}

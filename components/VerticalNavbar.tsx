@@ -1,4 +1,3 @@
-// components/VerticalNavbar.tsx
 import React, { useState } from 'react';
 import { 
   HomeIcon, 
@@ -21,31 +20,23 @@ interface NavItemProps {
   isCollapsed: boolean;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ 
-  icon, 
-  label, 
-  view, 
-  currentView, 
-  onNavigate,
-  isCollapsed 
-}) => {
+const NavItem: React.FC<NavItemProps> = ({ icon, label, view, currentView, onNavigate, isCollapsed }) => {
   const isActive = currentView === view;
-  
   return (
-    <li className="w-full">
+    <li className="w-full mb-1">
       <button
         onClick={() => onNavigate(view)}
-        className={`flex items-center w-full p-3 rounded-lg transition-colors ${
+        className={`flex items-center w-full p-3 rounded-xl transition-all duration-200 group ${
           isActive
-            ? 'bg-slate-700 text-white'
-            : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
+            ? 'bg-primary text-white shadow-lg shadow-primary/20'
+            : 'text-text-secondary hover:bg-background-hover hover:text-primary'
         }`}
         title={label}
       >
-        <span className="flex items-center justify-center w-6 h-6">
+        <span className={`flex-shrink-0 w-6 h-6 ${isActive ? 'text-white' : 'group-hover:text-primary'}`}>
           {icon}
         </span>
-        {!isCollapsed && <span className="ml-3">{label}</span>}
+        {!isCollapsed && <span className="ml-3 font-medium whitespace-nowrap transition-opacity duration-300">{label}</span>}
       </button>
     </li>
   );
@@ -60,55 +51,41 @@ interface VerticalNavbarProps {
   onSignOut: () => void;
 }
 
-const VerticalNavbar: React.FC<VerticalNavbarProps> = ({ 
-  currentView, 
-  onNavigate, 
-  isLoggedIn, 
-  onSignInClick, 
-  onSignUpClick, 
-  onSignOut 
-}) => {
+const VerticalNavbar: React.FC<VerticalNavbarProps> = ({ currentView, onNavigate, isLoggedIn, onSignOut }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const navItems = [
-    { icon: <HomeIcon className="w-5 h-5" />, label: 'Home', view: 'home' },
-    { icon: <MapIcon className="w-5 h-5" />, label: 'Roadmap', view: 'roadmapGenerator' },
-    { icon: <DocumentTextIcon className="w-5 h-5" />, label: 'Resume', view: 'resume' },
-    { icon: <BriefcaseIcon className="w-5 h-5" />, label: 'Resume Builder', view: 'resumeBuilder' },
-    { icon: <AcademicCapIcon className="w-5 h-5" />, label: 'Aptitude', view: 'aptitude' },
-    { icon: <ChatBubbleLeftRightIcon className="w-5 h-5" />, label: 'Mock Interview', view: 'mockInterview' },
-    { icon: <UserIcon className="w-5 h-5" />, label: 'Profile', view: 'profile' },
+    { icon: <HomeIcon className="w-6 h-6" />, label: 'Dashboard', view: 'dashboard' },
+    { icon: <MapIcon className="w-6 h-6" />, label: 'Roadmap Generator', view: 'roadmapGenerator' },
+    { icon: <DocumentTextIcon className="w-6 h-6" />, label: 'Resume Analyzer', view: 'resume' },
+    { icon: <BriefcaseIcon className="w-6 h-6" />, label: 'Resume Builder', view: 'resumeBuilder' },
+    { icon: <AcademicCapIcon className="w-6 h-6" />, label: 'Aptitude Prep', view: 'aptitude' },
+    { icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />, label: 'Mock Interview', view: 'mockInterview' },
+    { icon: <UserIcon className="w-6 h-6" />, label: 'My Profile', view: 'profile' },
   ];
 
   return (
-    <nav className={`h-screen flex flex-col transition-all duration-300 ${
-      isCollapsed ? 'w-16' : 'w-64'
-    } bg-slate-800 text-white`}>
-      {/* Header with logo and collapse button */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-700">
-        {!isCollapsed && <h1 className="text-xl font-bold text-white">EduPath</h1>}
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className="p-1 rounded-full hover:bg-slate-700"
-          aria-label={isCollapsed ? 'Expand menu' : 'Collapse menu'}
-        >
-          {isCollapsed ? (
-            <ChevronRightIcon className="w-5 h-5 text-slate-300" />
-          ) : (
-            <ChevronLeftIcon className="w-5 h-5 text-slate-300" />
-          )}
+    <nav className={`h-screen flex flex-col border-r border-border bg-background-secondary transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-72'}`}>
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 h-20 border-b border-border">
+        {!isCollapsed && (
+             <div className="flex items-center gap-2 animate-fadeIn">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg">AI</div>
+                <span className="text-xl font-bold text-text-primary tracking-tight">EduPath</span>
+            </div>
+        )}
+        <button onClick={() => setIsCollapsed(!isCollapsed)} className="p-2 rounded-lg hover:bg-background-hover text-text-secondary transition-colors mx-auto">
+          {isCollapsed ? <ChevronRightIcon className="w-5 h-5" /> : <ChevronLeftIcon className="w-5 h-5" />}
         </button>
       </div>
 
-      {/* Navigation items */}
-      <div className="flex-1 overflow-y-auto p-2">
+      {/* Nav Items */}
+      <div className="flex-1 overflow-y-auto py-6 px-3 scrollbar-hide">
         <ul className="space-y-1">
           {navItems.map((item) => (
             <NavItem
               key={item.view}
-              icon={item.icon}
-              label={item.label}
-              view={item.view}
+              {...item}
               currentView={currentView}
               onNavigate={onNavigate}
               isCollapsed={isCollapsed}
@@ -117,46 +94,18 @@ const VerticalNavbar: React.FC<VerticalNavbarProps> = ({
         </ul>
       </div>
 
-      {/* Bottom section - Auth Buttons */}
-      <div className="p-4 border-t border-slate-700">
-        {isLoggedIn ? (
-          <button
+      {/* Footer / Sign Out */}
+      <div className="p-4 border-t border-border">
+        <button
             onClick={onSignOut}
-            className="w-full flex items-center p-2 text-red-400 hover:bg-red-900/30 rounded-lg text-sm font-medium transition-colors"
-          >
-            <span className="flex items-center justify-center w-6 h-6">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
+            className="w-full flex items-center p-3 text-text-secondary hover:bg-error/10 hover:text-error rounded-xl transition-all duration-200 group"
+            title="Sign Out"
+        >
+            <span className="flex-shrink-0 w-6 h-6 group-hover:text-error">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" /></svg>
             </span>
-            {!isCollapsed && <span className="ml-3">Sign Out</span>}
-          </button>
-        ) : (
-          <div className="space-y-2">
-            <button
-              onClick={onSignInClick}
-              className="w-full flex items-center p-2 text-blue-400 hover:bg-blue-900/30 rounded-lg text-sm font-medium transition-colors"
-            >
-              <span className="flex items-center justify-center w-6 h-6">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                </svg>
-              </span>
-              {!isCollapsed && <span className="ml-3">Sign In</span>}
-            </button>
-            <button
-              onClick={onSignUpClick}
-              className="w-full flex items-center p-2 text-green-400 hover:bg-green-900/30 rounded-lg text-sm font-medium transition-colors"
-            >
-              <span className="flex items-center justify-center w-6 h-6">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                </svg>
-              </span>
-              {!isCollapsed && <span className="ml-3">Sign Up</span>}
-            </button>
-          </div>
-        )}
+            {!isCollapsed && <span className="ml-3 font-medium">Sign Out</span>}
+        </button>
       </div>
     </nav>
   );
