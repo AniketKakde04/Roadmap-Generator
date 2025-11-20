@@ -18,7 +18,6 @@ const Navbar: React.FC<NavbarProps> = ({
 }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    // Helper to close menu on nav
     const handleNav = (view: View) => {
         onNavigate(view);
         setIsMobileMenuOpen(false);
@@ -29,15 +28,15 @@ const Navbar: React.FC<NavbarProps> = ({
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Brand Logo */}
-                    <div className="flex-shrink-0 flex items-center">
+                    <div className="flex-shrink-0 flex items-center mr-4"> {/* Added mr-4 to prevent overlap */}
                         <button onClick={() => handleNav(isLoggedIn ? 'dashboard' : 'home')} className="flex items-center space-x-2 group">
                             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold group-hover:scale-105 transition-transform">AI</div>
-                            <span className="text-text-primary text-xl font-bold tracking-tight">EduPath</span>
+                            <span className="text-text-primary text-xl font-bold tracking-tight whitespace-nowrap">EduPath</span>
                         </button>
                     </div>
 
-                    {/* Desktop Navigation Links (ONLY if Logged In) */}
-                    <div className="hidden md:flex items-center space-x-4">
+                    {/* Desktop Navigation Links */}
+                    <div className="hidden md:flex items-center justify-center flex-grow space-x-4"> {/* Added flex-grow and justify-center to center nav items */}
                         {isLoggedIn && (
                             <ul className="flex items-center space-x-6">
                                 <li>
@@ -57,18 +56,16 @@ const Navbar: React.FC<NavbarProps> = ({
                                 </li>
                             </ul>
                         )}
-                        {/* If NOT logged in, we show nothing here, keeping the focus on the CTA buttons */}
                     </div>
 
                     {/* Right Side Actions */}
-                    <div className="hidden md:flex items-center space-x-4">
+                    <div className="hidden md:flex items-center space-x-4 flex-shrink-0"> {/* Added flex-shrink-0 */}
                         <ThemeToggle />
                         
                         <a href="https://github.com/aniketkakde04/Roadmap-Generator" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-primary transition-colors">
                             <GitHubIcon className="w-6 h-6" />
                         </a>
 
-                        {/* Auth Buttons */}
                         {isLoggedIn ? (
                             <div className="relative flex items-center">
                                 <button onClick={() => handleNav('profile')} className="w-8 h-8 rounded-full bg-background-accent flex items-center justify-center text-primary ring-2 ring-transparent hover:ring-primary transition-all" title="Profile">

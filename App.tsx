@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { generateRoadmap, generatePersonalizedRoadmap } from './services/geminiService';
-import { Roadmap as RoadmapType, SavedRoadmap, User } from './types';
+import { Roadmap as RoadmapType, SavedRoadmap, User, ResumeData } from './types';
 import Loader from './components/Loader';
 import Roadmap from './components/Roadmap';
 import Navbar from './components/Navbar';
@@ -13,13 +13,12 @@ import ResumeBuilderPage from './components/ResumeBuilderPage';
 import HomePage from './components/HomePage';
 import AptitudeDashboard from './components/AptitudeDashboard'; 
 import MockInterviewPage from './components/MockInterviewPage';
-import PortfolioPreview from './components/PortfolioPreview'; // <-- Import
+import PortfolioPreview from './components/PortfolioPreview'; 
 import { getSession, onAuthStateChange, signOutUser } from './services/authService';
 import { getSavedRoadmaps, saveRoadmap, deleteRoadmap, updateRoadmapProgress, updateRoadmap } from './services/roadmapService';
-import { getResume } from './services/resumeService'; // <-- Import to fetch resume for public view
+import { getResume } from './services/resumeService';
 import * as pdfjsLib from 'pdfjs-dist';
 import ArrowUpTrayIcon from './components/icons/ArrowUpTrayIcon';
-import { ResumeData } from './types';
 
 // Configure the worker for pdfjs-dist
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.5.136/build/pdf.worker.mjs`;
@@ -27,7 +26,12 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.
 type View = 'home' | 'dashboard' | 'roadmapGenerator' | 'resume' | 'profile' | 'resumeBuilder' | 'aptitude' | 'mockInterview' | 'sharedPortfolio';
 
 const App: React.FC = () => {
-    const [view, setView] = useState<View>('home');
+    // Initialize view based on URL to prevent flicker
+    const [view, setView] = useState<View>(() => {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('view') === 'sharedPortfolio' ? 'sharedPortfolio' : 'home';
+    });
+
     const [roadmap, setRoadmap] = useState<RoadmapType | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -53,30 +57,38 @@ const App: React.FC = () => {
     const [publicResumeData, setPublicResumeData] = useState<ResumeData | null>(null);
 
     useEffect(() => {
-        // Check URL params for public portfolio view
         const params = new URLSearchParams(window.location.search);
         const publicView = params.get('view');
-        // In a real app, we'd fetch by username/ID from params.get('user')
-        // For this demo, we'll just show the current user's data if logged in, or a mock if not
-        
-        if (publicView === 'sharedPortfolio') {
-            setView('sharedPortfolio');
-            // Mock fetching public data (in real app use params.get('userId'))
-            // For now, we will rely on the user being logged in OR just fetch the resume if we have a user
-        }
+        const sharedUserId = params.get('userId');
 
+        // 1. Handle Public Route Logic IMMEDIATELY
+        if (publicView === 'sharedPortfolio') {
+            // If we are in public view, we fetch the public data.
+            if (sharedUserId) {
+                getResume(sharedUserId).then(data => {
+                    if (data) setPublicResumeData(data);
+                });
+            } else {
+                // If no userId param but we are logged in, maybe show our own? 
+                // Or just show error/loader. For now, let auth check handle fallback.
+            }
+        } 
+        
+        // 2. Auth Check Logic
         const checkUser = async () => {
             const session = await getSession();
             const currentUser = session?.user ?? null;
             setUser(currentUser);
             
+            // CRITICAL FIX: Only redirect if NOT on a public route
             if (publicView !== 'sharedPortfolio') {
-                if (currentUser && view === 'home') {
-                     setView('dashboard');
+                if (currentUser) {
+                    // If user is logged in and on home, go to dashboard
+                    // Using functional update or ref would be better, but simple check works for init
+                     setView(v => v === 'home' ? 'dashboard' : v);
                 }
-            } else if (currentUser) {
-                 // If viewing portfolio and logged in, fetch own resume to display as 'public'
-                 // In production, this would fetch ANY user's resume by ID
+            } else if (currentUser && !sharedUserId) {
+                 // Edge case: User creates link but forgets ID param, fallback to own resume
                  const data = await getResume(currentUser.id);
                  if (data) setPublicResumeData(data);
             }
@@ -86,8 +98,15 @@ const App: React.FC = () => {
         const { data: authListener } = onAuthStateChange((_event, session) => {
             const currentUser = session?.user ?? null;
             setUser(currentUser);
-            if (currentUser && view === 'home' && !publicView) {
-                 setView('dashboard');
+            
+            // CRITICAL FIX: Same check here
+            const currentParams = new URLSearchParams(window.location.search);
+            if (currentParams.get('view') !== 'sharedPortfolio') {
+                if (currentUser) {
+                    setView(v => v === 'home' ? 'dashboard' : v);
+                } else {
+                    setView('home');
+                }
             }
         });
 
@@ -104,7 +123,6 @@ const App: React.FC = () => {
         }
     }, [user]);
 
-    // ... (handleFileChange, handleGenerateRoadmap, handleSaveRoadmap, etc. remain exactly the same)
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
             const file = event.target.files[0];
@@ -248,17 +266,21 @@ const App: React.FC = () => {
     const renderContent = () => {
         const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
         
-        // Public Portfolio View (No Sidebar)
+        // --- PUBLIC PORTFOLIO VIEW LOGIC ---
         if (view === 'sharedPortfolio') {
-             if (!publicResumeData) return <Loader />;
+             if (!publicResumeData) return <div className="w-full min-h-screen flex items-center justify-center bg-white"><Loader /></div>;
              return (
-                <div className="w-full min-h-screen bg-white">
-                    {/* Simple Public Nav */}
-                    <nav className="p-4 border-b border-gray-100 flex justify-between items-center">
-                        <span className="font-bold text-xl text-primary">EduPath Portfolio</span>
-                        <a href="/" className="text-sm font-medium text-gray-600 hover:text-primary">Create Your Own</a>
-                    </nav>
+                <div className="w-full min-h-screen bg-white relative">
                     <PortfolioPreview data={publicResumeData} readOnly={true} />
+                    
+                    <a 
+                        href="/" 
+                        className="fixed bottom-6 left-6 z-50 flex items-center gap-2 bg-white/90 backdrop-blur border border-slate-200 px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all group no-underline"
+                        title="Create your own portfolio with EduPath"
+                    >
+                        <div className="w-5 h-5 bg-primary rounded flex items-center justify-center text-[9px] text-white font-bold">AI</div>
+                        <span className="text-xs font-medium text-slate-500 group-hover:text-primary transition-colors">Made with EduPath</span>
+                    </a>
                 </div>
              );
         }
@@ -313,7 +335,7 @@ const App: React.FC = () => {
 
                         <main className="w-full flex-grow flex flex-col items-center">
                             <div className="w-full max-w-3xl p-6 bg-background-secondary/80 backdrop-blur-md rounded-xl shadow-xl border border-border mt-8">
-                                {/* ... (Roadmap Form Inputs - Same as before) ... */}
+                                
                                 <div className="flex mb-6 p-1 bg-background-accent rounded-lg">
                                     <button
                                         onClick={() => setGenerationMode('topic')}
@@ -427,7 +449,7 @@ const App: React.FC = () => {
                                         disabled={!canGenerate}
                                         className="w-full bg-primary text-white font-bold py-4 px-6 rounded-lg hover:bg-primary/90 disabled:bg-background-accent disabled:text-text-secondary disabled:cursor-not-allowed transition-all shadow-lg shadow-primary/20 mt-4"
                                     >
-                                        {isLoading ? 'Generating Plan...' : (generationMode === 'topic' ? 'Generate Roadmap' : 'Generate Personalized Plan')}
+                                        {isLoading ? 'Generating...' : (generationMode === 'topic' ? 'Generate Roadmap' : 'Generate Personalized Plan')}
                                     </button>
                                 </div>
                                 {error && <p className="text-error mt-4 text-center bg-error/10 p-3 rounded-lg border border-error/20">{error}</p>}
