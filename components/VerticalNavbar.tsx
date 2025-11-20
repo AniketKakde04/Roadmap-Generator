@@ -16,16 +16,18 @@ interface NavItemProps {
   icon: React.ReactNode;
   label: string;
   view: string;
+  tourId?: string; // Added prop
   currentView: string;
   onNavigate: (view: string) => void;
   isCollapsed: boolean;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon, label, view, currentView, onNavigate, isCollapsed }) => {
+const NavItem: React.FC<NavItemProps> = ({ icon, label, view, tourId, currentView, onNavigate, isCollapsed }) => {
   const isActive = currentView === view;
   return (
     <li className="w-full mb-1">
       <button
+        id={tourId} // Apply ID
         onClick={() => onNavigate(view)}
         className={`flex items-center w-full p-3 rounded-xl transition-all duration-200 group ${
           isActive
@@ -55,14 +57,15 @@ interface VerticalNavbarProps {
 const VerticalNavbar: React.FC<VerticalNavbarProps> = ({ currentView, onNavigate, isLoggedIn, onSignOut }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  // Added tourId to items
   const navItems = [
-    { icon: <HomeIcon className="w-6 h-6" />, label: 'Dashboard', view: 'dashboard' },
-    { icon: <MapIcon className="w-6 h-6" />, label: 'Roadmap Generator', view: 'roadmapGenerator' },
-    { icon: <DocumentTextIcon className="w-6 h-6" />, label: 'Resume Analyzer', view: 'resume' },
-    { icon: <BriefcaseIcon className="w-6 h-6" />, label: 'Resume Builder', view: 'resumeBuilder' },
-    { icon: <AcademicCapIcon className="w-6 h-6" />, label: 'Aptitude Prep', view: 'aptitude' },
-    { icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />, label: 'Mock Interview', view: 'mockInterview' },
-    { icon: <UserIcon className="w-6 h-6" />, label: 'My Profile', view: 'profile' },
+    { icon: <HomeIcon className="w-6 h-6" />, label: 'Dashboard', view: 'dashboard', tourId: 'nav-dashboard' },
+    { icon: <MapIcon className="w-6 h-6" />, label: 'Roadmap Generator', view: 'roadmapGenerator', tourId: 'nav-roadmap' },
+    { icon: <DocumentTextIcon className="w-6 h-6" />, label: 'Resume Analyzer', view: 'resume', tourId: 'nav-resume' },
+    { icon: <BriefcaseIcon className="w-6 h-6" />, label: 'Resume Builder', view: 'resumeBuilder', tourId: 'nav-builder' },
+    { icon: <AcademicCapIcon className="w-6 h-6" />, label: 'Aptitude Prep', view: 'aptitude', tourId: 'nav-aptitude' },
+    { icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />, label: 'Mock Interview', view: 'mockInterview', tourId: 'nav-interview' },
+    { icon: <UserIcon className="w-6 h-6" />, label: 'My Profile', view: 'profile', tourId: 'nav-profile' },
   ];
 
   return (

@@ -19,6 +19,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userName, onNavigate, stats }) =>
   const tools = [
     {
       id: 'roadmapGenerator',
+      tourId: 'tour-roadmap-card', // Added specialized ID
       title: 'Roadmap Generator',
       description: 'Create personalized learning paths for any topic or job role.',
       icon: <MapIcon className="w-8 h-8" />,
@@ -27,6 +28,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userName, onNavigate, stats }) =>
     },
     {
       id: 'resume',
+      tourId: 'tour-resume-card', // Added specialized ID
       title: 'Resume Analyzer',
       description: 'Analyze your resume against job descriptions to find gaps.',
       icon: <DocumentTextIcon className="w-8 h-8" />,
@@ -35,6 +37,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userName, onNavigate, stats }) =>
     },
     {
       id: 'resumeBuilder',
+      tourId: 'tour-builder-card', // Added specialized ID
       title: 'Resume Builder',
       description: 'Build a professional, ATS-friendly resume from scratch.',
       icon: <BriefcaseIcon className="w-8 h-8" />,
@@ -43,6 +46,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userName, onNavigate, stats }) =>
     },
     {
       id: 'mockInterview',
+      tourId: 'tour-interview-card', // Added specialized ID
       title: 'AI Mock Interview',
       description: 'Practice voice-based technical interviews with AI feedback.',
       icon: <ChatBubbleLeftRightIcon className="w-8 h-8" />,
@@ -51,6 +55,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userName, onNavigate, stats }) =>
     },
     {
       id: 'aptitude',
+      tourId: 'tour-aptitude-card', // Added specialized ID
       title: 'Aptitude Prep',
       description: 'Practice quizzes for quantitative and logical reasoning.',
       icon: <AcademicCapIcon className="w-8 h-8" />,
@@ -62,7 +67,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userName, onNavigate, stats }) =>
   return (
     <div className="w-full max-w-7xl mx-auto py-10 px-6 animate-fadeIn">
       {/* Welcome Header */}
-      <div className="mb-12">
+      <div className="mb-12" id="tour-welcome-header"> {/* Added ID */}
         <h1 className="text-4xl font-extrabold text-text-primary mb-3">
           Welcome back, <span className="text-primary">{userName}</span>
         </h1>
@@ -76,6 +81,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userName, onNavigate, stats }) =>
         {tools.map((tool) => (
           <button
             key={tool.id}
+            id={tool.tourId} // Applied ID here
             onClick={() => onNavigate(tool.id)}
             className="flex flex-col items-start p-6 rounded-2xl bg-background-secondary border border-border hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 group shadow-lg hover:shadow-primary/10"
           >

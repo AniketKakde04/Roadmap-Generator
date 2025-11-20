@@ -14,6 +14,7 @@ import HomePage from './components/HomePage';
 import AptitudeDashboard from './components/AptitudeDashboard'; 
 import MockInterviewPage from './components/MockInterviewPage';
 import PortfolioPreview from './components/PortfolioPreview'; 
+import OnboardingTour, { TourStep } from './components/OnboardingTour'; // Import Tour
 import { getSession, onAuthStateChange, signOutUser } from './services/authService';
 import { getSavedRoadmaps, saveRoadmap, deleteRoadmap, updateRoadmapProgress, updateRoadmap } from './services/roadmapService';
 import { getResume } from './services/resumeService';
@@ -55,40 +56,75 @@ const App: React.FC = () => {
     
     // Public Portfolio Data
     const [publicResumeData, setPublicResumeData] = useState<ResumeData | null>(null);
+    
+    // --- TOUR STATE ---
+    const [showTour, setShowTour] = useState(false);
+
+    // Define Tour Steps
+    const tourSteps: TourStep[] = [
+        {
+            targetId: 'tour-welcome-header',
+            title: 'Welcome to EduPath!',
+            content: 'This is your dashboard. From here, you can access all the AI-powered tools to boost your career.',
+            position: 'center'
+        },
+        {
+            targetId: 'nav-roadmap',
+            title: 'AI Roadmap Generator',
+            content: 'Generate personalized learning paths for any tech stack or job role tailored to your timeline.',
+            position: 'right'
+        },
+        {
+            targetId: 'nav-builder',
+            title: 'Resume Builder',
+            content: 'Build a professional, ATS-friendly resume from scratch using our templates.',
+            position: 'right'
+        },
+        {
+            targetId: 'nav-interview',
+            title: 'Mock Interviews',
+            content: 'Practice speaking with an AI interviewer and get real-time feedback on your answers.',
+            position: 'right'
+        },
+        {
+            targetId: 'nav-profile',
+            title: 'Your Profile',
+            content: 'Access your saved roadmaps, resume data, and your shareable portfolio link here.',
+            position: 'right'
+        }
+    ];
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const publicView = params.get('view');
         const sharedUserId = params.get('userId');
 
-        // 1. Handle Public Route Logic IMMEDIATELY
-        if (publicView === 'sharedPortfolio') {
-            // If we are in public view, we fetch the public data.
-            if (sharedUserId) {
-                getResume(sharedUserId).then(data => {
-                    if (data) setPublicResumeData(data);
-                });
-            } else {
-                // If no userId param but we are logged in, maybe show our own? 
-                // Or just show error/loader. For now, let auth check handle fallback.
-            }
-        } 
+        if (publicView === 'sharedPortfolio' && sharedUserId) {
+            setView('sharedPortfolio');
+            getResume(sharedUserId).then(data => {
+                if (data) setPublicResumeData(data);
+            });
+        }
         
-        // 2. Auth Check Logic
         const checkUser = async () => {
             const session = await getSession();
             const currentUser = session?.user ?? null;
             setUser(currentUser);
             
-            // CRITICAL FIX: Only redirect if NOT on a public route
             if (publicView !== 'sharedPortfolio') {
                 if (currentUser) {
-                    // If user is logged in and on home, go to dashboard
-                    // Using functional update or ref would be better, but simple check works for init
                      setView(v => v === 'home' ? 'dashboard' : v);
+                     
+                     // Check for Onboarding Tour
+                     const hasSeenTour = localStorage.getItem('onboarding_complete');
+                     if (!hasSeenTour) {
+                         // Small delay to ensure UI is rendered
+                         setTimeout(() => setShowTour(true), 1000);
+                     }
+                } else {
+                    setView('home');
                 }
             } else if (currentUser && !sharedUserId) {
-                 // Edge case: User creates link but forgets ID param, fallback to own resume
                  const data = await getResume(currentUser.id);
                  if (data) setPublicResumeData(data);
             }
@@ -99,7 +135,6 @@ const App: React.FC = () => {
             const currentUser = session?.user ?? null;
             setUser(currentUser);
             
-            // CRITICAL FIX: Same check here
             const currentParams = new URLSearchParams(window.location.search);
             if (currentParams.get('view') !== 'sharedPortfolio') {
                 if (currentUser) {
@@ -122,6 +157,11 @@ const App: React.FC = () => {
             setSavedRoadmaps([]);
         }
     }, [user]);
+
+    const handleTourComplete = () => {
+        localStorage.setItem('onboarding_complete', 'true');
+        setShowTour(false);
+    };
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
@@ -256,6 +296,11 @@ const App: React.FC = () => {
     const handleAuthSuccess = () => {
         setModalView(null);
         setView('dashboard');
+        // Trigger tour for new sign ups immediately
+        const hasSeenTour = localStorage.getItem('onboarding_complete');
+        if (!hasSeenTour) {
+            setTimeout(() => setShowTour(true), 500);
+        }
     };
     
     const handleSignOut = async () => {
@@ -272,7 +317,6 @@ const App: React.FC = () => {
              return (
                 <div className="w-full min-h-screen bg-white relative">
                     <PortfolioPreview data={publicResumeData} readOnly={true} />
-                    
                     <a 
                         href="/" 
                         className="fixed bottom-6 left-6 z-50 flex items-center gap-2 bg-white/90 backdrop-blur border border-slate-200 px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all group no-underline"
@@ -303,10 +347,10 @@ const App: React.FC = () => {
                  return <ProfilePage 
                         userName={userName} 
                         savedRoadmaps={savedRoadmaps} 
-                        onProgressToggle={handleProgressToggle}
-                        onDeleteRoadmap={handleDeleteRoadmap}
-                        onUpdateRoadmap={handleUpdateRoadmap}
-                        onNavigate={setView as any}
+                        onProgressToggle={handleProgressToggle} 
+                        onDeleteRoadmap={handleDeleteRoadmap} 
+                        onUpdateRoadmap={handleUpdateRoadmap} 
+                        onNavigate={setView as any} 
                     />;
             case 'resumeBuilder':
                 return <ResumeBuilderPage />;
@@ -363,7 +407,7 @@ const App: React.FC = () => {
                                                     onChange={(e) => setTopic(e.target.value)}
                                                     onKeyPress={(e) => e.key === 'Enter' && handleGenerateRoadmap()}
                                                     placeholder="e.g., 'Learn React Native' or 'Master System Design'"
-                                                    className="w-full bg-background border border-border text-text-primary placeholder-text-secondary rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary outline-none transition-all"
+                                                    className="w-full bg-background border border-border text-text-primary rounded-lg py-3 px-4 focus:ring-2 focus:ring-primary outline-none transition-all"
                                                     disabled={isLoading}
                                                 />
                                             </div>
@@ -482,6 +526,15 @@ const App: React.FC = () => {
     
     return (
         <div className="min-h-screen bg-background text-text-primary font-sans transition-colors duration-300 selection:bg-primary/30">
+            {/* Render Tour if conditions met */}
+            {showTour && (
+                <OnboardingTour 
+                    steps={tourSteps} 
+                    onComplete={handleTourComplete}
+                    onSkip={handleTourComplete} 
+                />
+            )}
+
             {view === 'sharedPortfolio' ? (
                 renderContent()
             ) : user ? (
