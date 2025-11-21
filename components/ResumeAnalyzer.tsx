@@ -1,267 +1,350 @@
 import React, { useState } from 'react';
-import * as pdfjsLib from 'pdfjs-dist';
 import { suggestProjectsFromResume } from '../services/geminiService';
 import { AnalysisReport } from '../types';
 import Loader from './Loader';
-import ArrowUpTrayIcon from './icons/ArrowUpTrayIcon';
-import LightBulbIcon from './icons/LightBulbIcon';
+import { 
+    BriefcaseIcon, 
+    ArrowUpTrayIcon, 
+    SparklesIcon, 
+    CheckCircleIcon, 
+    XCircleIcon, 
+    LightBulbIcon,
+    ChartBarIcon,
+    ArrowPathIcon,
+    DocumentTextIcon
+} from '@heroicons/react/24/outline';
+import * as pdfjsLib from 'pdfjs-dist';
 
+// Configure worker locally for this component as well to ensure it works standalone if needed
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.5.136/build/pdf.worker.mjs`;
-
-const MatchScoreGauge = ({ score }: { score: number }) => {
-    const circumference = 2 * Math.PI * 45;
-    const strokeDashoffset = circumference - (score / 100) * circumference;
-
-    return (
-        <div className="relative flex items-center justify-center w-40 h-40">
-            <svg className="w-full h-full" viewBox="0 0 100 100">
-                <circle
-                    className="text-background-accent"
-                    strokeWidth="10"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="45"
-                    cx="50"
-                    cy="50"
-                />
-                <circle
-                    className="text-primary"
-                    strokeWidth="10"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={strokeDashoffset}
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    fill="transparent"
-                    r="45"
-                    cx="50"
-                    cy="50"
-                    transform="rotate(-90 50 50)"
-                    style={{ transition: 'stroke-dashoffset 0.8s ease-out' }}
-                />
-            </svg>
-            <span className="absolute text-3xl font-bold text-text-primary">{score}%</span>
-        </div>
-    );
-};
-
 
 interface ResumeAnalyzerProps {
     onProjectSelect: (projectTitle: string) => void;
 }
 
 const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [jobTitle, setJobTitle] = useState('');
+    const [step, setStep] = useState<'input' | 'analyzing' | 'results'>('input');
+    const [resumeText, setResumeText] = useState('');
     const [jobDescription, setJobDescription] = useState('');
-    const [analysisReport, setAnalysisReport] = useState<AnalysisReport | null>(null); 
-    const [isLoading, setIsLoading] = useState(false);
+    const [jobTitle, setJobTitle] = useState(''); 
+    const [analysis, setAnalysis] = useState<AnalysisReport | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [fileName, setFileName] = useState<string | null>(null);
+    const [isParsing, setIsParsing] = useState(false);
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
             const file = event.target.files[0];
             if (file.type !== 'application/pdf') {
                 setError('Please upload a PDF file.');
-                setSelectedFile(null);
-            } else {
-                setSelectedFile(file);
-                if (error) setError(null);
+                return;
+            }
+
+            setFileName(file.name);
+            setIsParsing(true);
+            setError(null);
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                let fullText = '';
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map((item: any) => ('str' in item ? item.str : '')).join(' ');
+                    fullText += pageText + '\n';
+                }
+                setResumeText(fullText);
+            } catch (err) {
+                console.error(err);
+                setError('Failed to parse PDF. Please try again.');
+                setFileName(null);
+            } finally {
+                setIsParsing(false);
             }
         }
     };
 
     const handleAnalyze = async () => {
-        if (!selectedFile) {
-            setError('Please select a resume PDF file before analyzing.');
+        if (!resumeText.trim() || !jobDescription.trim()) {
+            setError('Please provide both your resume (PDF) and the job description.');
             return;
         }
-        setIsLoading(true);
+        
+        setStep('analyzing');
         setError(null);
-        setAnalysisReport(null);
-
+        
         try {
-            const arrayBuffer = await selectedFile.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-            let fullText = '';
-
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const textContent = await page.getTextContent();
-                const pageText = textContent.items.map(item => 'str' in item ? item.str : '').join(' ');
-                fullText += pageText + '\n';
-            }
-            
-            if (!fullText.trim()) {
-                throw new Error("Could not extract text from the PDF. The file might be image-based or empty.");
-            }
-            
-            const result = await suggestProjectsFromResume(fullText, jobTitle, jobDescription);
-            setAnalysisReport(result);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'An unexpected error occurred while processing the PDF.');
-        } finally {
-            setIsLoading(false);
+            const result = await suggestProjectsFromResume(resumeText, jobTitle, jobDescription);
+            setAnalysis(result);
+            setStep('results');
+        } catch (err: any) {
+            setError(err.message || 'Failed to analyze resume. Please try again.');
+            setStep('input');
         }
     };
-    
+
+    const getScoreColor = (score: number) => {
+        if (score >= 80) return 'text-emerald-500 border-emerald-500';
+        if (score >= 60) return 'text-yellow-500 border-yellow-500';
+        return 'text-red-500 border-red-500';
+    };
+
     return (
-        <div className="w-full max-w-5xl mx-auto py-8">
-            <header className="text-center mb-12">
-                <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-2">
-                    Resume Analyzer
+        <div className="w-full max-w-7xl mx-auto animate-fadeIn pb-12">
+            
+            {/* Header */}
+            <div className="text-center mb-10">
+                <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 mb-4">
+                    AI Resume Architect
                 </h1>
-                <p className="mt-4 text-lg text-text-secondary">
-                    Get an instant, AI-powered analysis of your resume against your target job.
+                <p className="text-text-secondary text-lg max-w-2xl mx-auto">
+                    Don't let the ATS bot reject you. Optimize your resume against specific job descriptions and get project ideas to fill your gaps.
                 </p>
-            </header>
-
-            <div className="bg-background-secondary border border-border rounded-xl p-6 md:p-8 shadow-sm">
-                <div className="space-y-6">
-                    <div>
-                        <label htmlFor="resume-upload" className="block text-sm font-medium text-text-primary mb-2">
-                           1. Upload your resume (PDF only)
-                        </label>
-                        <div className="mt-2 flex justify-center rounded-lg border-2 border-dashed border-border px-6 py-10 bg-background hover:bg-background-hover transition-colors">
-                            <div className="text-center">
-                                <ArrowUpTrayIcon className="mx-auto h-12 w-12 text-text-secondary" />
-                                <div className="mt-4 flex text-sm leading-6 text-text-secondary">
-                                    <label
-                                        htmlFor="resume-upload"
-                                        className="relative cursor-pointer rounded-md bg-transparent font-semibold text-primary focus-within:outline-none hover:text-secondary p-1 -m-1"
-                                    >
-                                        <span>Upload a file</span>
-                                        <input id="resume-upload" name="resume-upload" type="file" className="sr-only" accept=".pdf" onChange={handleFileChange} disabled={isLoading} />
-                                    </label>
-                                    <p className="pl-1">or drag and drop</p>
-                                </div>
-                                {selectedFile ? (
-                                    <p className="text-sm text-success mt-2 font-medium">{selectedFile.name}</p>
-                                ) : (
-                                    <p className="text-xs leading-5 text-text-secondary/70">PDF up to 10MB</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 className="block text-sm font-medium text-text-primary mb-2">
-                           2. Add a target job for tailored suggestions (Optional)
-                        </h3>
-                        <div className="space-y-4 rounded-lg border border-border bg-background p-4">
-                             <div>
-                                <label htmlFor="job-title" className="block text-sm font-medium text-text-secondary mb-1">
-                                    Target Job Title
-                                </label>
-                                <input
-                                    id="job-title"
-                                    type="text"
-                                    value={jobTitle}
-                                    onChange={(e) => setJobTitle(e.target.value)}
-                                    placeholder="e.g., 'Senior Frontend Developer'"
-                                    className="w-full bg-background-accent border border-transparent text-text-primary placeholder-text-secondary rounded-md py-2 px-3 focus:bg-background focus:ring-2 focus:ring-primary focus:outline-none transition"
-                                    disabled={isLoading}
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="job-description" className="block text-sm font-medium text-text-secondary mb-1">
-                                    Job Description
-                                </label>
-                                <textarea
-                                    id="job-description"
-                                    rows={6}
-                                    value={jobDescription}
-                                    onChange={(e) => setJobDescription(e.target.value)}
-                                    placeholder="Paste the job description here for more tailored project suggestions..."
-                                    className="w-full bg-background-accent border border-transparent text-text-primary placeholder-text-secondary rounded-md py-2 px-3 focus:bg-background focus:ring-2 focus:ring-primary focus:outline-none transition"
-                                    disabled={isLoading}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                     <div>
-                        <button
-                            onClick={handleAnalyze}
-                            disabled={isLoading || !selectedFile}
-                            className="w-full sm:w-auto bg-primary text-white font-semibold py-3 px-8 rounded-md hover:bg-secondary disabled:bg-background-accent disabled:text-text-secondary disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center shadow-md shadow-primary/20"
-                        >
-                             {isLoading ? 'Analyzing...' : 'Analyze & Suggest Projects'}
-                        </button>
-                    </div>
-                </div>
-                 {error && <p className="text-error mt-4 text-center bg-error/10 p-2 rounded-lg" role="alert">{error}</p>}
             </div>
 
-            {isLoading && <div className="mt-8"><Loader /></div>}
-
-            {analysisReport && (
-                <div className="mt-12 animate-fadeInUp">
-                     <h2 className="text-3xl font-bold text-center text-text-primary mb-4">
-                        Your Analysis Report
-                     </h2>
-                     <div className="bg-background-secondary border border-border rounded-xl p-8 shadow-sm">
-                        {/* Match Score */}
-                        <div className="flex flex-col items-center mb-8">
-                            <h3 className="text-xl font-semibold text-text-primary mb-2">Resume Match Score</h3>
-                            <MatchScoreGauge score={analysisReport.matchScore} />
-                            <p className="text-text-secondary mt-2 text-center max-w-md">This score represents the alignment between your resume and the target job description.</p>
+            {/* MAIN CONTENT AREA */}
+            {step === 'analyzing' ? (
+                <div className="flex flex-col items-center justify-center h-96 bg-white/50 backdrop-blur-sm rounded-3xl border border-border">
+                    <Loader />
+                    <p className="mt-8 text-lg font-medium text-text-primary animate-pulse">
+                        Analyzing keyword matches & identifying skill gaps...
+                    </p>
+                </div>
+            ) : step === 'results' && analysis ? (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fadeInUp">
+                    
+                    {/* LEFT COLUMN: SCORE & SUMMARY */}
+                    <div className="lg:col-span-1 space-y-6">
+                        {/* Score Card */}
+                        <div className="bg-white p-8 rounded-3xl shadow-lg border border-slate-100 text-center relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+                            <h3 className="text-gray-500 font-medium uppercase tracking-wider text-sm mb-6">Match Score</h3>
+                            <div className={`relative w-40 h-40 mx-auto rounded-full border-8 flex items-center justify-center mb-4 ${getScoreColor(analysis.matchScore)}`}>
+                                <span className="text-5xl font-bold text-slate-800">{analysis.matchScore}%</span>
+                            </div>
+                            <p className="text-sm text-slate-500">
+                                {analysis.matchScore > 80 ? "Excellent match! You're ready to apply." : 
+                                 analysis.matchScore > 50 ? "Good base, but needs tailoring." : 
+                                 "Significant gaps found. See recommendations."}
+                            </p>
                         </div>
+
+                        {/* Key Stats / Quick Actions */}
+                        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                <ChartBarIcon className="w-5 h-5 text-indigo-500" />
+                                Analysis Summary
+                            </h3>
+                            <div className="space-y-3 text-sm">
+                                <div className="flex justify-between p-3 bg-slate-50 rounded-xl">
+                                    <span className="text-slate-500">Strong Skills</span>
+                                    <span className="font-bold text-emerald-600">{analysis.strengths.length} found</span>
+                                </div>
+                                <div className="flex justify-between p-3 bg-slate-50 rounded-xl">
+                                    <span className="text-slate-500">Missing Skills</span>
+                                    <span className="font-bold text-red-500">{analysis.gaps.length} identified</span>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => { setStep('input'); setAnalysis(null); setResumeText(''); setFileName(null); }}
+                                className="w-full mt-6 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <ArrowPathIcon className="w-4 h-4" />
+                                New Analysis
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* RIGHT COLUMN: DETAILED BREAKDOWN */}
+                    <div className="lg:col-span-2 space-y-8">
                         
-                        {/* Strengths vs. Gaps */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                            <div className="bg-background border border-border p-4 rounded-lg shadow-sm">
-                                <h4 className="font-semibold text-success mb-3 text-lg">✅ Your Strengths</h4>
+                        {/* 1. Strengths & Gaps Grid */}
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="bg-emerald-50/50 border border-emerald-100 p-6 rounded-2xl">
+                                <h3 className="text-lg font-bold text-emerald-800 mb-4 flex items-center gap-2">
+                                    <CheckCircleIcon className="w-6 h-6" />
+                                    Your Strengths
+                                </h3>
                                 <ul className="space-y-2">
-                                    {analysisReport.strengths.map((item, i) => <li key={i} className="text-text-secondary">{item}</li>)}
+                                    {analysis.strengths.map((item, i) => (
+                                        <li key={i} className="flex items-start gap-2 text-sm text-emerald-700">
+                                            <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>
+                                            {item}
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
-                             <div className="bg-background border border-border p-4 rounded-lg shadow-sm">
-                                <h4 className="font-semibold text-warning mb-3 text-lg">🎯 Key Gaps & Opportunities</h4>
+
+                            <div className="bg-red-50/50 border border-red-100 p-6 rounded-2xl">
+                                <h3 className="text-lg font-bold text-red-800 mb-4 flex items-center gap-2">
+                                    <XCircleIcon className="w-6 h-6" />
+                                    Missing Skills
+                                </h3>
                                 <ul className="space-y-2">
-                                    {analysisReport.gaps.map((item, i) => <li key={i} className="text-text-secondary">{item}</li>)}
+                                    {analysis.gaps.map((item, i) => (
+                                        <li key={i} className="flex items-start gap-2 text-sm text-red-700">
+                                            <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0"></span>
+                                            {item}
+                                        </li>
+                                    ))}
                                 </ul>
                             </div>
                         </div>
 
-                        {/* AI Feedback */}
-                         <div className="bg-background border border-border p-4 rounded-lg mb-12 shadow-sm">
-                            <h4 className="font-semibold text-info mb-3 text-lg">📝 AI Resume Feedback</h4>
-                            <ul className="space-y-2 list-disc list-inside">
-                                {analysisReport.feedback.map((item, i) => <li key={i} className="text-text-secondary">{item}</li>)}
+                        {/* 2. Detailed Feedback */}
+                        <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                            <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                <DocumentTextIcon className="w-6 h-6 text-blue-500" />
+                                Specific Resume Feedback
+                            </h3>
+                            <ul className="space-y-4">
+                                {analysis.feedback.map((point, i) => (
+                                    <li key={i} className="flex gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold flex-shrink-0 text-sm">
+                                            {i + 1}
+                                        </div>
+                                        <p className="text-slate-700 text-sm leading-relaxed">{point}</p>
+                                    </li>
+                                ))}
                             </ul>
                         </div>
-                        
-                        {/* Project Suggestions */}
+
+                        {/* 3. Project Suggestions */}
                         <div>
-                             <h3 className="text-2xl font-bold text-center text-text-primary mb-8">
-                                Recommended Projects to Fill Your Gaps
-                             </h3>
-                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {analysisReport.projectSuggestions.map((project, index) => (
-                                     <button
-                                        key={index}
-                                        onClick={() => onProjectSelect(project.title)}
-                                        className="bg-background border border-border rounded-xl p-6 text-left hover:border-primary transition-all duration-300 transform hover:-translate-y-1 group flex flex-col shadow-sm hover:shadow-md"
-                                        aria-label={`Select project: ${project.title}`}
-                                     >
-                                        <div className="flex-grow">
-                                             <h4 className="text-lg font-bold text-text-primary group-hover:text-primary transition-colors">{project.title}</h4>
-                                             <p className="text-sm text-text-secondary mt-2">{project.description}</p>
-                                             <div className="mt-4 pt-4 border-t border-border">
-                                                <h5 className="text-xs font-semibold text-text-secondary uppercase tracking-wider flex items-center">
-                                                    <LightBulbIcon className="w-4 h-4 mr-2 text-warning" />
-                                                    Why this project?
-                                                </h5>
-                                                <p className="text-sm text-text-secondary mt-1">{project.reasoning}</p>
-                                             </div>
+                            <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                <LightBulbIcon className="w-6 h-6 text-yellow-500" />
+                                Suggested Projects to Fill Gaps
+                            </h3>
+                            <div className="grid gap-6">
+                                {analysis.projectSuggestions.map((project, i) => (
+                                    <div key={i} className="bg-gradient-to-br from-white to-slate-50 p-6 rounded-2xl border border-slate-200 hover:border-indigo-300 hover:shadow-md transition-all group">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <h4 className="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                                {project.title}
+                                            </h4>
+                                            <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-1 rounded-full uppercase">
+                                                Project Idea
+                                            </span>
                                         </div>
-                                         <span className="block mt-4 text-sm font-semibold text-primary group-hover:underline self-start">
-                                            Generate Roadmap &rarr;
-                                         </span>
-                                     </button>
+                                        <p className="text-slate-600 text-sm mb-4">{project.description}</p>
+                                        <div className="bg-yellow-50 border border-yellow-100 p-3 rounded-lg mb-4">
+                                            <p className="text-xs text-yellow-800 font-medium">
+                                                <span className="font-bold">Why this works:</span> {project.reasoning}
+                                            </p>
+                                        </div>
+                                        <button 
+                                            onClick={() => onProjectSelect(project.title)}
+                                            className="w-full py-2 bg-white border border-indigo-200 text-indigo-600 rounded-lg font-bold text-sm hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <SparklesIcon className="w-4 h-4" />
+                                            Generate Roadmap for this Project
+                                        </button>
+                                    </div>
                                 ))}
-                             </div>
+                            </div>
                         </div>
-                     </div>
+
+                    </div>
+                </div>
+            ) : (
+                // --- INPUT FORM STEP ---
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeInUp">
+                    
+                    {/* Left Column: Job Details */}
+                    <div className="space-y-6">
+                        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                            <div className="flex items-center gap-3 mb-6 text-indigo-600">
+                                <div className="p-2 bg-indigo-50 rounded-lg">
+                                    <BriefcaseIcon className="w-6 h-6" />
+                                </div>
+                                <h2 className="text-xl font-bold text-slate-800">Target Role</h2>
+                            </div>
+                            
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Job Title (Optional)</label>
+                                    <input
+                                        type="text"
+                                        value={jobTitle}
+                                        onChange={(e) => setJobTitle(e.target.value)}
+                                        placeholder="e.g. Senior React Developer"
+                                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Job Description <span className="text-red-500">*</span></label>
+                                    <textarea
+                                        value={jobDescription}
+                                        onChange={(e) => setJobDescription(e.target.value)}
+                                        placeholder="Paste the full JD here. The more details, the better the analysis..."
+                                        rows={12}
+                                        className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none text-sm leading-relaxed"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column: Resume Input */}
+                    <div className="space-y-6">
+                        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 h-full flex flex-col justify-center">
+                            <div className="flex items-center gap-3 mb-6 text-purple-600">
+                                <div className="p-2 bg-purple-50 rounded-lg">
+                                    <DocumentTextIcon className="w-6 h-6" />
+                                </div>
+                                <h2 className="text-xl font-bold text-slate-800">Your Resume</h2>
+                            </div>
+
+                            <div className="flex-1 flex flex-col justify-center space-y-6">
+                                {/* File Upload - Main and Only Input */}
+                                <label 
+                                    className={`border-2 border-dashed border-purple-300 rounded-3xl p-12 text-center hover:bg-purple-50 hover:border-purple-500 transition-all cursor-pointer group ${isParsing ? 'opacity-50 cursor-wait' : ''}`}
+                                >
+                                    <input 
+                                        type="file" 
+                                        className="hidden" 
+                                        accept=".pdf" 
+                                        onChange={handleFileChange} 
+                                        disabled={isParsing}
+                                    />
+                                    <div className="w-20 h-20 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                                        <ArrowUpTrayIcon className="w-10 h-10" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-slate-800 mb-2">
+                                        {fileName ? `Selected: ${fileName}` : "Upload Resume PDF"}
+                                    </h3>
+                                    <p className="text-slate-500 max-w-xs mx-auto">
+                                        {isParsing 
+                                            ? "Extracting text from your document..." 
+                                            : "Click to browse or drag and drop your file here"}
+                                    </p>
+                                </label>
+
+                                {fileName && !isParsing && (
+                                    <div className="bg-green-50 border border-green-200 p-4 rounded-xl flex items-center gap-3 text-green-700 animate-fadeIn">
+                                        <CheckCircleIcon className="w-5 h-5" />
+                                        <span className="font-medium">Resume parsed successfully!</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={handleAnalyze}
+                                disabled={!resumeText || !jobDescription || isParsing}
+                                className="w-full mt-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-indigo-200 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                            >
+                                <SparklesIcon className="w-6 h-6" />
+                                {isParsing ? 'Parsing PDF...' : 'Analyze My Chances'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {error && (
+                <div className="mt-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-center animate-fadeIn">
+                    {error}
                 </div>
             )}
         </div>

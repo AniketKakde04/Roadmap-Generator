@@ -2,16 +2,17 @@
 module.exports = {
   content: [
     "./index.html",
-    "./*.{js,ts,jsx,tsx}",            // Files in root (App.tsx, index.tsx)
-    "./src/**/*.{js,ts,jsx,tsx}",     // Files in src
-    "./components/**/*.{js,ts,jsx,tsx}", // Files in components
-    "./services/**/*.{js,ts,jsx,tsx}",   // Files in services
+    "./*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+    "./services/**/*.{js,ts,jsx,tsx}",
   ],
   darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        display: ['Outfit', 'Inter', 'sans-serif'], // Add this for headings if you import the font
       },
       colors: {
         background: {
@@ -39,6 +40,8 @@ module.exports = {
       animation: {
         fadeIn: 'fadeIn 0.5s ease-out forwards',
         fadeInUp: 'fadeInUp 0.6s ease-out forwards',
+        blob: "blob 7s infinite",
+        'text-shimmer': 'text-shimmer 2.5s ease-out infinite alternate',
       },
       keyframes: {
         fadeIn: {
@@ -48,6 +51,16 @@ module.exports = {
         fadeInUp: {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        blob: {
+          "0%": { transform: "translate(0px, 0px) scale(1)" },
+          "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+          "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+          "100%": { transform: "translate(0px, 0px) scale(1)" },
+        },
+        'text-shimmer': {
+          from: { backgroundPosition: '0 0' },
+          to: { backgroundPosition: '-200% 0' },
         },
       },
     },
