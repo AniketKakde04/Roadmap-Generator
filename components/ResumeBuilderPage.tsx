@@ -177,6 +177,8 @@ const ResumeBuilderPage: React.FC = () => {
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
     const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
     const [aiTarget, setAiTarget] = useState<{ section: 'summary' | 'experience', index?: number } | null>(null);
+    const [previewZoom, setPreviewZoom] = useState<number>(0.75);
+    const [isFullScreenPreview, setIsFullScreenPreview] = useState(false);
 
 
     useEffect(() => {
@@ -299,6 +301,28 @@ const ResumeBuilderPage: React.FC = () => {
 
     if (loading) return <Loader />;
 
+    // Full-screen preview mode
+    if (isFullScreenPreview) {
+        return (
+            <div className="fixed inset-0 bg-background z-50 flex flex-col">
+                <div className="flex items-center justify-between p-4 border-b border-border bg-background-secondary">
+                    <h2 className="text-lg font-semibold text-text-primary">Resume Preview (Full Screen)</h2>
+                    <button
+                        onClick={() => setIsFullScreenPreview(false)}
+                        className="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary transition-colors"
+                    >
+                        Close Preview
+                    </button>
+                </div>
+                <div className="flex-1 overflow-auto flex justify-center items-start p-8 bg-background">
+                    <div className="w-[210mm] bg-white shadow-2xl">
+                        <ResumePreview resumeData={resumeData} />
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <>
             {isAIModalOpen && (
@@ -310,148 +334,149 @@ const ResumeBuilderPage: React.FC = () => {
                 />
             )}
 
-            <div className="flex flex-col lg:flex-row gap-8 p-4 md:p-8 h-[calc(100vh-64px)]">
+            <div className="flex flex-col lg:flex-row gap-6 p-4 md:p-8 h-[calc(100vh-64px)]">
                 {/* Left Side: Form Controls */}
                 <div className="w-full lg:w-1/2 xl:w-2/5 flex-shrink-0 h-full flex flex-col">
-                    <div className="bg-background-secondary p-4 rounded-xl border border-border h-full flex flex-col shadow-sm">
-                        <div className="flex justify-between items-center mb-4 p-2 border-b border-border">
-                            <h2 className="text-2xl font-bold text-text-primary flex items-center gap-2">
-                                <FiLayout className="w-6 h-6" />
+                    <div className="bg-background-secondary p-4 rounded-xl border border-border h-full flex flex-col shadow-lg">
+                        <div className="flex justify-between items-center mb-4 pb-3 border-b border-border">
+                            <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
+                                <FiLayout className="w-5 h-5 text-primary" />
                                 Editor
                             </h2>
                             <div className="flex gap-2">
-                                <button onClick={handleSave} disabled={saving} className="bg-primary text-white font-semibold py-2 px-4 rounded-md hover:bg-secondary disabled:bg-background-accent disabled:text-text-secondary flex items-center gap-2 transition-all">
+                                <button onClick={handleSave} disabled={saving} className="bg-primary text-white font-semibold py-2 px-3 rounded-md hover:bg-secondary disabled:bg-background-accent disabled:text-text-secondary flex items-center gap-1 transition-all shadow-sm hover:shadow-md text-sm">
                                     <FiSave className="w-4 h-4" />
                                     {saving ? 'Saving...' : 'Save'}
                                 </button>
-                                <button onClick={handleExportPDF} className="bg-success text-white font-semibold py-2 px-4 rounded-md hover:bg-opacity-90 flex items-center gap-2 transition-all shadow-sm hover:shadow-md">
+                                <button onClick={handleExportPDF} className="bg-success text-white font-semibold py-2 px-3 rounded-md hover:opacity-90 flex items-center gap-1 transition-all shadow-sm hover:shadow-md text-sm">
                                     <FiDownload className="w-4 h-4" />
                                     Export PDF
                                 </button>
                             </div>
                         </div>
 
-                        <div className="flex-grow overflow-y-auto pr-2 custom-scrollbar">
+                        <div className="flex-grow overflow-y-auto custom-scrollbar space-y-0">
                             <AccordionSection title="Personal Details" isOpenDefault={true}>
                                 <div className="space-y-3 p-2">
-                                    <input name="full_name" value={resumeData.full_name} onChange={handleInputChange} placeholder="Full Name" className="w-full bg-background border border-border text-text-primary p-2 rounded-md focus:ring-2 focus:ring-primary outline-none" />
-                                    <input name="job_title" value={resumeData.job_title} onChange={handleInputChange} placeholder="Job Title" className="w-full bg-background border border-border text-text-primary p-2 rounded-md focus:ring-2 focus:ring-primary outline-none" />
+                                    <input name="full_name" value={resumeData.full_name} onChange={handleInputChange} placeholder="Full Name" className="w-full bg-background border border-border text-text-primary placeholder:text-text-secondary p-2 rounded-md focus:ring-2 focus:ring-primary outline-none text-sm" />
+                                    <input name="job_title" value={resumeData.job_title} onChange={handleInputChange} placeholder="Job Title" className="w-full bg-background border border-border text-text-primary placeholder:text-text-secondary p-2 rounded-md focus:ring-2 focus:ring-primary outline-none text-sm" />
                                     <div className="flex gap-2">
-                                        <input name="email" value={resumeData.email} onChange={handleInputChange} placeholder="Email" className="w-full bg-background border border-border text-text-primary p-2 rounded-md focus:ring-2 focus:ring-primary outline-none" />
-                                        <input name="phone" value={resumeData.phone} onChange={handleInputChange} placeholder="Phone" className="w-full bg-background border border-border text-text-primary p-2 rounded-md focus:ring-2 focus:ring-primary outline-none" />
+                                        <input name="email" value={resumeData.email} onChange={handleInputChange} placeholder="Email" className="flex-1 bg-background border border-border text-text-primary placeholder:text-text-secondary p-2 rounded-md focus:ring-2 focus:ring-primary outline-none text-sm" />
+                                        <input name="phone" value={resumeData.phone} onChange={handleInputChange} placeholder="Phone" className="flex-1 bg-background border border-border text-text-primary placeholder:text-text-secondary p-2 rounded-md focus:ring-2 focus:ring-primary outline-none text-sm" />
                                     </div>
                                     <div className="flex gap-2">
-                                        <input name="linkedin_url" value={resumeData.linkedin_url} onChange={handleInputChange} placeholder="LinkedIn URL" className="w-full bg-background border border-border text-text-primary p-2 rounded-md focus:ring-2 focus:ring-primary outline-none" />
-                                        <input name="github_url" value={resumeData.github_url} onChange={handleInputChange} placeholder="GitHub URL" className="w-full bg-background border border-border text-text-primary p-2 rounded-md focus:ring-2 focus:ring-primary outline-none" />
+                                        <input name="linkedin_url" value={resumeData.linkedin_url} onChange={handleInputChange} placeholder="LinkedIn URL" className="flex-1 bg-background border border-border text-text-primary placeholder:text-text-secondary p-2 rounded-md focus:ring-2 focus:ring-primary outline-none text-sm" />
+                                        <input name="github_url" value={resumeData.github_url} onChange={handleInputChange} placeholder="GitHub URL" className="flex-1 bg-background border border-border text-text-primary placeholder:text-text-secondary p-2 rounded-md focus:ring-2 focus:ring-primary outline-none text-sm" />
                                     </div>
                                 </div>
                             </AccordionSection>
                              <AccordionSection title="Summary">
                                 <div className="space-y-2 p-2">
-                                    <div className="flex justify-end items-center">
-                                        <button onClick={() => handleAIAssist('summary')} disabled={aiLoading} className="text-xs bg-primary/10 text-primary py-1 px-3 rounded-full hover:bg-primary hover:text-white transition-colors disabled:opacity-50 flex items-center gap-1">
+                                    <div className="flex justify-between items-center gap-2">
+                                        <label className="text-xs font-medium text-text-secondary">Professional Summary</label>
+                                        <button onClick={() => handleAIAssist('summary')} disabled={aiLoading} className="text-xs bg-primary text-white py-1 px-2 rounded-md hover:bg-secondary transition-colors disabled:opacity-50 flex items-center gap-1 whitespace-nowrap font-medium">
                                             <FiZap className="w-3 h-3" />
-                                            {aiLoading ? 'Generating...' : 'AI Assist'}
+                                            {aiLoading ? 'Gen...' : 'AI Assist'}
                                         </button>
                                     </div>
-                                    <textarea name="summary" value={resumeData.summary} onChange={handleInputChange} rows={4} placeholder="Professional summary..." className="w-full bg-background border border-border text-text-primary p-2 rounded-md focus:ring-2 focus:ring-primary outline-none resize-none" />
+                                    <textarea name="summary" value={resumeData.summary} onChange={handleInputChange} rows={3} placeholder="Professional summary..." className="w-full bg-background border border-border text-text-primary placeholder:text-text-secondary p-2 rounded-md focus:ring-2 focus:ring-primary outline-none resize-none text-sm" />
                                 </div>
                             </AccordionSection>
                             <AccordionSection title="Experience">
-                                 <div className="space-y-4 p-2">
+                                 <div className="space-y-3 p-2">
                                     {resumeData.experience.map((exp, index) => (
-                                        <div key={exp.id} className="p-3 bg-background border border-border rounded-lg space-y-3 shadow-sm relative group">
+                                        <div key={exp.id} className="p-2 bg-background border border-border rounded-lg space-y-2 shadow-sm">
                                             <div className="flex gap-2">
-                                                <input value={exp.title} onChange={e => handleArrayChange('experience', index, 'title', e.target.value)} placeholder="Job Title" className="flex-1 bg-background-accent border-transparent p-2 rounded-md text-text-primary focus:bg-background focus:border-primary focus:ring-1 outline-none transition-all"/>
-                                                <input value={exp.company} onChange={e => handleArrayChange('experience', index, 'company', e.target.value)} placeholder="Company" className="flex-1 bg-background-accent border-transparent p-2 rounded-md text-text-primary focus:bg-background focus:border-primary focus:ring-1 outline-none transition-all"/>
+                                                <input value={exp.title} onChange={e => handleArrayChange('experience', index, 'title', e.target.value)} placeholder="Job Title" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
+                                                <input value={exp.company} onChange={e => handleArrayChange('experience', index, 'company', e.target.value)} placeholder="Company" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
                                             </div>
                                             <div className="flex gap-2">
-                                                <input value={exp.startDate} onChange={e => handleArrayChange('experience', index, 'startDate', e.target.value)} placeholder="Start Date" className="w-1/2 bg-background-accent border-transparent p-2 rounded-md text-text-primary focus:bg-background focus:border-primary focus:ring-1 outline-none transition-all"/>
-                                                <input value={exp.endDate} onChange={e => handleArrayChange('experience', index, 'endDate', e.target.value)} placeholder="End Date" className="w-1/2 bg-background-accent border-transparent p-2 rounded-md text-text-primary focus:bg-background focus:border-primary focus:ring-1 outline-none transition-all"/>
+                                                <input value={exp.startDate} onChange={e => handleArrayChange('experience', index, 'startDate', e.target.value)} placeholder="Start Date" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
+                                                <input value={exp.endDate} onChange={e => handleArrayChange('experience', index, 'endDate', e.target.value)} placeholder="End Date" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
                                             </div>
-                                             <div className="relative">
-                                                <textarea value={exp.description} onChange={e => handleArrayChange('experience', index, 'description', e.target.value)} rows={3} placeholder="Describe your role..." className="w-full bg-background-accent border-transparent p-2 rounded-md text-text-primary focus:bg-background focus:border-primary focus:ring-1 outline-none transition-all resize-none pr-8"/>
-                                                <button onClick={() => handleAIAssist('experience', index)} disabled={aiLoading} title="AI Assist" className="absolute top-2 right-2 text-primary/70 hover:text-primary p-1 rounded-full hover:bg-primary/10 transition-colors">
+                                             <div className="flex gap-1 items-start">
+                                                <textarea value={exp.description} onChange={e => handleArrayChange('experience', index, 'description', e.target.value)} rows={2} placeholder="Describe your role..." className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all resize-none text-sm"/>
+                                                <button onClick={() => handleAIAssist('experience', index)} disabled={aiLoading} title="AI Assist" className="mt-1 text-white bg-primary hover:bg-secondary p-1 rounded-md transition-colors disabled:opacity-50">
                                                     <FiZap className="w-4 h-4" />
                                                 </button>
                                             </div>
                                             <button onClick={() => removeArrayItem('experience', exp.id)} className="text-xs text-error hover:text-red-600 font-medium mt-1">Remove Entry</button>
                                         </div>
                                     ))}
-                                    <button onClick={() => addArrayItem('experience')} className="w-full py-2 border-2 border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-sm font-medium">+ Add Experience</button>
+                                    <button onClick={() => addArrayItem('experience')} className="w-full py-1 border-2 border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-xs font-medium">+ Add Experience</button>
                                 </div>
                             </AccordionSection>
                              {/* ... Other sections (Projects, Education, Skills etc) follow same pattern ... */}
                              {/* Simplified for brevity, but you should keep all sections from your original file */}
                              <AccordionSection title="Projects">
-                                <div className="space-y-4 p-2">
+                                <div className="space-y-3 p-2">
                                     {resumeData.projects.map((proj, index) => (
-                                        <div key={proj.id} className="p-3 bg-background border border-border rounded-lg space-y-3 shadow-sm">
-                                            <input value={proj.name} onChange={e => handleArrayChange('projects', index, 'name', e.target.value)} placeholder="Project Name" className="w-full bg-background-accent border-transparent p-2 rounded-md text-text-primary focus:bg-background focus:border-primary focus:ring-1 outline-none transition-all"/>
-                                            <textarea value={proj.description} onChange={e => handleArrayChange('projects', index, 'description', e.target.value)} rows={3} placeholder="Project description..." className="w-full bg-background-accent border-transparent p-2 rounded-md text-text-primary focus:bg-background focus:border-primary focus:ring-1 outline-none transition-all resize-none"/>
+                                        <div key={proj.id} className="p-2 bg-background border border-border rounded-lg space-y-2 shadow-sm">
+                                            <input value={proj.name} onChange={e => handleArrayChange('projects', index, 'name', e.target.value)} placeholder="Project Name" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
+                                            <textarea value={proj.description} onChange={e => handleArrayChange('projects', index, 'description', e.target.value)} rows={2} placeholder="Project description..." className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all resize-none text-sm"/>
                                             <button onClick={() => removeArrayItem('projects', proj.id)} className="text-xs text-error hover:text-red-600 font-medium">Remove</button>
                                         </div>
                                     ))}
-                                    <button onClick={() => addArrayItem('projects')} className="w-full py-2 border-2 border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-sm font-medium">+ Add Project</button>
+                                    <button onClick={() => addArrayItem('projects')} className="w-full py-1 border-2 border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-xs font-medium">+ Add Project</button>
                                 </div>
                             </AccordionSection>
                              <AccordionSection title="Education">
-                                 <div className="space-y-4 p-2">
+                                 <div className="space-y-3 p-2">
                                     {resumeData.education.map((edu, index) => (
-                                        <div key={edu.id} className="p-3 bg-background border border-border rounded-lg space-y-3 shadow-sm">
-                                            <input value={edu.university} onChange={e => handleArrayChange('education', index, 'university', e.target.value)} placeholder="University/School Name" className="w-full bg-background-accent border-transparent p-2 rounded-md text-text-primary focus:bg-background focus:border-primary focus:ring-1 outline-none transition-all"/>
-                                            <input value={edu.degree} onChange={e => handleArrayChange('education', index, 'degree', e.target.value)} placeholder="Degree" className="w-full bg-background-accent border-transparent p-2 rounded-md text-text-primary focus:bg-background focus:border-primary focus:ring-1 outline-none transition-all"/>
+                                        <div key={edu.id} className="p-2 bg-background border border-border rounded-lg space-y-2 shadow-sm">
+                                            <input value={edu.university} onChange={e => handleArrayChange('education', index, 'university', e.target.value)} placeholder="University/School Name" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
+                                            <input value={edu.degree} onChange={e => handleArrayChange('education', index, 'degree', e.target.value)} placeholder="Degree" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
                                             <div className="flex gap-2">
-                                                <input value={edu.startDate} onChange={e => handleArrayChange('education', index, 'startDate', e.target.value)} placeholder="Start Date" className="w-1/2 bg-background-accent border-transparent p-2 rounded-md text-text-primary focus:bg-background focus:border-primary focus:ring-1 outline-none transition-all"/>
-                                                <input value={edu.endDate} onChange={e => handleArrayChange('education', index, 'endDate', e.target.value)} placeholder="End Date" className="w-1/2 bg-background-accent border-transparent p-2 rounded-md text-text-primary focus:bg-background focus:border-primary focus:ring-1 outline-none transition-all"/>
+                                                <input value={edu.startDate} onChange={e => handleArrayChange('education', index, 'startDate', e.target.value)} placeholder="Start Date" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
+                                                <input value={edu.endDate} onChange={e => handleArrayChange('education', index, 'endDate', e.target.value)} placeholder="End Date" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
                                             </div>
                                             <button onClick={() => removeArrayItem('education', edu.id)} className="text-xs text-error hover:text-red-600 font-medium">Remove</button>
                                         </div>
                                     ))}
-                                    <button onClick={() => addArrayItem('education')} className="w-full py-2 border-2 border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-sm font-medium">+ Add Education</button>
+                                    <button onClick={() => addArrayItem('education')} className="w-full py-1 border-2 border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-xs font-medium">+ Add Education</button>
                                 </div>
                             </AccordionSection>
                              <AccordionSection title="Skills">
-                                <div className="space-y-3 p-2">
+                                <div className="space-y-2 p-2">
                                     <div className="grid grid-cols-2 gap-2">
                                         {resumeData.skills.map((skill, index) => (
-                                            <div key={skill.id} className="flex items-center gap-1 bg-background-accent p-1 pl-2 rounded-md group">
-                                                <input value={skill.name} onChange={e => handleArrayChange('skills', index, 'name', e.target.value)} placeholder="Skill" className="w-full bg-transparent border-none text-sm text-text-primary focus:ring-0 p-0 outline-none"/>
-                                                <button onClick={() => removeArrayItem('skills', skill.id)} className="text-text-secondary hover:text-error p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div key={skill.id} className="flex items-center gap-1 bg-background-accent border border-border p-1 pl-2 rounded-md group">
+                                                <input value={skill.name} onChange={e => handleArrayChange('skills', index, 'name', e.target.value)} placeholder="Skill" className="flex-1 bg-transparent border-none text-xs text-text-primary placeholder:text-text-secondary focus:ring-0 p-0 outline-none"/>
+                                                <button onClick={() => removeArrayItem('skills', skill.id)} className="text-text-secondary hover:text-error p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                                                 </button>
                                             </div>
                                         ))}
                                     </div>
-                                    <button onClick={() => addArrayItem('skills')} className="w-full py-2 border-2 border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-sm font-medium">+ Add Skill</button>
+                                    <button onClick={() => addArrayItem('skills')} className="w-full py-1 border-2 border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-xs font-medium">+ Add Skill</button>
                                 </div>
                             </AccordionSection>
                             
                              <AccordionSection title="Certifications">
-                                <div className="space-y-4 p-2">
+                                <div className="space-y-3 p-2">
                                     {resumeData.certifications.map((cert, index) => (
-                                        <div key={cert.id} className="p-3 bg-background border border-border rounded-lg space-y-3 shadow-sm">
-                                            <input value={cert.name} onChange={e => handleArrayChange('certifications', index, 'name', e.target.value)} placeholder="Certification Name" className="w-full bg-background-accent border-transparent p-2 rounded-md text-text-primary focus:bg-background focus:border-primary focus:ring-1 outline-none transition-all"/>
+                                        <div key={cert.id} className="p-2 bg-background border border-border rounded-lg space-y-2 shadow-sm">
+                                            <input value={cert.name} onChange={e => handleArrayChange('certifications', index, 'name', e.target.value)} placeholder="Certification Name" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
                                             <div className="flex gap-2">
-                                                <input value={cert.issuer} onChange={e => handleArrayChange('certifications', index, 'issuer', e.target.value)} placeholder="Issuer" className="w-2/3 bg-background-accent border-transparent p-2 rounded-md text-text-primary focus:bg-background focus:border-primary focus:ring-1 outline-none transition-all"/>
-                                                <input value={cert.date} onChange={e => handleArrayChange('certifications', index, 'date', e.target.value)} placeholder="Date" className="w-1/3 bg-background-accent border-transparent p-2 rounded-md text-text-primary focus:bg-background focus:border-primary focus:ring-1 outline-none transition-all"/>
+                                                <input value={cert.issuer} onChange={e => handleArrayChange('certifications', index, 'issuer', e.target.value)} placeholder="Issuer" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
+                                                <input value={cert.date} onChange={e => handleArrayChange('certifications', index, 'date', e.target.value)} placeholder="Date" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
                                             </div>
                                             <button onClick={() => removeArrayItem('certifications', cert.id)} className="text-xs text-error hover:text-red-600 font-medium">Remove</button>
                                         </div>
                                     ))}
-                                    <button onClick={() => addArrayItem('certifications')} className="w-full py-2 border-2 border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-sm font-medium">+ Add Certification</button>
+                                    <button onClick={() => addArrayItem('certifications')} className="w-full py-1 border-2 border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-xs font-medium">+ Add Certification</button>
                                 </div>
                             </AccordionSection>
 
                              <AccordionSection title="Achievements">
-                                <div className="space-y-4 p-2">
+                                <div className="space-y-3 p-2">
                                     {resumeData.achievements.map((ach, index) => (
-                                        <div key={ach.id} className="p-3 bg-background border border-border rounded-lg space-y-3 shadow-sm">
-                                            <textarea value={ach.description} onChange={e => handleArrayChange('achievements', index, 'description', e.target.value)} rows={2} placeholder="e.g., '1st Place at XYZ Hackathon'" className="w-full bg-background-accent border-transparent p-2 rounded-md text-text-primary focus:bg-background focus:border-primary focus:ring-1 outline-none transition-all resize-none"/>
+                                        <div key={ach.id} className="p-2 bg-background border border-border rounded-lg space-y-2 shadow-sm">
+                                            <textarea value={ach.description} onChange={e => handleArrayChange('achievements', index, 'description', e.target.value)} rows={2} placeholder="e.g., '1st Place at XYZ Hackathon'" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all resize-none text-sm"/>
                                             <button onClick={() => removeArrayItem('achievements', ach.id)} className="text-xs text-error hover:text-red-600 font-medium">Remove</button>
                                         </div>
                                     ))}
-                                    <button onClick={() => addArrayItem('achievements')} className="w-full py-2 border-2 border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-sm font-medium">+ Add Achievement</button>
+                                    <button onClick={() => addArrayItem('achievements')} className="w-full py-1 border-2 border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-xs font-medium">+ Add Achievement</button>
                                 </div>
                             </AccordionSection>
                         </div>
@@ -460,42 +485,91 @@ const ResumeBuilderPage: React.FC = () => {
 
                 {/* Right Side: Preview */}
                 <div className="w-full lg:w-1/2 xl:w-3/5 overflow-y-auto flex flex-col">
-                    <div className="flex items-center justify-between mb-4 p-2 bg-background-secondary border border-border rounded-lg shadow-sm">
-                        <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
-                            <FiColumns className="w-5 h-5" />
-                            Live Preview
-                        </h3>
-                        <div className="flex gap-1 bg-background p-1 rounded-md border border-border">
-                            {[
-                                { id: 1, name: 'Modern', icon: <FiLayout className="w-4 h-4" />, type: 'single-column' },
-                                { id: 2, name: 'Split', icon: <FiColumns className="w-4 h-4" />, type: 'two-column' },
-                                { id: 3, name: 'Minimal', icon: <FiMinimize2 className="w-4 h-4" />, type: 'minimalist' },
-                                { id: 4, name: 'Bold', icon: <FiZap className="w-4 h-4" />, type: 'creative' }
-                            ].map(template => (
+                    <div className="flex items-center justify-between mb-4 p-4 bg-background-secondary border border-border rounded-lg shadow-md">
+                        <div className="flex items-center gap-4">
+                            <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
+                                <FiColumns className="w-5 h-5 text-primary" />
+                                Live Preview
+                            </h3>
+                            <div className="h-6 w-px bg-border"></div>
+                            <div className="flex items-center gap-2">
                                 <button
-                                    key={template.id}
-                                    onClick={() => setResumeData(prev => ({
-                                        ...prev,
-                                        templateType: template.type as any
-                                    }))}
-                                    className={`flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                                        (resumeData as any).templateType === template.type || 
-                                        (!(resumeData as any).templateType && template.type === 'single-column')
-                                            ? 'bg-primary text-white shadow-sm' 
-                                            : 'text-text-secondary hover:bg-background-hover hover:text-text-primary'
-                                    }`}
+                                    onClick={() => setPreviewZoom(Math.max(0.5, previewZoom - 0.1))}
+                                    className="px-2 py-1 text-sm bg-background hover:bg-background-hover border border-border rounded-md transition-colors"
+                                    title="Zoom Out"
                                 >
-                                    {template.icon}
-                                    <span className="hidden sm:inline">{template.name}</span>
+                                    −
                                 </button>
-                            ))}
+                                <span className="text-sm font-medium text-text-secondary w-12 text-center">
+                                    {Math.round(previewZoom * 100)}%
+                                </span>
+                                <button
+                                    onClick={() => setPreviewZoom(Math.min(1.2, previewZoom + 0.1))}
+                                    className="px-2 py-1 text-sm bg-background hover:bg-background-hover border border-border rounded-md transition-colors"
+                                    title="Zoom In"
+                                >
+                                    +
+                                </button>
+                                <button
+                                    onClick={() => setPreviewZoom(0.75)}
+                                    className="px-2 py-1 text-xs bg-background hover:bg-background-hover border border-border rounded-md transition-colors text-text-secondary"
+                                    title="Reset Zoom"
+                                >
+                                    Reset
+                                </button>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => setIsFullScreenPreview(true)}
+                            className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-md hover:bg-secondary transition-all shadow-sm hover:shadow-md"
+                        >
+                            Full Screen
+                        </button>
+                    </div>
+
+                    {/* Template Selector */}
+                    <div className="mb-4 p-4 bg-background-secondary border border-border rounded-lg shadow-sm">
+                        <h4 className="text-sm font-semibold text-text-primary mb-3">Select Template</h4>
+                        <div className="flex gap-2 overflow-x-auto">
+                        {[
+                            { id: 1, name: 'Modern', icon: <FiLayout className="w-4 h-4" />, type: 'single-column' },
+                            { id: 2, name: 'Split', icon: <FiColumns className="w-4 h-4" />, type: 'two-column' },
+                            { id: 3, name: 'Minimal', icon: <FiMinimize2 className="w-4 h-4" />, type: 'minimalist' },
+                            { id: 4, name: 'Bold', icon: <FiZap className="w-4 h-4" />, type: 'creative' }
+                        ].map(template => (
+                            <button
+                                key={template.id}
+                                onClick={() => setResumeData(prev => ({
+                                    ...prev,
+                                    templateType: template.type as any
+                                }))}
+                                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${
+                                    (resumeData as any).templateType === template.type || 
+                                    (!(resumeData as any).templateType && template.type === 'single-column')
+                                        ? 'bg-primary text-white shadow-md' 
+                                        : 'bg-background border border-border text-text-secondary hover:border-primary hover:text-text-primary'
+                                }`}
+                            >
+                                {template.icon}
+                                <span>{template.name}</span>
+                            </button>
+                        ))}
                         </div>
                     </div>
                     
-                    {/* Preview Container with Aspect Ratio Lock */}
-                    <div className="flex-1 bg-background-secondary/50 rounded-xl border border-border p-4 overflow-y-auto flex justify-center">
-                        {/* The preview itself is styled to look like a sheet of paper */}
-                        <div className="w-[210mm] min-h-[297mm] bg-white shadow-2xl transform scale-[0.45] sm:scale-[0.6] md:scale-[0.7] lg:scale-[0.8] origin-top transition-transform duration-300 ease-out">
+                    {/* Preview Container */}
+                    <div className="flex-1 bg-gradient-to-br from-background to-background-secondary rounded-xl border border-border p-6 overflow-auto flex justify-center items-start shadow-inner">
+                        {/* Paper-like container with realistic shadow */}
+                        <div 
+                            className="bg-white rounded-lg shadow-2xl transition-transform duration-200 origin-top"
+                            style={{
+                                width: '210mm',
+                                minHeight: '297mm',
+                                transform: `scale(${previewZoom})`,
+                                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05)'
+                            }}
+                        >
                             <ResumePreview resumeData={resumeData} />
                         </div>
                     </div>

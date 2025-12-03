@@ -51,6 +51,31 @@
   body {
     @apply bg-background text-text-primary;
   }
+
+  /* Force placeholder text to be darker */
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-text-secondary) !important;
+    opacity: 1 !important;
+  }
+
+  /* Firefox placeholder styling */
+  input::-moz-placeholder,
+  textarea::-moz-placeholder {
+    color: var(--color-text-secondary) !important;
+    opacity: 1 !important;
+  }
+
+  input:-moz-placeholder,
+  textarea:-moz-placeholder {
+    color: var(--color-text-secondary) !important;
+    opacity: 1 !important;
+  }
+
+  input:-ms-input-placeholder,
+  textarea:-ms-input-placeholder {
+    color: var(--color-text-secondary) !important;
+  }
 }
 
 @layer components {
@@ -63,10 +88,11 @@
       background: transparent; 
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-      @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+      background: #cbd5e1;
+      border-radius: 9999px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      @apply bg-slate-400 dark:bg-slate-600;
+      background: #94a3b8;
   }
 
   .scrollbar-hide::-webkit-scrollbar {
@@ -75,6 +101,19 @@
   .scrollbar-hide {
       -ms-overflow-style: none;
       scrollbar-width: none;
+  }
+
+  /* Enhanced input styling for dark placeholders */
+  input::placeholder,
+  textarea::placeholder {
+    color: #475569 !important; /* text-text-secondary equivalent */
+    opacity: 1 !important;
+  }
+
+  /* Dark placeholder custom class for accent backgrounds */
+  .placeholder-dark::placeholder {
+    color: #1e293b !important; /* Darker for better contrast on accent backgrounds */
+    opacity: 1 !important;
   }
   
   /* Animations */

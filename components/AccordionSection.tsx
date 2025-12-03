@@ -10,14 +10,14 @@ const AccordionSection: React.FC<AccordionSectionProps> = ({ title, children, is
   const [isOpen, setIsOpen] = useState(isOpenDefault);
 
   return (
-    <div className="border-b border-slate-700">
+    <div className="border-b border-border">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex justify-between items-center p-4 text-left hover:bg-slate-700/50 transition-colors"
+        className="w-full flex justify-between items-center p-3 text-left hover:bg-background-hover transition-colors"
       >
-        <h3 className="text-lg font-semibold text-slate-200">{title}</h3>
+        <h3 className="text-base font-semibold text-text-primary">{title}</h3>
         <svg
-          className={`w-5 h-5 text-slate-400 transform transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-5 h-5 text-text-secondary transform transition-transform ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -26,7 +26,7 @@ const AccordionSection: React.FC<AccordionSectionProps> = ({ title, children, is
         </svg>
       </button>
       {isOpen && (
-        <div className="p-4 bg-slate-900/20 animate-fadeInUp">
+        <div className="p-2 bg-background/30 animate-fadeInUp">
           {children}
         </div>
       )}
