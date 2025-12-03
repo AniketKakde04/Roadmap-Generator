@@ -1,0 +1,124 @@
+{
+  "hash": "9f1c53ff",
+  "configHash": "e29b4a79",
+  "lockfileHash": "d6e30e20",
+  "browserHash": "95270954",
+  "optimized": {
+    "@google/genai": {
+      "src": "../../@google/genai/dist/web/index.mjs",
+      "file": "@google_genai.js",
+      "fileHash": "175aba64",
+      "needsInterop": false
+    },
+    "@heroicons/react/24/outline": {
+      "src": "../../@heroicons/react/24/outline/esm/index.js",
+      "file": "@heroicons_react_24_outline.js",
+      "fileHash": "839bfec3",
+      "needsInterop": false
+    },
+    "@supabase/supabase-js": {
+      "src": "../../@supabase/supabase-js/dist/module/index.js",
+      "file": "@supabase_supabase-js.js",
+      "fileHash": "0fe507da",
+      "needsInterop": false
+    },
+    "html2canvas": {
+      "src": "../../html2canvas/dist/html2canvas.esm.js",
+      "file": "html2canvas.js",
+      "fileHash": "47b7e77f",
+      "needsInterop": false
+    },
+    "jspdf": {
+      "src": "../../jspdf/dist/jspdf.es.min.js",
+      "file": "jspdf.js",
+      "fileHash": "eb5f7ebc",
+      "needsInterop": false
+    },
+    "lucide-react": {
+      "src": "../../lucide-react/dist/esm/lucide-react.js",
+      "file": "lucide-react.js",
+      "fileHash": "c3fba0ba",
+      "needsInterop": false
+    },
+    "pdfjs-dist": {
+      "src": "../../pdfjs-dist/build/pdf.mjs",
+      "file": "pdfjs-dist.js",
+      "fileHash": "4987838f",
+      "needsInterop": false
+    },
+    "react": {
+      "src": "../../react/index.js",
+      "file": "react.js",
+      "fileHash": "3fd0f40e",
+      "needsInterop": true
+    },
+    "react-dom": {
+      "src": "../../react-dom/index.js",
+      "file": "react-dom.js",
+      "fileHash": "52a781b5",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "5e91c1ea",
+      "needsInterop": true
+    },
+    "react-icons/fi": {
+      "src": "../../react-icons/fi/index.mjs",
+      "file": "react-icons_fi.js",
+      "fileHash": "ab44d492",
+      "needsInterop": false
+    },
+    "react-markdown": {
+      "src": "../../react-markdown/index.js",
+      "file": "react-markdown.js",
+      "fileHash": "1d3873d6",
+      "needsInterop": false
+    },
+    "reactflow": {
+      "src": "../../reactflow/dist/esm/index.mjs",
+      "file": "reactflow.js",
+      "fileHash": "bcf08cb3",
+      "needsInterop": false
+    },
+    "uuid": {
+      "src": "../../uuid/dist/esm-browser/index.js",
+      "file": "uuid.js",
+      "fileHash": "d1c9f4c2",
+      "needsInterop": false
+    },
+    "react/jsx-dev-runtime": {
+      "src": "../../react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "0f946d7c",
+      "needsInterop": true
+    }
+  },
+  "chunks": {
+    "purify.es-F55OV3J5": {
+      "file": "purify__es-F55OV3J5.js"
+    },
+    "index.es-634MUAMV": {
+      "file": "index__es-634MUAMV.js"
+    },
+    "browser-MBMWUMDU": {
+      "file": "browser-MBMWUMDU.js"
+    },
+    "chunk-HWMC2YUY": {
+      "file": "chunk-HWMC2YUY.js"
+    },
+    "chunk-D7ZASVPN": {
+      "file": "chunk-D7ZASVPN.js"
+    },
+    "chunk-QFBL4CO2": {
+      "file": "chunk-QFBL4CO2.js"
+    },
+    "chunk-M7X4J53E": {
+      "file": "chunk-M7X4J53E.js"
+    },
+    "chunk-4B2QHNJT": {
+      "file": "chunk-4B2QHNJT.js"
+    }
+  }
+}

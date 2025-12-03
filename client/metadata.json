@@ -1,0 +1,5 @@
+{
+  "name": "AI Roadmap Generator",
+  "description": "An application that generates a personalized learning or project roadmap using AI. Users enter a topic, and the AI provides a step-by-step guide with descriptions and free online resources.",
+  "requestFramePermissions": []
+}
