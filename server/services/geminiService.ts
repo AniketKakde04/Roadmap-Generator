@@ -349,7 +349,24 @@ export async function generateRoadmap(topic: string, level: string, timeline: st
             throw new Error("N8N returned an empty response. Check the 'Respond to Webhook' node.");
         }
 
-        const data = JSON.parse(text); // Now parse it safely
+        let data = JSON.parse(text); // Now parse it safely
+
+        // Handle case where n8n returns { "output": "```json ... ```" } or { "text": "..." }
+        if (data.output && typeof data.output === 'string') {
+            const cleanedOutput = data.output.replace(/```json/g, '').replace(/```/g, '').trim();
+            try {
+                data = JSON.parse(cleanedOutput);
+            } catch (e) {
+                console.warn("Failed to parse inner output JSON", e);
+            }
+        } else if (data.text && typeof data.text === 'string') {
+            const cleanedText = data.text.replace(/```json/g, '').replace(/```/g, '').trim();
+            try {
+                data = JSON.parse(cleanedText);
+            } catch (e) {
+                console.warn("Failed to parse inner text JSON", e);
+            }
+        }
 
         // Ensure the response from N8N matches the Roadmap type
         // The N8N workflow usually returns the JSON object in the body or a specific property
