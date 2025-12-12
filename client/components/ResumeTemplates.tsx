@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ResumeData } from '../types';
 
 interface TemplateData extends Partial<ResumeData> {
-  templateType?: 'single-column' | 'two-column' | 'minimalist' | 'creative';
+  templateType?: 'single-column' | 'two-column' | 'minimalist' | 'creative' | 'right-sidebar';
 }
 
 const template1: TemplateData = {
@@ -78,7 +78,6 @@ const template2: TemplateData = {
       endDate: '2019',
     },
   ],
-  templateType: 'two-column' // Added to identify the template type
 };
 
 const template3: TemplateData = {
@@ -155,6 +154,48 @@ const template4: TemplateData = {
   ],
 };
 
+
+
+const template6: TemplateData = {
+  templateType: 'right-sidebar',
+  full_name: 'Aniket Kakde',
+  job_title: 'Computer Science Engineering Student',
+  email: 'aniketkakde509@gmail.com',
+  phone: '8766806290',
+  linkedin_url: 'linkedin.com/in/aniket',
+  summary: 'I am a Computer Science Engineering student passionate about leveraging technology for innovative solutions. My experience includes developing a WhatsApp-based AI-powered loan recovery assistant.',
+  skills: [
+    { id: '1', name: 'Java' },
+    { id: '2', name: 'Python' },
+    { id: '3', name: 'React' },
+    { id: '4', name: 'Node.js' },
+    { id: '5', name: 'SQL' },
+  ],
+  experience: [
+    {
+      id: '1',
+      title: 'Intern',
+      company: 'EbixCash Financial Technologies',
+      startDate: '06/2025',
+      endDate: '08/2025',
+      description: 'Developed a WhatsApp-based AI-Powered Loan Recovery Assistant using Python, Flask, and Twilio.',
+    },
+  ],
+  education: [
+    {
+      id: '1',
+      university: 'Sant Gadge Baba Amravati University',
+      degree: 'Bachelor of Engineering (B.E.)',
+      startDate: '11/2022',
+      endDate: '05/2026',
+    },
+  ],
+  achievements: [
+    { id: '1', description: 'Received multiple awards for excellence in engineering and innovation.' },
+    { id: '2', description: 'Best Engineering Student Award.' }
+  ],
+};
+
 interface TemplatePreviewProps {
   template: {
     id: number;
@@ -174,11 +215,10 @@ interface ResumeTemplatesProps {
 
 const TemplatePreview: React.FC<TemplatePreviewProps> = ({ template, isSelected, onClick, onSelectTemplate }) => {
   return (
-    <div 
+    <div
       onClick={onClick}
-      className={`${template.color} p-6 rounded-lg cursor-pointer transform transition-all duration-300 ${
-        isSelected ? 'ring-4 ring-offset-2 ring-sky-400 scale-105' : 'hover:scale-105 hover:shadow-lg'
-      }`}
+      className={`${template.color} p-6 rounded-lg cursor-pointer transform transition-all duration-300 ${isSelected ? 'ring-4 ring-offset-2 ring-sky-400 scale-105' : 'hover:scale-105 hover:shadow-lg'
+        }`}
     >
       <div className="bg-white/20 backdrop-blur-sm p-4 rounded h-48 overflow-hidden">
         <div className="font-bold text-white mb-2">{template.name}</div>
@@ -221,8 +261,22 @@ const TemplatePreview: React.FC<TemplatePreviewProps> = ({ template, isSelected,
             <div className="h-2 bg-white/20 rounded w-3/4"></div>
           </div>
         )}
+
+        {template.id === 6 && (
+          <div className="flex h-full gap-2">
+            <div className="w-2/3 space-y-1">
+              <div className="h-4 bg-white/30 rounded w-full"></div>
+              <div className="h-2 bg-white/20 rounded w-5/6"></div>
+              <div className="h-2 bg-white/20 rounded w-3/4"></div>
+            </div>
+            <div className="w-1/3 border-l border-white/20 space-y-1 pl-1">
+              <div className="h-3 bg-white/30 rounded w-full"></div>
+              <div className="h-2 bg-white/20 rounded w-3/4"></div>
+            </div>
+          </div>
+        )}
       </div>
-      <button 
+      <button
         className="mt-3 w-full bg-white/20 hover:bg-white/30 text-white py-2 px-4 rounded transition-colors text-sm"
         onClick={(e) => {
           e.stopPropagation();
@@ -240,35 +294,43 @@ const TemplatePreview: React.FC<TemplatePreviewProps> = ({ template, isSelected,
 
 const ResumeTemplates: React.FC<ResumeTemplatesProps> = ({ onSelectTemplate }) => {
   const [selectedTemplate, setSelectedTemplate] = useState<number | null>(1); // Default to first template
-  
+
   const templates = [
-    { 
-      id: 1, 
-      name: 'Professional', 
-      data: template1, 
+    {
+      id: 1,
+      name: 'Professional',
+      data: template1,
       color: 'bg-blue-600',
       description: 'Clean and professional single-column layout'
     },
-    { 
-      id: 2, 
-      name: 'Modern', 
-      data: template2, 
+    {
+      id: 2,
+      name: 'Modern',
+      data: template2,
       color: 'bg-purple-600',
       description: 'Two-column modern design with sidebar'
     },
-    { 
-      id: 3, 
-      name: 'Minimalist', 
-      data: template3, 
+    {
+      id: 3,
+      name: 'Minimalist',
+      data: template3,
       color: 'bg-emerald-600',
       description: 'Simple and clean with ample white space'
     },
-    { 
-      id: 4, 
-      name: 'Creative', 
-      data: template4, 
+    {
+      id: 4,
+      name: 'Creative',
+      data: template4,
       color: 'bg-amber-600',
       description: 'Bold and creative layout with color accents'
+    },
+
+    {
+      id: 6,
+      name: 'Compact',
+      data: template6,
+      color: 'bg-indigo-600',
+      description: 'Modern right-sidebar layout with blue accents'
     },
   ];
 

@@ -7,7 +7,7 @@ import ResumePreview from './ResumePreview';
 import Loader from './Loader';
 import { supabase } from '../services/supabase';
 import AccordionSection from './AccordionSection';
-import { FiLayout, FiColumns, FiMinimize2, FiZap, FiDownload, FiSave } from 'react-icons/fi';
+import { FiLayout, FiColumns, FiMinimize2, FiZap, FiDownload, FiSave, FiBook, FiSidebar } from 'react-icons/fi';
 import { createRoot } from 'react-dom/client';
 
 const initialResumeState: ResumeData = {
@@ -33,7 +33,7 @@ const printResume = (resumeData: ResumeData) => {
     // 3. Write the HTML content
     // We need to inject the styles and the ResumePreview component into this new document.
     // Since ResumePreview is a React component, we need to render it into the iframe's body.
-    
+
     doc.open();
     doc.write(`
         <!DOCTYPE html>
@@ -114,7 +114,7 @@ const printResume = (resumeData: ResumeData) => {
             setTimeout(() => {
                 iframe.contentWindow?.focus();
                 iframe.contentWindow?.print();
-                
+
                 // Cleanup after print dialog closes (or immediately, browser handles the queue)
                 // Ideally we wait, but removing immediately is fine in most modern browsers
                 // setTimeout(() => document.body.removeChild(iframe), 1000);
@@ -126,9 +126,9 @@ const printResume = (resumeData: ResumeData) => {
 
 const AIAssistModal = ({ suggestions, onClose, onInsert, loading }: { suggestions: string[], onClose: () => void, onInsert: (text: string) => void, loading: boolean }) => {
     const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(null);
-    
+
     useEffect(() => {
-        if(suggestions.length > 0) {
+        if (suggestions.length > 0) {
             setSelectedSuggestion(suggestions[0]);
         }
     }, [suggestions]);
@@ -136,12 +136,12 @@ const AIAssistModal = ({ suggestions, onClose, onInsert, loading }: { suggestion
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
             <div className="bg-background border border-border rounded-2xl shadow-xl w-full max-w-2xl p-6 relative flex flex-col max-h-[90vh]">
-                 <h3 className="text-lg font-bold text-primary mb-4 flex-shrink-0">AI Suggestions</h3>
-                 <div className="flex-grow overflow-y-auto">
+                <h3 className="text-lg font-bold text-primary mb-4 flex-shrink-0">AI Suggestions</h3>
+                <div className="flex-grow overflow-y-auto">
                     {loading ? <Loader /> : (
                         <div className="space-y-3">
                             {suggestions.map((suggestion, index) => (
-                                <div 
+                                <div
                                     key={index}
                                     onClick={() => setSelectedSuggestion(suggestion)}
                                     className={`p-4 rounded-md cursor-pointer transition-all border ${selectedSuggestion === suggestion ? 'bg-primary/10 border-primary ring-1 ring-primary' : 'bg-background-secondary border-border hover:bg-background-hover'}`}
@@ -151,12 +151,12 @@ const AIAssistModal = ({ suggestions, onClose, onInsert, loading }: { suggestion
                             ))}
                         </div>
                     )}
-                 </div>
-                 <div className="flex justify-end gap-4 mt-6 flex-shrink-0">
+                </div>
+                <div className="flex justify-end gap-4 mt-6 flex-shrink-0">
                     <button onClick={onClose} className="text-text-secondary hover:text-text-primary">Cancel</button>
-                    <button 
-                        onClick={() => selectedSuggestion && onInsert(selectedSuggestion)} 
-                        disabled={loading || !selectedSuggestion} 
+                    <button
+                        onClick={() => selectedSuggestion && onInsert(selectedSuggestion)}
+                        disabled={loading || !selectedSuggestion}
                         className="bg-primary text-white font-semibold py-2 px-5 rounded-md hover:bg-secondary disabled:bg-background-accent disabled:text-text-secondary"
                     >
                         Insert Selected
@@ -173,7 +173,7 @@ const ResumeBuilderPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [aiLoading, setAiLoading] = useState(false);
-    
+
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
     const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
     const [aiTarget, setAiTarget] = useState<{ section: 'summary' | 'experience', index?: number } | null>(null);
@@ -184,7 +184,7 @@ const ResumeBuilderPage: React.FC = () => {
     useEffect(() => {
         const fetchResume = async () => {
             try {
-                const { data: { user } } = await supabase.auth.getUser(); 
+                const { data: { user } } = await supabase.auth.getUser();
                 if (user) {
                     const data = await getResume(user.id);
                     if (data) setResumeData(data);
@@ -192,10 +192,10 @@ const ResumeBuilderPage: React.FC = () => {
                 } else {
                     setResumeData(initialResumeState);
                 }
-            } catch (error) { 
-                console.error("Failed to fetch resume:", error); 
+            } catch (error) {
+                console.error("Failed to fetch resume:", error);
                 setResumeData(initialResumeState);
-            } 
+            }
             finally { setLoading(false); }
         };
         fetchResume();
@@ -205,7 +205,7 @@ const ResumeBuilderPage: React.FC = () => {
         const { name, value } = e.target;
         setResumeData(prev => ({ ...prev, [name]: value }));
     };
-    
+
     type EducationKeys = keyof EducationEntry;
     type ExperienceKeys = keyof ExperienceEntry;
     type ProjectKeys = keyof ProjectEntry;
@@ -225,10 +225,10 @@ const ResumeBuilderPage: React.FC = () => {
             return { ...prev, [section]: newSection };
         });
     };
-    
+
     const addArrayItem = (section: 'education' | 'experience' | 'projects' | 'skills' | 'achievements' | 'certifications') => {
         let newItem: any;
-        switch(section) {
+        switch (section) {
             case 'education': newItem = { id: uuidv4(), university: '', degree: '', startDate: '', endDate: '' }; break;
             case 'experience': newItem = { id: uuidv4(), title: '', company: '', startDate: '', endDate: '', description: '' }; break;
             case 'projects': newItem = { id: uuidv4(), name: '', description: '' }; break;
@@ -239,25 +239,25 @@ const ResumeBuilderPage: React.FC = () => {
         }
         setResumeData(prev => ({ ...prev, [section]: [...(prev[section] as any[]), newItem] }));
     };
-    
+
     const removeArrayItem = (section: keyof ResumeData, id: string) => {
         setResumeData(prev => ({ ...prev, [section]: (prev[section] as any[]).filter(item => item.id !== id) }));
     };
-    
+
     const handleSave = useCallback(async () => {
         setSaving(true);
         try {
             const updatedResume = await upsertResume(resumeData);
             setResumeData(updatedResume);
-             // Replaced alert with console for better UX flow (add toast later)
-             console.log('Resume saved successfully!');
+            // Replaced alert with console for better UX flow (add toast later)
+            console.log('Resume saved successfully!');
         } catch (error) {
-             console.error('Error saving resume. Please try again.');
+            console.error('Error saving resume. Please try again.');
         } finally {
             setSaving(false);
         }
     }, [resumeData]);
-    
+
     // --- IMPROVED EXPORT HANDLER ---
     const handleExportPDF = () => {
         // Calls the dedicated print utility function
@@ -269,7 +269,7 @@ const ResumeBuilderPage: React.FC = () => {
         setIsAIModalOpen(true);
         setAiLoading(true);
         setAiSuggestions([]);
-        
+
         let prompt = '';
         if (section === 'summary') {
             prompt = `Based on the following resume details, write a professional and compelling 2-3 sentence summary. Details: Job Title - "${resumeData.job_title}", Key Skills - "${resumeData.skills.map(s => s.name).join(', ')}".`;
@@ -282,7 +282,7 @@ const ResumeBuilderPage: React.FC = () => {
             const aiResponse = await generateAIReply(prompt);
             setAiSuggestions(aiResponse);
         } catch (error) {
-             setAiSuggestions(['Sorry, the AI assistant failed to generate a response. Please try again.']);
+            setAiSuggestions(['Sorry, the AI assistant failed to generate a response. Please try again.']);
         } finally {
             setAiLoading(false);
         }
@@ -326,7 +326,7 @@ const ResumeBuilderPage: React.FC = () => {
     return (
         <>
             {isAIModalOpen && (
-                <AIAssistModal 
+                <AIAssistModal
                     suggestions={aiSuggestions}
                     onClose={() => setIsAIModalOpen(false)}
                     onInsert={handleInsertAISuggestion}
@@ -370,7 +370,7 @@ const ResumeBuilderPage: React.FC = () => {
                                     </div>
                                 </div>
                             </AccordionSection>
-                             <AccordionSection title="Summary">
+                            <AccordionSection title="Summary">
                                 <div className="space-y-2 p-2">
                                     <div className="flex justify-between items-center gap-2">
                                         <label className="text-xs font-medium text-text-secondary">Professional Summary</label>
@@ -383,19 +383,19 @@ const ResumeBuilderPage: React.FC = () => {
                                 </div>
                             </AccordionSection>
                             <AccordionSection title="Experience">
-                                 <div className="space-y-3 p-2">
+                                <div className="space-y-3 p-2">
                                     {resumeData.experience.map((exp, index) => (
                                         <div key={exp.id} className="p-2 bg-background border border-border rounded-lg space-y-2 shadow-sm">
                                             <div className="flex gap-2">
-                                                <input value={exp.title} onChange={e => handleArrayChange('experience', index, 'title', e.target.value)} placeholder="Job Title" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
-                                                <input value={exp.company} onChange={e => handleArrayChange('experience', index, 'company', e.target.value)} placeholder="Company" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
+                                                <input value={exp.title} onChange={e => handleArrayChange('experience', index, 'title', e.target.value)} placeholder="Job Title" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm" />
+                                                <input value={exp.company} onChange={e => handleArrayChange('experience', index, 'company', e.target.value)} placeholder="Company" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm" />
                                             </div>
                                             <div className="flex gap-2">
-                                                <input value={exp.startDate} onChange={e => handleArrayChange('experience', index, 'startDate', e.target.value)} placeholder="Start Date" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
-                                                <input value={exp.endDate} onChange={e => handleArrayChange('experience', index, 'endDate', e.target.value)} placeholder="End Date" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
+                                                <input value={exp.startDate} onChange={e => handleArrayChange('experience', index, 'startDate', e.target.value)} placeholder="Start Date" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm" />
+                                                <input value={exp.endDate} onChange={e => handleArrayChange('experience', index, 'endDate', e.target.value)} placeholder="End Date" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm" />
                                             </div>
-                                             <div className="flex gap-1 items-start">
-                                                <textarea value={exp.description} onChange={e => handleArrayChange('experience', index, 'description', e.target.value)} rows={2} placeholder="Describe your role..." className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all resize-none text-sm"/>
+                                            <div className="flex gap-1 items-start">
+                                                <textarea value={exp.description} onChange={e => handleArrayChange('experience', index, 'description', e.target.value)} rows={2} placeholder="Describe your role..." className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all resize-none text-sm" />
                                                 <button onClick={() => handleAIAssist('experience', index)} disabled={aiLoading} title="AI Assist" className="mt-1 text-white bg-primary hover:bg-secondary p-1 rounded-md transition-colors disabled:opacity-50">
                                                     <FiZap className="w-4 h-4" />
                                                 </button>
@@ -406,29 +406,29 @@ const ResumeBuilderPage: React.FC = () => {
                                     <button onClick={() => addArrayItem('experience')} className="w-full py-1 border-2 border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-xs font-medium">+ Add Experience</button>
                                 </div>
                             </AccordionSection>
-                             {/* ... Other sections (Projects, Education, Skills etc) follow same pattern ... */}
-                             {/* Simplified for brevity, but you should keep all sections from your original file */}
-                             <AccordionSection title="Projects">
+                            {/* ... Other sections (Projects, Education, Skills etc) follow same pattern ... */}
+                            {/* Simplified for brevity, but you should keep all sections from your original file */}
+                            <AccordionSection title="Projects">
                                 <div className="space-y-3 p-2">
                                     {resumeData.projects.map((proj, index) => (
                                         <div key={proj.id} className="p-2 bg-background border border-border rounded-lg space-y-2 shadow-sm">
-                                            <input value={proj.name} onChange={e => handleArrayChange('projects', index, 'name', e.target.value)} placeholder="Project Name" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
-                                            <textarea value={proj.description} onChange={e => handleArrayChange('projects', index, 'description', e.target.value)} rows={2} placeholder="Project description..." className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all resize-none text-sm"/>
+                                            <input value={proj.name} onChange={e => handleArrayChange('projects', index, 'name', e.target.value)} placeholder="Project Name" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm" />
+                                            <textarea value={proj.description} onChange={e => handleArrayChange('projects', index, 'description', e.target.value)} rows={2} placeholder="Project description..." className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all resize-none text-sm" />
                                             <button onClick={() => removeArrayItem('projects', proj.id)} className="text-xs text-error hover:text-red-600 font-medium">Remove</button>
                                         </div>
                                     ))}
                                     <button onClick={() => addArrayItem('projects')} className="w-full py-1 border-2 border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-xs font-medium">+ Add Project</button>
                                 </div>
                             </AccordionSection>
-                             <AccordionSection title="Education">
-                                 <div className="space-y-3 p-2">
+                            <AccordionSection title="Education">
+                                <div className="space-y-3 p-2">
                                     {resumeData.education.map((edu, index) => (
                                         <div key={edu.id} className="p-2 bg-background border border-border rounded-lg space-y-2 shadow-sm">
-                                            <input value={edu.university} onChange={e => handleArrayChange('education', index, 'university', e.target.value)} placeholder="University/School Name" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
-                                            <input value={edu.degree} onChange={e => handleArrayChange('education', index, 'degree', e.target.value)} placeholder="Degree" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
+                                            <input value={edu.university} onChange={e => handleArrayChange('education', index, 'university', e.target.value)} placeholder="University/School Name" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm" />
+                                            <input value={edu.degree} onChange={e => handleArrayChange('education', index, 'degree', e.target.value)} placeholder="Degree" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm" />
                                             <div className="flex gap-2">
-                                                <input value={edu.startDate} onChange={e => handleArrayChange('education', index, 'startDate', e.target.value)} placeholder="Start Date" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
-                                                <input value={edu.endDate} onChange={e => handleArrayChange('education', index, 'endDate', e.target.value)} placeholder="End Date" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
+                                                <input value={edu.startDate} onChange={e => handleArrayChange('education', index, 'startDate', e.target.value)} placeholder="Start Date" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm" />
+                                                <input value={edu.endDate} onChange={e => handleArrayChange('education', index, 'endDate', e.target.value)} placeholder="End Date" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm" />
                                             </div>
                                             <button onClick={() => removeArrayItem('education', edu.id)} className="text-xs text-error hover:text-red-600 font-medium">Remove</button>
                                         </div>
@@ -436,12 +436,12 @@ const ResumeBuilderPage: React.FC = () => {
                                     <button onClick={() => addArrayItem('education')} className="w-full py-1 border-2 border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-xs font-medium">+ Add Education</button>
                                 </div>
                             </AccordionSection>
-                             <AccordionSection title="Skills">
+                            <AccordionSection title="Skills">
                                 <div className="space-y-2 p-2">
                                     <div className="grid grid-cols-2 gap-2">
                                         {resumeData.skills.map((skill, index) => (
                                             <div key={skill.id} className="flex items-center gap-1 bg-background-accent border border-border p-1 pl-2 rounded-md group">
-                                                <input value={skill.name} onChange={e => handleArrayChange('skills', index, 'name', e.target.value)} placeholder="Skill" className="flex-1 bg-transparent border-none text-xs text-text-primary placeholder:text-text-secondary focus:ring-0 p-0 outline-none"/>
+                                                <input value={skill.name} onChange={e => handleArrayChange('skills', index, 'name', e.target.value)} placeholder="Skill" className="flex-1 bg-transparent border-none text-xs text-text-primary placeholder:text-text-secondary focus:ring-0 p-0 outline-none" />
                                                 <button onClick={() => removeArrayItem('skills', skill.id)} className="text-text-secondary hover:text-error p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                                                 </button>
@@ -451,15 +451,15 @@ const ResumeBuilderPage: React.FC = () => {
                                     <button onClick={() => addArrayItem('skills')} className="w-full py-1 border-2 border-dashed border-border text-text-secondary hover:text-primary hover:border-primary rounded-lg transition-colors text-xs font-medium">+ Add Skill</button>
                                 </div>
                             </AccordionSection>
-                            
-                             <AccordionSection title="Certifications">
+
+                            <AccordionSection title="Certifications">
                                 <div className="space-y-3 p-2">
                                     {resumeData.certifications.map((cert, index) => (
                                         <div key={cert.id} className="p-2 bg-background border border-border rounded-lg space-y-2 shadow-sm">
-                                            <input value={cert.name} onChange={e => handleArrayChange('certifications', index, 'name', e.target.value)} placeholder="Certification Name" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
+                                            <input value={cert.name} onChange={e => handleArrayChange('certifications', index, 'name', e.target.value)} placeholder="Certification Name" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm" />
                                             <div className="flex gap-2">
-                                                <input value={cert.issuer} onChange={e => handleArrayChange('certifications', index, 'issuer', e.target.value)} placeholder="Issuer" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
-                                                <input value={cert.date} onChange={e => handleArrayChange('certifications', index, 'date', e.target.value)} placeholder="Date" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm"/>
+                                                <input value={cert.issuer} onChange={e => handleArrayChange('certifications', index, 'issuer', e.target.value)} placeholder="Issuer" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm" />
+                                                <input value={cert.date} onChange={e => handleArrayChange('certifications', index, 'date', e.target.value)} placeholder="Date" className="flex-1 bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm" />
                                             </div>
                                             <button onClick={() => removeArrayItem('certifications', cert.id)} className="text-xs text-error hover:text-red-600 font-medium">Remove</button>
                                         </div>
@@ -468,11 +468,11 @@ const ResumeBuilderPage: React.FC = () => {
                                 </div>
                             </AccordionSection>
 
-                             <AccordionSection title="Achievements">
+                            <AccordionSection title="Achievements">
                                 <div className="space-y-3 p-2">
                                     {resumeData.achievements.map((ach, index) => (
                                         <div key={ach.id} className="p-2 bg-background border border-border rounded-lg space-y-2 shadow-sm">
-                                            <textarea value={ach.description} onChange={e => handleArrayChange('achievements', index, 'description', e.target.value)} rows={2} placeholder="e.g., '1st Place at XYZ Hackathon'" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all resize-none text-sm"/>
+                                            <textarea value={ach.description} onChange={e => handleArrayChange('achievements', index, 'description', e.target.value)} rows={2} placeholder="e.g., '1st Place at XYZ Hackathon'" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all resize-none text-sm" />
                                             <button onClick={() => removeArrayItem('achievements', ach.id)} className="text-xs text-error hover:text-red-600 font-medium">Remove</button>
                                         </div>
                                     ))}
@@ -532,36 +532,36 @@ const ResumeBuilderPage: React.FC = () => {
                     <div className="mb-4 p-4 bg-background-secondary border border-border rounded-lg shadow-sm">
                         <h4 className="text-sm font-semibold text-text-primary mb-3">Select Template</h4>
                         <div className="flex gap-2 overflow-x-auto">
-                        {[
-                            { id: 1, name: 'Modern', icon: <FiLayout className="w-4 h-4" />, type: 'single-column' },
-                            { id: 2, name: 'Split', icon: <FiColumns className="w-4 h-4" />, type: 'two-column' },
-                            { id: 3, name: 'Minimal', icon: <FiMinimize2 className="w-4 h-4" />, type: 'minimalist' },
-                            { id: 4, name: 'Bold', icon: <FiZap className="w-4 h-4" />, type: 'creative' }
-                        ].map(template => (
-                            <button
-                                key={template.id}
-                                onClick={() => setResumeData(prev => ({
-                                    ...prev,
-                                    templateType: template.type as any
-                                }))}
-                                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${
-                                    (resumeData as any).templateType === template.type || 
-                                    (!(resumeData as any).templateType && template.type === 'single-column')
-                                        ? 'bg-primary text-white shadow-md' 
+                            {[
+                                { id: 1, name: 'Modern', icon: <FiLayout className="w-4 h-4" />, type: 'single-column' },
+                                { id: 2, name: 'Split', icon: <FiColumns className="w-4 h-4" />, type: 'two-column' },
+                                { id: 3, name: 'Minimal', icon: <FiMinimize2 className="w-4 h-4" />, type: 'minimalist' },
+                                { id: 4, name: 'Bold', icon: <FiZap className="w-4 h-4" />, type: 'creative' },
+                                { id: 6, name: 'Compact', icon: <FiSidebar className="w-4 h-4" />, type: 'right-sidebar' }
+                            ].map(template => (
+                                <button
+                                    key={template.id}
+                                    onClick={() => setResumeData(prev => ({
+                                        ...prev,
+                                        templateType: template.type as any
+                                    }))}
+                                    className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${(resumeData as any).templateType === template.type ||
+                                        (!(resumeData as any).templateType && template.type === 'single-column')
+                                        ? 'bg-primary text-white shadow-md'
                                         : 'bg-background border border-border text-text-secondary hover:border-primary hover:text-text-primary'
-                                }`}
-                            >
-                                {template.icon}
-                                <span>{template.name}</span>
-                            </button>
-                        ))}
+                                        }`}
+                                >
+                                    {template.icon}
+                                    <span>{template.name}</span>
+                                </button>
+                            ))}
                         </div>
                     </div>
-                    
+
                     {/* Preview Container */}
                     <div className="flex-1 bg-gradient-to-br from-background to-background-secondary rounded-xl border border-border p-6 overflow-auto flex justify-center items-start shadow-inner">
                         {/* Paper-like container with realistic shadow */}
-                        <div 
+                        <div
                             className="bg-white rounded-lg shadow-2xl transition-transform duration-200 origin-top"
                             style={{
                                 width: '210mm',

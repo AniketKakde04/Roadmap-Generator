@@ -14,7 +14,7 @@ export interface Step {
 }
 
 export interface Roadmap {
-  title:string;
+  title: string;
   description: string;
   steps: Step[];
 }
@@ -34,20 +34,20 @@ export interface ProjectSuggestion {
 
 // --- THIS IS THE NEW TYPE FOR THE ANALYSIS REPORT ---
 export interface AnalysisReport {
-    matchScore: number;
-    strengths: string[];
-    gaps: string[];
-    feedback: string[];
-    projectSuggestions: ProjectSuggestion[];
+  matchScore: number;
+  strengths: string[];
+  gaps: string[];
+  feedback: string[];
+  projectSuggestions: ProjectSuggestion[];
 }
 
 
 export type User = SupabaseUser;
 
 export interface AuthCredentials {
-    name?: string;
-    email: string;
-    password?: string;
+  name?: string;
+  email: string;
+  password?: string;
 }
 
 
@@ -66,8 +66,10 @@ export interface ResumeData {
   experience: ExperienceEntry[];
   projects: ProjectEntry[];
   skills: SkillEntry[];
+  achievements?: AchievementEntry[];
+  certifications?: CertificationEntry[];
   updated_at?: string;
-  templateType?: 'single-column' | 'two-column' | 'minimalist' | 'creative'; 
+  templateType?: 'single-column' | 'two-column' | 'minimalist' | 'creative' | 'right-sidebar';
 }
 
 export interface EducationEntry {
@@ -96,6 +98,18 @@ export interface ProjectEntry {
 export interface SkillEntry {
   id: string;
   name: string;
+}
+
+export interface AchievementEntry {
+  id: string;
+  description: string;
+}
+
+export interface CertificationEntry {
+  id: string;
+  name: string;
+  issuer: string;
+  date: string;
 }
 // --- NEW TYPES FOR APTITUDE FEATURE ---
 
@@ -334,7 +348,7 @@ export type Database = {
         }
       }
     }
-    
+
     Views: {
       [_ in never]: never
     }
