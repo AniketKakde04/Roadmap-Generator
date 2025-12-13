@@ -304,7 +304,7 @@ The output MUST be a valid JSON object matching the provided schema.`;
         prompt += `\n\nResume Text:\n---\n${resumeText}\n---\n\nPlease generate the full analysis report now.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash", contents: prompt,
+            model: "gemini-1.5-flash", contents: prompt,
             config: { responseMimeType: "application/json", responseSchema: analysisReportSchema },
         });
         const jsonText = (response.text || "").trim();
@@ -402,7 +402,7 @@ export const generateAIReply = async (prompt: string): Promise<string[]> => {
             required: ["suggestions"]
         };
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash", contents: `${prompt} Please provide three distinct options.`,
+            model: "gemini-1.5-flash", contents: `${prompt} Please provide three distinct options.`,
             config: { responseMimeType: "application/json", responseSchema: suggestionSchema },
         });
         const jsonText = (response.text || "").trim();
@@ -448,7 +448,7 @@ Please generate ${count} new questions now. Ensure the options are plausible and
 The output MUST be a valid JSON object matching the provided schema.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
+            model: "gemini-1.5-flash",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -491,7 +491,7 @@ Format the output as simple, clean Markdown. Use headings, bullet points, and bo
 If the topic is not found in the text, return a simple message: "No specific study guide found for this topic."`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
+            model: "gemini-1.5-flash",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -552,7 +552,7 @@ ${resumeText}
 Please generate the personalized roadmap now.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
+            model: "gemini-1.5-flash",
             contents: prompt,
             // tools: [{ "google_search": {} }], // Enable Google Search for finding resources
             config: {
@@ -596,7 +596,7 @@ Respond with *only* your greeting and the first question. Do not add any other t
         // --- SYNTAX FIX ---
         // Your package version expects an object with 'model' and 'contents'
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
+            model: "gemini-1.5-flash",
             contents: prompt,
             config: {}
         });
@@ -653,7 +653,7 @@ Below is the conversation history so far. Your task is to:
         // --- END FIX ---
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
+            model: "gemini-1.5-flash",
             contents: prompt,
             config: {}// Send the single, combined prompt
         });
@@ -703,7 +703,7 @@ The output MUST be a valid JSON object matching the provided schema.
         // --- END FIX ---
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
+            model: "gemini-1.5-flash",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",

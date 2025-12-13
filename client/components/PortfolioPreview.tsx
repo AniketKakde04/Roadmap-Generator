@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ResumeData } from '../types';
-import { 
-    FiGithub, FiLinkedin, FiMail, FiPhone, FiDownload, 
-    FiExternalLink, FiMapPin, FiCalendar, FiAward, 
-    FiCheckCircle, FiMenu, FiX 
+import {
+    FiGithub, FiLinkedin, FiMail, FiPhone, FiDownload,
+    FiExternalLink, FiMapPin, FiCalendar, FiAward,
+    FiCheckCircle, FiMenu, FiX, FiArrowRight, FiBriefcase
 } from 'react-icons/fi';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -16,11 +16,25 @@ interface PortfolioPreviewProps {
 const PortfolioPreview: React.FC<PortfolioPreviewProps> = ({ data, readOnly = false }) => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [activeSection, setActiveSection] = useState('home');
 
-    // Handle scroll for navbar styling
+    // Handle scroll for navbar and active section
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 20);
+
+            // Determine active section
+            const sections = ['home', 'experience', 'projects', 'skills', 'contact'];
+            for (const section of sections) {
+                const element = document.getElementById(section);
+                if (element) {
+                    const rect = element.getBoundingClientRect();
+                    if (rect.top <= 100 && rect.bottom >= 100) {
+                        setActiveSection(section);
+                        break;
+                    }
+                }
+            }
         };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
@@ -32,28 +46,36 @@ const PortfolioPreview: React.FC<PortfolioPreviewProps> = ({ data, readOnly = fa
             const originalStyle = input.style.cssText;
             input.style.width = '100%';
             input.style.maxWidth = 'none';
-            
+            // Force light theme for PDF
+            input.classList.add('bg-white');
+            input.classList.remove('bg-slate-50');
+
             const nav = document.getElementById('portfolio-nav');
             if (nav) nav.style.display = 'none';
+            const fab = document.getElementById('download-fab');
+            if (fab) fab.style.display = 'none';
 
             html2canvas(input, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' })
-            .then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-                
-                if (pdfHeight > pdf.internal.pageSize.getHeight()) {
-                     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                } else {
-                     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                }
-                
-                pdf.save(`${data.full_name || 'portfolio'}.pdf`);
-                
-                if (nav) nav.style.display = 'flex';
-                input.style.cssText = originalStyle;
-            });
+                .then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+                    if (pdfHeight > pdf.internal.pageSize.getHeight()) {
+                        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                    } else {
+                        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                    }
+
+                    pdf.save(`${data.full_name || 'portfolio'}.pdf`);
+
+                    if (nav) nav.style.display = 'flex';
+                    if (fab) fab.style.display = 'block';
+                    input.style.cssText = originalStyle;
+                    input.classList.remove('bg-white');
+                    input.classList.add('bg-slate-50');
+                });
         }
     };
 
@@ -66,49 +88,56 @@ const PortfolioPreview: React.FC<PortfolioPreviewProps> = ({ data, readOnly = fa
     };
 
     const NavLink = ({ to, label }: { to: string, label: string }) => (
-        <button 
+        <button
             onClick={() => scrollToSection(to)}
-            className="text-sm font-medium text-slate-600 hover:text-primary transition-colors px-4 py-2"
+            className={`text-sm font-medium transition-all px-4 py-2 rounded-full ${activeSection === to
+                ? 'bg-slate-900 text-white shadow-md'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                }`}
         >
             {label}
         </button>
     );
 
     return (
-        <div className="bg-white min-h-screen font-sans text-slate-800 selection:bg-primary/20 relative">
-            
+        <div className="bg-slate-50 min-h-screen font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900 relative">
+
             {/* --- FLOATING ACTION BUTTON (PDF) --- */}
             {!readOnly && (
-                 <button 
+                <button
+                    id="download-fab"
                     onClick={handleDownloadPDF}
-                    className="fixed bottom-8 right-8 bg-slate-900 text-white p-4 rounded-full shadow-2xl hover:bg-primary transition-all z-50 hover:scale-110 active:scale-95 group"
+                    className="fixed bottom-8 right-8 bg-slate-900 text-white p-4 rounded-full shadow-2xl hover:bg-indigo-600 transition-all z-50 hover:scale-110 active:scale-95 group"
                     title="Download as PDF"
                 >
                     <FiDownload className="w-6 h-6 group-hover:animate-bounce" />
                 </button>
             )}
 
-            {/* --- NAVBAR --- */}
-            <nav 
+            {/* --- GLASS NAVBAR --- */}
+            <nav
                 id="portfolio-nav"
-                className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${isScrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-6'}`}
+                className={`fixed top-4 left-1/2 -translate-x-1/2 z-40 transition-all duration-300 w-[95%] rounded-full ${isScrolled
+                    ? 'bg-white/80 backdrop-blur-xl shadow-lg border border-white/20 py-2 pl-6 pr-2'
+                    : 'bg-transparent py-4 px-0'
+                    }`}
             >
-                <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-                    <div className="text-xl font-bold text-slate-900 tracking-tight truncate max-w-[200px]">
-                        {data.full_name.split(' ')[0]}<span className="text-primary">.</span>
+                <div className="flex justify-between items-center">
+                    <div className={`font-bold tracking-tight text-xl ${isScrolled ? 'text-slate-900' : 'text-slate-900'} cursor-pointer`} onClick={() => scrollToSection('home')}>
+                        {data.full_name.split(' ')[0]}<span className="text-indigo-600">.</span>
                     </div>
-                    
+
                     {/* Desktop Menu */}
                     <div className="hidden md:flex items-center space-x-1">
                         <NavLink to="home" label="Home" />
-                        <NavLink to="about" label="About" />
-                        <NavLink to="projects" label="Projects" />
                         <NavLink to="experience" label="Experience" />
+                        <NavLink to="projects" label="Projects" />
+                        <NavLink to="skills" label="Skills" />
                         <NavLink to="contact" label="Contact" />
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <div className="md:hidden">
+                    <div className="md:hidden pr-4">
                         <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-slate-600">
                             {mobileMenuOpen ? <FiX className="w-6 h-6" /> : <FiMenu className="w-6 h-6" />}
                         </button>
@@ -117,120 +146,72 @@ const PortfolioPreview: React.FC<PortfolioPreviewProps> = ({ data, readOnly = fa
 
                 {/* Mobile Menu Dropdown */}
                 {mobileMenuOpen && (
-                    <div className="md:hidden bg-white border-t border-slate-100 absolute w-full left-0 shadow-lg top-full">
-                        <div className="flex flex-col p-4 space-y-2">
-                            <NavLink to="home" label="Home" />
-                            <NavLink to="about" label="About" />
-                            <NavLink to="projects" label="Projects" />
-                            <NavLink to="experience" label="Experience" />
-                            <NavLink to="contact" label="Contact" />
-                        </div>
+                    <div className="md:hidden absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-slate-100 overflow-hidden p-2 flex flex-col gap-1 z-50">
+                        <NavLink to="home" label="Home" />
+                        <NavLink to="experience" label="Experience" />
+                        <NavLink to="projects" label="Projects" />
+                        <NavLink to="skills" label="Skills" />
+                        <NavLink to="contact" label="Contact" />
                     </div>
                 )}
             </nav>
 
-            {/* --- MAIN CONTENT CONTAINER --- */}
-            <div id="portfolio-content">
-                
-                {/* --- HERO SECTION --- */}
-                {/* Adjusted padding-top to reduce gap between navbar and content */}
-                <section id="home" className="relative pt-24 pb-16 md:pt-32 md:pb-24 px-6 bg-gradient-to-b from-slate-50 to-white overflow-hidden">
-                    <div className="max-w-7xl mx-auto relative z-10">
-                        <div className="flex flex-col items-center text-center">
-                            <div className="mb-6 relative">
-                                <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-white border-4 border-white shadow-xl flex items-center justify-center overflow-hidden z-10 relative">
-                                    <span className="text-4xl md:text-5xl font-bold text-slate-900">{data.full_name.charAt(0)}</span>
-                                </div>
-                                <div className="absolute -top-4 -right-4 w-16 h-16 bg-primary/20 rounded-full blur-2xl"></div>
-                                <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-secondary/20 rounded-full blur-2xl"></div>
-                            </div>
-                            
-                            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-slate-900 mb-3">
-                                {data.full_name}
-                            </h1>
-                            <p className="text-lg md:text-2xl text-slate-500 font-medium mb-8 max-w-2xl">
-                                {data.job_title}
-                            </p>
-                            
-                            <div className="flex gap-4">
-                                <button onClick={() => scrollToSection('projects')} className="px-6 py-3 bg-slate-900 text-white rounded-full font-semibold hover:bg-slate-800 transition-colors shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-sm md:text-base">
-                                    View Work
-                                </button>
-                                <button onClick={() => scrollToSection('contact')} className="px-6 py-3 bg-white text-slate-900 border border-slate-200 rounded-full font-semibold hover:bg-slate-50 transition-colors text-sm md:text-base">
-                                    Contact Me
-                                </button>
-                            </div>
+            {/* --- MAIN CONTENT --- */}
+            {/* --- MAIN CONTENT --- */}
+            <div id="portfolio-content" className="w-full mx-auto px-4 sm:px-6 lg:px-12 overflow-hidden bg-slate-50">
+
+                {/* --- 1. MODERN HERO SECTION --- */}
+                <section id="home" className="min-h-screen flex flex-col justify-center pt-24 pb-12 relative">
+                    <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-indigo-200/30 rounded-full blur-[100px] pointer-events-none" />
+                    <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-blue-200/30 rounded-full blur-[100px] pointer-events-none" />
+
+                    <div className="max-w-3xl z-10">
+                        <div className="inline-block px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-semibold mb-6 animate-fadeIn">
+                            👋 Hello, I'm {data.full_name.split(' ')[0]}
                         </div>
-                    </div>
-                    
-                    {/* Decorative blobs */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full overflow-hidden pointer-events-none">
-                        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
-                        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-6">
+                            I build <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">digital experiences</span> that matter.
+                        </h1>
+                        <p className="text-xl text-slate-600 max-w-xl leading-relaxed mb-10">
+                            {data.job_title}. {data.summary.slice(0, 150)}{data.summary.length > 150 ? '...' : ''}
+                        </p>
+
+                        <div className="flex flex-wrap gap-4">
+                            <button onClick={() => scrollToSection('projects')} className="group px-8 py-4 bg-slate-900 text-white rounded-full font-semibold hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
+                                View My Work <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+                            </button>
+                            <button onClick={() => scrollToSection('contact')} className="px-8 py-4 bg-white text-slate-900 border border-slate-200 rounded-full font-semibold hover:border-slate-400 transition-all">
+                                Get in Touch
+                            </button>
+                        </div>
+
+
                     </div>
                 </section>
 
-                {/* --- ABOUT & SKILLS SECTION --- */}
-                <section id="about" className="py-16 px-6">
-                    <div className="max-w-4xl mx-auto">
-                        <div className="text-center mb-12">
-                            <h2 className="text-sm font-bold text-primary uppercase tracking-widest mb-2">About Me</h2>
-                        </div>
-                        
-                        <div className="bg-slate-50 rounded-3xl p-8 md:p-12 mb-12">
-                            <p className="text-lg text-slate-600 leading-relaxed text-center md:text-left">
-                                {data.summary}
-                            </p>
-                        </div>
-
-                        {/* Skills Grid */}
-                        <div className="space-y-8">
-                            <div className="text-center">
-                                <h3 className="text-xl font-bold text-slate-900 mb-6">Technical Proficiency</h3>
+                {/* --- 2. EXPERIENCE TIMELINE --- */}
+                {data.experience.length > 0 && (
+                    <section id="experience" className="py-24 relative">
+                        <div className="flex flex-col md:flex-row gap-12">
+                            <div className="md:w-1/3 lg:w-1/4">
+                                <h2 className="text-3xl font-bold text-slate-900 mb-6 md:sticky md:top-32">Experience.</h2>
                             </div>
-                            <div className="flex flex-wrap justify-center gap-3">
-                                {data.skills.map((skill, index) => (
-                                    <div 
-                                        key={index} 
-                                        className="px-4 py-2 bg-white border border-slate-200 rounded-xl shadow-sm text-slate-700 font-medium hover:border-primary/50 hover:shadow-md transition-all cursor-default text-sm"
-                                    >
-                                        {skill.name}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* --- PROJECTS SECTION (Grid Layout) --- */}
-                {data.projects.length > 0 && (
-                    <section id="projects" className="py-16 px-6 bg-slate-50">
-                        <div className="max-w-7xl mx-auto">
-                            <div className="flex flex-col md:flex-row justify-between items-end mb-12 px-2">
-                                <div>
-                                    <h2 className="text-sm font-bold text-primary uppercase tracking-widest mb-2">Portfolio</h2>
-                                    <h3 className="text-3xl font-bold text-slate-900">Featured Projects</h3>
-                                </div>
-                                <a href={data.github_url} target="_blank" rel="noreferrer" className="hidden md:flex items-center text-slate-500 hover:text-primary transition-colors mt-4 md:mt-0">
-                                    View GitHub <FiExternalLink className="ml-2" />
-                                </a>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {data.projects.map((project, index) => (
-                                    <div key={index} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-300 border border-slate-100 flex flex-col h-full">
-                                        <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center group-hover:from-primary/5 group-hover:to-secondary/5 transition-colors relative overflow-hidden">
-                                            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-400 via-slate-100 to-transparent"></div>
-                                            <h4 className="text-4xl font-bold text-slate-300/50 group-hover:text-primary/20 transition-colors">{project.name.substring(0, 2)}</h4>
-                                        </div>
-                                        <div className="p-6 flex-grow flex flex-col">
-                                            <h4 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-primary transition-colors">{project.name}</h4>
-                                            <p className="text-slate-600 text-sm leading-relaxed mb-6 flex-grow">
-                                                {project.description}
-                                            </p>
-                                            <div className="pt-4 border-t border-slate-100 flex items-center text-sm font-semibold text-primary">
-                                                View Details <span className="ml-2 group-hover:translate-x-1 transition-transform">&rarr;</span>
+                            <div className="md:w-2/3 lg:w-3/4 space-y-12">
+                                {data.experience.map((exp, index) => (
+                                    <div key={index} className="relative pl-8 border-l-2 border-indigo-100 group">
+                                        <div className="absolute top-1.5 left-[-9px] w-4 h-4 bg-white border-4 border-indigo-500 rounded-full group-hover:scale-125 transition-transform" />
+                                        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                                            <div className="flex flex-wrap justify-between items-start mb-2">
+                                                <h3 className="text-xl font-bold text-slate-900">{exp.title}</h3>
+                                                <span className="text-sm font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">{exp.startDate} - {exp.endDate}</span>
                                             </div>
+                                            <div className="text-base font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                                                <FiBriefcase className="text-slate-400" />
+                                                {exp.company}
+                                            </div>
+                                            <p className="text-slate-600 leading-relaxed text-sm whitespace-pre-line">
+                                                {exp.description}
+                                            </p>
                                         </div>
                                     </div>
                                 ))}
@@ -239,77 +220,74 @@ const PortfolioPreview: React.FC<PortfolioPreviewProps> = ({ data, readOnly = fa
                     </section>
                 )}
 
-                {/* --- EXPERIENCE & EDUCATION (Split Layout) --- */}
-                <section id="experience" className="py-16 px-6">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-                            
-                            {/* EXPERIENCE COLUMN */}
-                            <div>
-                                <h3 className="text-2xl font-bold text-slate-900 mb-10 flex items-center">
-                                    <span className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center mr-4">
-                                        <FiCalendar className="w-5 h-5" />
-                                    </span>
-                                    Experience
-                                </h3>
-                                <div className="space-y-12 border-l-2 border-slate-100 ml-5 pl-10 relative">
-                                    {data.experience.map((exp, index) => (
-                                        <div key={index} className="relative">
-                                            <span className="absolute -left-[49px] top-1 w-4 h-4 rounded-full border-2 border-white bg-blue-500 ring-4 ring-blue-50"></span>
-                                            <div className="mb-2">
-                                                <h4 className="text-lg font-bold text-slate-900">{exp.title}</h4>
-                                                <div className="flex flex-wrap gap-2 items-center text-sm mt-1">
-                                                    <span className="font-semibold text-blue-600">{exp.company}</span>
-                                                    <span className="text-slate-300">•</span>
-                                                    <span className="text-slate-500">{exp.startDate} - {exp.endDate}</span>
-                                                </div>
-                                            </div>
-                                            <p className="text-slate-600 leading-relaxed text-sm">
-                                                {exp.description}
-                                            </p>
+                {/* --- 3. PROJECT GRID --- */}
+                {data.projects.length > 0 && (
+                    <section id="projects" className="py-24">
+                        <h2 className="text-3xl font-bold text-slate-900 mb-12">Featured Projects.</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                            {data.projects.map((proj, index) => (
+                                <div key={index} className="group bg-white rounded-[2rem] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:translate-y-[-4px] transition-all duration-300 h-full flex flex-col">
+                                    <div className="h-64 bg-slate-100 relative overflow-hidden">
+                                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-blue-500/10 group-hover:scale-110 transition-transform duration-700" />
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <h3 className="text-5xl font-black text-slate-900/5 group-hover:text-indigo-600/10 transition-colors uppercase tracking-tighter">
+                                                {proj.name.substring(0, 2)}
+                                            </h3>
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* EDUCATION & CERTS COLUMN */}
-                            <div className="space-y-16">
-                                {/* Education */}
-                                <div>
-                                    <h3 className="text-2xl font-bold text-slate-900 mb-10 flex items-center">
-                                        <span className="w-10 h-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center mr-4">
-                                            <FiAward className="w-5 h-5" />
-                                        </span>
-                                        Education
-                                    </h3>
-                                    <div className="space-y-6">
-                                        {data.education.map((edu, index) => (
-                                            <div key={index} className="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-                                                <h4 className="text-lg font-bold text-slate-900">{edu.university}</h4>
-                                                <p className="text-slate-700 font-medium">{edu.degree}</p>
-                                                <p className="text-sm text-slate-500 mt-2">{edu.startDate} - {edu.endDate}</p>
-                                            </div>
-                                        ))}
+                                    </div>
+                                    <div className="p-8 flex-grow flex flex-col">
+                                        <h3 className="text-2xl font-bold text-slate-900 mb-3">{proj.name}</h3>
+                                        <p className="text-slate-600 leading-relaxed mb-6 flex-grow">
+                                            {proj.description}
+                                        </p>
+                                        <a href={data.github_url} className="inline-flex items-center text-sm font-bold text-slate-900 hover:text-indigo-600 transition-colors">
+                                            View Details <FiArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+                                        </a>
                                     </div>
                                 </div>
+                            ))}
+                        </div>
+                    </section>
+                )}
 
-                                {/* Certifications */}
+                {/* --- 4. SKILLS & EDUCATION --- */}
+                <section id="skills" className="py-24 bg-slate-100 -mx-4 sm:-mx-6 lg:-mx-12 px-4 sm:px-6 lg:px-12 relative overflow-hidden">
+                    <div className="w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 relative z-10">
+                        {/* Skills */}
+                        <div>
+                            <h2 className="text-2xl font-bold text-slate-900 mb-8">Skills.</h2>
+                            <div className="flex flex-wrap gap-2">
+                                {data.skills.map((skill, index) => (
+                                    <span key={index} className="px-5 py-2.5 bg-white text-slate-700 font-medium rounded-xl border border-slate-200 shadow-sm hover:border-indigo-400 hover:text-indigo-600 transition-colors cursor-default">
+                                        {skill.name}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Education */}
+                        <div>
+                            <h2 className="text-2xl font-bold text-slate-900 mb-8">Education.</h2>
+                            <div className="space-y-6">
+                                {data.education.map((edu, index) => (
+                                    <div key={index} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                        <div className="flex justify-between items-start mb-1">
+                                            <h3 className="font-bold text-slate-900">{edu.university}</h3>
+                                            <span className="text-xs font-semibold bg-slate-100 px-2 py-1 rounded text-slate-600">{edu.startDate} - {edu.endDate}</span>
+                                        </div>
+                                        <p className="text-indigo-600 font-medium text-sm">{edu.degree}</p>
+                                    </div>
+                                ))}
                                 {data.certifications && data.certifications.length > 0 && (
-                                    <div>
-                                        <h3 className="text-2xl font-bold text-slate-900 mb-8 flex items-center">
-                                            <span className="w-10 h-10 rounded-lg bg-green-100 text-green-600 flex items-center justify-center mr-4">
-                                                <FiCheckCircle className="w-5 h-5" />
-                                            </span>
-                                            Certifications
-                                        </h3>
-                                        <div className="grid gap-4">
+                                    <div className="mt-8">
+                                        <h3 className="text-lg font-bold text-slate-900 mb-4">Certifications</h3>
+                                        <div className="space-y-3">
                                             {data.certifications.map((cert, index) => (
-                                                <div key={index} className="flex items-center p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                                    <div className="flex-grow">
-                                                        <h4 className="font-bold text-slate-900 text-sm">{cert.name}</h4>
-                                                        <p className="text-xs text-slate-500">{cert.issuer}</p>
-                                                    </div>
-                                                    <span className="text-xs font-medium bg-white px-2 py-1 rounded border border-slate-200 text-slate-400">{cert.date}</span>
+                                                <div key={index} className="flex items-center gap-3 text-sm text-slate-600">
+                                                    <FiCheckCircle className="text-emerald-500 shrink-0" />
+                                                    <span>
+                                                        <strong className="text-slate-800">{cert.name}</strong> • {cert.issuer}
+                                                    </span>
                                                 </div>
                                             ))}
                                         </div>
@@ -320,55 +298,42 @@ const PortfolioPreview: React.FC<PortfolioPreviewProps> = ({ data, readOnly = fa
                     </div>
                 </section>
 
-                {/* --- ACHIEVEMENTS SECTION --- */}
-                {data.achievements && data.achievements.length > 0 && (
-                    <section className="py-16 px-6 bg-slate-900 text-white">
-                        <div className="max-w-4xl mx-auto text-center">
-                            <h2 className="text-3xl font-bold mb-12">Honors & Achievements</h2>
-                            <div className="grid gap-6">
-                                {data.achievements.map((ach, index) => (
-                                    <div key={index} className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-sm flex items-start text-left hover:bg-white/10 transition-colors">
-                                        <FiAward className="w-6 h-6 text-yellow-400 mr-4 flex-shrink-0 mt-1" />
-                                        <p className="text-slate-200 text-lg">{ach.description}</p>
-                                    </div>
-                                ))}
-                            </div>
+                {/* --- 5. CONTACT FOOTER --- */}
+                <footer id="contact" className="py-24 text-center">
+                    <div className="max-w-2xl mx-auto">
+                        <div className="inline-block p-4 rounded-full bg-indigo-50 text-indigo-600 mb-6">
+                            <FiMail className="w-6 h-6" />
                         </div>
-                    </section>
-                )}
-
-                {/* --- FOOTER / CONTACT --- */}
-                <footer id="contact" className="py-16 px-6 bg-white border-t border-slate-100">
-                    <div className="max-w-4xl mx-auto text-center space-y-8">
-                        <h2 className="text-3xl font-bold text-slate-900">Let's work together.</h2>
-                        <p className="text-slate-500 text-lg max-w-lg mx-auto">
-                            I'm currently looking for new opportunities. Feel free to reach out if you have a project or just want to say hi.
+                        <h2 className="text-4xl font-bold text-slate-900 mb-6">Let's build something together.</h2>
+                        <p className="text-slate-600 mb-10 text-lg">
+                            I'm currently looking for new opportunities. Whether you have a question or just want to say hi, I'll try my best to get back to you!
                         </p>
-                        
-                        <div className="flex flex-wrap justify-center gap-4">
+
+                        <div className="flex flex-col md:flex-row items-center justify-center gap-6">
                             {data.email && (
-                                <a href={`mailto:${data.email}`} className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-full font-medium hover:bg-primary transition-colors">
-                                    <FiMail /> {data.email}
+                                <a href={`mailto:${data.email}`} className="px-8 py-4 bg-slate-900 text-white rounded-full font-bold hover:bg-indigo-600 transition-colors shadow-lg w-full md:w-auto">
+                                    Say Hello
                                 </a>
                             )}
-                            {data.linkedin_url && (
-                                <a href={data.linkedin_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-6 py-3 bg-slate-100 text-slate-900 rounded-full font-medium hover:bg-slate-200 transition-colors">
-                                    <FiLinkedin /> LinkedIn
-                                </a>
-                            )}
+                            <div className="flex gap-4">
+                                {data.linkedin_url && (
+                                    <a href={data.linkedin_url} target="_blank" rel="noreferrer" className="p-4 bg-white border border-slate-200 rounded-full text-slate-600 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm hover:shadow-md">
+                                        <FiLinkedin className="w-6 h-6" />
+                                    </a>
+                                )}
+                                {data.github_url && (
+                                    <a href={data.github_url} target="_blank" rel="noreferrer" className="p-4 bg-white border border-slate-200 rounded-full text-slate-600 hover:text-slate-900 hover:border-slate-400 transition-all shadow-sm hover:shadow-md">
+                                        <FiGithub className="w-6 h-6" />
+                                    </a>
+                                )}
+                            </div>
                         </div>
 
-                        <div className="pt-12 flex flex-col items-center gap-4 text-slate-400 text-sm">
-                            <div className="flex gap-6">
-                                {data.github_url && <a href={data.github_url} className="hover:text-slate-900 transition-colors"><FiGithub className="w-5 h-5" /></a>}
-                                {data.phone && <a href={`tel:${data.phone}`} className="hover:text-slate-900 transition-colors"><FiPhone className="w-5 h-5" /></a>}
-                            </div>
-                            <p>© {new Date().getFullYear()} {data.full_name}. All rights reserved.</p>
-                            <p className="opacity-50 text-xs">Built with EduPath</p>
+                        <div className="mt-20 pt-10 border-t border-slate-100 text-slate-400 text-sm">
+                            <p>© {new Date().getFullYear()} {data.full_name}. Built with EduPathway.</p>
                         </div>
                     </div>
                 </footer>
-
             </div>
         </div>
     );
