@@ -316,15 +316,33 @@ The output MUST be a valid JSON object matching the provided schema.`;
     }
 }
 
-export async function generateRoadmap(topic: string, level: string, timeline: string): Promise<Roadmap> {
+import { checkRoadmapLimit, incrementRoadmapUsage } from './usageService';
+
+export async function generateRoadmap(topic: string, level: string, timeline: string, userId: string): Promise<Roadmap> {
     // TOGGLE: Set to true to use N8N, false to use Gemini directly
     const USE_N8N = false;
 
-    if (USE_N8N) {
-        return generateRoadmapViaN8N(topic, level, timeline);
-    } else {
-        return generateRoadmapViaGemini(topic, level, timeline);
+    // Check Usage Limit (Only if we have a userId)
+    if (userId) {
+        const canGenerate = await checkRoadmapLimit(userId);
+        if (!canGenerate) {
+            throw new Error("Daily limit reached. You can only generate 1 roadmap per day.");
+        }
     }
+
+    let result: Roadmap;
+    if (USE_N8N) {
+        result = await generateRoadmapViaN8N(topic, level, timeline);
+    } else {
+        result = await generateRoadmapViaGemini(topic, level, timeline);
+    }
+
+    // Increment Usage if successful
+    if (userId) {
+        await incrementRoadmapUsage(userId);
+    }
+
+    return result;
 }
 
 async function generateRoadmapViaGemini(topic: string, level: string, timeline: string): Promise<Roadmap> {

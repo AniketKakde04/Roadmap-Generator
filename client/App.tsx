@@ -211,7 +211,7 @@ const App: React.FC = () => {
                 if (!topic.trim()) {
                     throw new Error('Please enter a topic to generate a roadmap.');
                 }
-                result = await generateRoadmap(topic, level, timeline);
+                result = await generateRoadmap(topic, level, timeline, user?.id);
             } else {
                 if (!resumeText.trim() || !jobTitle.trim() || !jobDescription.trim()) {
                     throw new Error('Please provide a Resume, Job Title, and Job Description.');

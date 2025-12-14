@@ -25,7 +25,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userName, onNavigate, stats }) =>
       icon: <MapIcon className="w-8 h-8" />,
       color: 'bg-blue-500',
       hover: 'hover:bg-blue-600',
-      disabled: true // Coming Soon
+      hover: 'hover:bg-blue-600'
     },
     {
       id: 'resume',
@@ -88,8 +88,8 @@ const Dashboard: React.FC<DashboardProps> = ({ userName, onNavigate, stats }) =>
             onClick={() => !tool.disabled && onNavigate(tool.id)}
             disabled={tool.disabled}
             className={`flex flex-col items-start p-6 rounded-2xl border transition-all duration-300 group shadow-lg relative overflow-hidden ${tool.disabled
-                ? 'bg-background-secondary/50 border-border opacity-70 cursor-not-allowed'
-                : 'bg-background-secondary border-border hover:border-primary/50 hover:-translate-y-1 hover:shadow-primary/10'
+              ? 'bg-background-secondary/50 border-border opacity-70 cursor-not-allowed'
+              : 'bg-background-secondary border-border hover:border-primary/50 hover:-translate-y-1 hover:shadow-primary/10'
               }`}
           >
             {/* Coming Soon Badge */}

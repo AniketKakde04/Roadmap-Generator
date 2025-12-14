@@ -42,8 +42,8 @@ app.post('/api/analyze-resume', async (req: Request, res: Response) => {
 
 app.post('/api/roadmap', async (req: Request, res: Response) => {
     try {
-        const { topic, level, timeline } = req.body;
-        const result = await generateRoadmap(topic, level, timeline);
+        const { topic, level, timeline, userId } = req.body;
+        const result = await generateRoadmap(topic, level, timeline, userId);
         res.json(result);
     } catch (error) {
         console.error("Error in /api/roadmap:", error);

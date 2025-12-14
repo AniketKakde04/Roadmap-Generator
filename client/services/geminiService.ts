@@ -22,12 +22,12 @@ export async function suggestProjectsFromResume(resumeText: string, jobTitle: st
     }
 }
 
-export async function generateRoadmap(topic: string, level: string, timeline: string): Promise<Roadmap> {
+export async function generateRoadmap(topic: string, level: string, timeline: string, userId?: string): Promise<Roadmap> {
     try {
         const response = await fetch(`${API_URL}/roadmap`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topic, level, timeline })
+            body: JSON.stringify({ topic, level, timeline, userId })
         });
 
         if (!response.ok) {
