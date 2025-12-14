@@ -5,8 +5,7 @@ import {
     FiExternalLink, FiMapPin, FiCalendar, FiAward,
     FiCheckCircle, FiMenu, FiX, FiArrowRight, FiBriefcase
 } from 'react-icons/fi';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import { printResume } from '../utils/printResume';
 
 interface PortfolioPreviewProps {
     data: ResumeData;
@@ -41,42 +40,7 @@ const PortfolioPreview: React.FC<PortfolioPreviewProps> = ({ data, readOnly = fa
     }, []);
 
     const handleDownloadPDF = () => {
-        const input = document.getElementById('portfolio-content');
-        if (input) {
-            const originalStyle = input.style.cssText;
-            input.style.width = '100%';
-            input.style.maxWidth = 'none';
-            // Force light theme for PDF
-            input.classList.add('bg-white');
-            input.classList.remove('bg-slate-50');
-
-            const nav = document.getElementById('portfolio-nav');
-            if (nav) nav.style.display = 'none';
-            const fab = document.getElementById('download-fab');
-            if (fab) fab.style.display = 'none';
-
-            html2canvas(input, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' })
-                .then(canvas => {
-                    const imgData = canvas.toDataURL('image/png');
-                    const pdf = new jsPDF('p', 'mm', 'a4');
-                    const pdfWidth = pdf.internal.pageSize.getWidth();
-                    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-                    if (pdfHeight > pdf.internal.pageSize.getHeight()) {
-                        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                    } else {
-                        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                    }
-
-                    pdf.save(`${data.full_name || 'portfolio'}.pdf`);
-
-                    if (nav) nav.style.display = 'flex';
-                    if (fab) fab.style.display = 'block';
-                    input.style.cssText = originalStyle;
-                    input.classList.remove('bg-white');
-                    input.classList.add('bg-slate-50');
-                });
-        }
+        printResume(data);
     };
 
     const scrollToSection = (id: string) => {
@@ -161,24 +125,29 @@ const PortfolioPreview: React.FC<PortfolioPreviewProps> = ({ data, readOnly = fa
             <div id="portfolio-content" className="w-full mx-auto px-4 sm:px-6 lg:px-12 overflow-hidden bg-slate-50">
 
                 {/* --- 1. MODERN HERO SECTION --- */}
-                <section id="home" className="min-h-screen flex flex-col justify-center pt-24 pb-12 relative">
+                <section id="home" className="min-h-screen flex flex-col justify-center items-center text-center pt-24 pb-12 relative">
                     <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] bg-indigo-200/30 rounded-full blur-[100px] pointer-events-none" />
                     <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-blue-200/30 rounded-full blur-[100px] pointer-events-none" />
 
-                    <div className="max-w-3xl z-10">
-                        <div className="inline-block px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-sm font-semibold mb-6 animate-fadeIn">
-                            👋 Hello, I'm {data.full_name.split(' ')[0]}
-                        </div>
-                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-6">
-                            I build <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">digital experiences</span> that matter.
+                    <div className="max-w-4xl z-10 mx-auto">
+                        <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-4">
+                            {data.full_name}
                         </h1>
-                        <p className="text-xl text-slate-600 max-w-xl leading-relaxed mb-10">
-                            {data.job_title}. {data.summary.slice(0, 150)}{data.summary.length > 150 ? '...' : ''}
+                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-8">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">
+                                {data.job_title || "Creative Professional"}
+                            </span>
+                        </h2>
+                        <p className="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed mb-10">
+                            {data.summary}
                         </p>
 
-                        <div className="flex flex-wrap gap-4">
+                        <div className="flex flex-wrap gap-4 justify-center">
                             <button onClick={() => scrollToSection('projects')} className="group px-8 py-4 bg-slate-900 text-white rounded-full font-semibold hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl flex items-center gap-2">
                                 View My Work <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
+                            </button>
+                            <button onClick={handleDownloadPDF} className="px-8 py-4 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2">
+                                <FiDownload /> Download Resume
                             </button>
                             <button onClick={() => scrollToSection('contact')} className="px-8 py-4 bg-white text-slate-900 border border-slate-200 rounded-full font-semibold hover:border-slate-400 transition-all">
                                 Get in Touch

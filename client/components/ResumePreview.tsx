@@ -11,7 +11,7 @@ interface ResumePreviewProps {
 const HeaderSection = ({ resumeData, templateType }: { resumeData: ResumeData, templateType?: string }) => {
     if (templateType === 'minimalist') {
         return (
-            <div className="text-center mb-8">
+            <div className="text-center mb-4">
                 <h1 className="text-3xl font-light tracking-wider">{resumeData.full_name || 'Your Name'}</h1>
                 <div className="w-20 h-0.5 bg-gray-400 mx-auto my-3"></div>
                 <p className="text-gray-600">{resumeData.job_title || 'Target Job Title'}</p>
@@ -26,7 +26,7 @@ const HeaderSection = ({ resumeData, templateType }: { resumeData: ResumeData, t
 
     if (templateType === 'creative') {
         return (
-            <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 to-blue-500 text-white p-8 rounded-t-lg mb-6">
+            <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 to-blue-500 text-white p-5 rounded-t-lg mb-4">
                 <div className="relative z-10">
                     <h1 className="text-4xl font-bold mb-2">{resumeData.full_name || 'Your Name'}</h1>
                     <p className="text-xl text-purple-100">{resumeData.job_title || 'Target Job Title'}</p>
@@ -44,7 +44,7 @@ const HeaderSection = ({ resumeData, templateType }: { resumeData: ResumeData, t
 
     // Default template (professional / 'single-column')
     return (
-        <div className="text-center border-b-2 border-gray-200 pb-4 mb-6">
+        <div className="text-center border-b-2 border-gray-200 pb-2 mb-4">
             <h1 className="text-4xl font-bold tracking-tight">{resumeData.full_name || 'Your Name'}</h1>
             <p className="text-xl text-sky-700 font-semibold">{resumeData.job_title || 'Target Job Title'}</p>
             <div className="flex justify-center items-center flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-gray-600">
@@ -88,8 +88,8 @@ const SectionTitle = ({ children, templateType }: { children: React.ReactNode, t
 
 // Title for the dark sidebar
 const SidebarSection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-    <div className="mb-5">
-        <h2 className="text-base font-bold uppercase tracking-wider text-sky-300 border-b-2 border-sky-300 pb-1 mb-3">
+    <div className="mb-3">
+        <h2 className="text-base font-bold uppercase tracking-wider text-sky-300 border-b-2 border-sky-300 pb-1 mb-2">
             {title}
         </h2>
         {children}
@@ -98,8 +98,8 @@ const SidebarSection: React.FC<{ title: string; children: React.ReactNode }> = (
 
 // Title for the white main content area
 const MainSection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-    <div className="mb-5">
-        <h2 className="text-lg font-bold uppercase tracking-wider text-sky-800 border-b-2 border-gray-300 pb-1 mb-3">
+    <div className="mb-3">
+        <h2 className="text-lg font-bold uppercase tracking-wider text-sky-800 border-b-2 border-gray-300 pb-1 mb-2">
             {title}
         </h2>
         {children}
@@ -110,7 +110,7 @@ const MainSection: React.FC<{ title: string; children: React.ReactNode }> = ({ t
 const TwoColumnTemplate: React.FC<{ data: ResumeData }> = ({ data }) => (
     <div className="flex w-full min-h-[297mm]">
         {/* --- LEFT SIDEBAR --- */}
-        <aside className="w-1/3 bg-slate-900 text-white p-6">
+        <aside className="w-1/3 bg-slate-900 text-white p-4">
             {/* --- CONTACT --- */}
             <SidebarSection title="Contact">
                 <div className="space-y-3 text-sm">
@@ -169,7 +169,7 @@ const TwoColumnTemplate: React.FC<{ data: ResumeData }> = ({ data }) => (
         </aside>
 
         {/* --- RIGHT MAIN CONTENT --- */}
-        <main className="w-2/3 bg-white p-6">
+        <main className="w-2/3 bg-white p-4">
             {/* --- HEADER --- */}
             <div className="mb-5">
                 <h1 className="text-4xl font-extrabold tracking-tight text-gray-900">{data.full_name || 'Your Name'}</h1>
@@ -257,9 +257,9 @@ const TwoColumnTemplate: React.FC<{ data: ResumeData }> = ({ data }) => (
 const RightSidebarTemplate: React.FC<{ data: ResumeData }> = ({ data }) => (
     <div className="flex w-full min-h-[297mm] font-sans bg-white">
         {/* MAIN CONTENT (Left, 65%) */}
-        <main className="w-[65%] p-8 pt-10">
+        <main className="w-[65%] p-6 pt-6">
             {/* HEADER */}
-            <div className="mb-8">
+            <div className="mb-5">
                 <h1 className="text-4xl font-extrabold text-gray-900 mb-1">{data.full_name}</h1>
                 <p className="text-xl font-bold text-sky-600 mb-4">{data.job_title}</p>
 
@@ -295,10 +295,10 @@ const RightSidebarTemplate: React.FC<{ data: ResumeData }> = ({ data }) => (
 
             {/* EXPERIENCE */}
             {data.experience.length > 0 && (
-                <div className="mb-8">
-                    <h3 className="text-sm font-extrabold uppercase tracking-wide border-b-2 border-black pb-2 mb-4">Experience</h3>
+                <div className="mb-5">
+                    <h3 className="text-sm font-extrabold uppercase tracking-wide border-b-2 border-black pb-2 mb-3">Experience</h3>
                     {data.experience.map(exp => (
-                        <div key={exp.id} className="mb-5 last:mb-0">
+                        <div key={exp.id} className="mb-3 last:mb-0">
                             <h4 className="text-base font-bold text-gray-900">{exp.title}</h4>
                             <div className="flex justify-between text-sm font-semibold text-sky-600 mb-2">
                                 <span>{exp.company}</span>
@@ -314,10 +314,10 @@ const RightSidebarTemplate: React.FC<{ data: ResumeData }> = ({ data }) => (
 
             {/* EDUCATION */}
             {data.education.length > 0 && (
-                <div className="mb-8">
-                    <h3 className="text-sm font-extrabold uppercase tracking-wide border-b-2 border-black pb-2 mb-4">Education</h3>
+                <div className="mb-5">
+                    <h3 className="text-sm font-extrabold uppercase tracking-wide border-b-2 border-black pb-2 mb-3">Education</h3>
                     {data.education.map(edu => (
-                        <div key={edu.id} className="mb-4">
+                        <div key={edu.id} className="mb-3">
                             <h4 className="text-base font-bold text-gray-900">{edu.degree}</h4>
                             <div className="text-sm font-semibold text-sky-600">{edu.university}</div>
                             <div className="text-xs text-gray-500 mt-1">{edu.startDate} - {edu.endDate}</div>
@@ -328,7 +328,7 @@ const RightSidebarTemplate: React.FC<{ data: ResumeData }> = ({ data }) => (
         </main>
 
         {/* SIDEBAR (Right, 35%) */}
-        <aside className="w-[35%] bg-white p-6 pt-10 border-l border-gray-100">
+        <aside className="w-[35%] bg-white p-4 pt-6 border-l border-gray-100">
             {/* PHOTO PLACEHOLDER (Circle with Initials) */}
             <div className="mb-8 flex justify-center">
                 <div className="w-32 h-32 rounded-full bg-sky-500 flex items-center justify-center text-white text-4xl font-bold tracking-tighter shadow-lg">
@@ -423,23 +423,23 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData }) => {
     return (
         <div
             id="resume-preview"
-            className={`w-full h-full p-8 bg-white text-gray-800 rounded-lg shadow-lg overflow-y-auto font-sans ${templateType === 'minimalist' ? 'bg-gray-50' : ''
+            className={`w-full h-full p-6 bg-white text-gray-800 rounded-lg shadow-lg overflow-y-auto font-sans ${templateType === 'minimalist' ? 'bg-gray-50' : ''
                 }`}
         >
             <HeaderSection resumeData={data} templateType={templateType} />
 
             {data.summary && (
-                <div className="mb-6">
+                <div className="mb-4">
                     <SectionTitle templateType={templateType}>Summary</SectionTitle>
                     <p className="text-sm text-gray-700">{data.summary}</p>
                 </div>
             )}
 
             {data.education.length > 0 && (
-                <div className="mb-6">
+                <div className="mb-4">
                     <SectionTitle templateType={templateType}>Education</SectionTitle>
                     {data.education.map(edu => (
-                        <div key={edu.id} className="mb-3">
+                        <div key={edu.id} className="mb-2">
                             {/* UPDATED: Grouped University/Degree vs Date */}
                             <div className="flex justify-between items-start">
                                 <div>
@@ -454,7 +454,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData }) => {
             )}
 
             {data.skills.length > 0 && (
-                <div className="mb-6">
+                <div className="mb-4">
                     <SectionTitle templateType={templateType}>Skills</SectionTitle>
                     {/* UPDATED: Changed ' • ' to ' | ' and added filter */}
                     <p className="text-sm text-gray-700 leading-relaxed">
@@ -464,10 +464,10 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData }) => {
             )}
 
             {data.experience.length > 0 && (
-                <div className="mb-6">
+                <div className="mb-4">
                     <SectionTitle templateType={templateType}>Experience</SectionTitle>
                     {data.experience.map(exp => (
-                        <div key={exp.id} className="mb-3">
+                        <div key={exp.id} className="mb-2">
                             {/* UPDATED: Grouped Title/Company vs Date */}
                             <div className="flex justify-between items-start">
                                 <div>
@@ -485,10 +485,10 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData }) => {
             )}
 
             {data.projects.length > 0 && (
-                <div className="mb-6">
+                <div className="mb-4">
                     <SectionTitle templateType={templateType}>Projects</SectionTitle>
                     {data.projects.map(proj => (
-                        <div key={proj.id} className="mb-3">
+                        <div key={proj.id} className="mb-2">
                             <h3 className="text-md font-bold">{proj.name}</h3>
                             <ul className="list-disc pl-5 mt-1 text-sm text-gray-700">
                                 {proj.description.split('\n').map((line, i) => line.trim() && <li key={i}>{line.replace(/^- /, '')}</li>)}
