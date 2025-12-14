@@ -135,6 +135,7 @@ const PricingCard = ({
     period,
     features,
     isPopular,
+    comingSoon,
     onAction,
     colorClass
 }: {
@@ -143,17 +144,25 @@ const PricingCard = ({
     period?: string,
     features: string[],
     isPopular?: boolean,
+    comingSoon?: boolean,
     onAction: () => void,
     colorClass: string
 }) => (
-    <div className={`relative flex flex-col p-8 rounded-3xl border transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${isPopular
+    <div className={`relative flex flex-col p-8 rounded-3xl border transition-all duration-300 ${comingSoon ? 'opacity-80' : 'hover:-translate-y-2 hover:shadow-xl'} ${isPopular
         ? 'bg-background border-primary shadow-lg shadow-primary/10 ring-1 ring-primary/20'
         : 'bg-background-secondary/50 backdrop-blur-sm border-border'
         }`}>
-        {isPopular && (
+        {isPopular && !comingSoon && (
             <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                 <span className="bg-gradient-to-r from-primary to-accent text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg">
                     Most Popular
+                </span>
+            </div>
+        )}
+        {comingSoon && (
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                <span className="bg-text-secondary/80 text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg">
+                    Coming Soon
                 </span>
             </div>
         )}
@@ -176,12 +185,15 @@ const PricingCard = ({
         </ul>
         <button
             onClick={onAction}
-            className={`w-full py-3.5 rounded-xl font-bold transition-all ${isPopular
-                ? 'bg-primary text-white hover:bg-secondary shadow-lg shadow-primary/25 btn-shine'
-                : 'bg-white dark:bg-white/5 text-text-primary border border-border hover:border-primary/50'
+            disabled={comingSoon}
+            className={`w-full py-3.5 rounded-xl font-bold transition-all ${comingSoon
+                ? 'bg-background-accent text-text-secondary cursor-not-allowed'
+                : isPopular
+                    ? 'bg-primary text-white hover:bg-secondary shadow-lg shadow-primary/25 btn-shine'
+                    : 'bg-white dark:bg-white/5 text-text-primary border border-border hover:border-primary/50'
                 }`}
         >
-            {isPopular ? 'Get Pro Access' : 'Start for Free'}
+            {comingSoon ? 'Coming Soon' : (isPopular ? 'Get Pro Access' : 'Start for Free')}
         </button>
     </div>
 );
@@ -387,6 +399,7 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
                                 price="₹79"
                                 period="month"
                                 isPopular={true}
+                                comingSoon={true}
                                 colorClass="text-primary"
                                 features={[
                                     'Unlimited AI Roadmaps',
