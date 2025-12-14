@@ -1,9 +1,9 @@
 import React from 'react';
-import { 
-    MapIcon, 
-    DocumentTextIcon, 
-    AcademicCapIcon, 
-    ChatBubbleLeftRightIcon, 
+import {
+    MapIcon,
+    DocumentTextIcon,
+    AcademicCapIcon,
+    ChatBubbleLeftRightIcon,
     CheckIcon,
     ArrowRightIcon,
     SparklesIcon,
@@ -54,21 +54,21 @@ const ResumeVisual = () => (
 );
 
 // --- Journey Card Component ---
-const JourneyCard = ({ 
-    step, 
-    title, 
-    subtitle, 
-    description, 
-    icon, 
+const JourneyCard = ({
+    step,
+    title,
+    subtitle,
+    description,
+    icon,
     colorClass,
     visual,
-    isLast 
-}: { 
-    step: string, 
-    title: string, 
-    subtitle: string, 
-    description: string, 
-    icon: JSX.Element, 
+    isLast
+}: {
+    step: string,
+    title: string,
+    subtitle: string,
+    description: string,
+    icon: JSX.Element,
     colorClass: string,
     visual: JSX.Element,
     isLast?: boolean
@@ -120,7 +120,7 @@ const JourneyCard = ({
                     {/* Decorative Blob */}
                     <div className={`absolute -top-10 -right-10 w-32 h-32 ${colorClass} rounded-full blur-3xl opacity-40`}></div>
                     <div className={`absolute -bottom-10 -left-10 w-32 h-32 ${colorClass} rounded-full blur-3xl opacity-40`}></div>
-                    
+
                     {visual}
                 </div>
             </div>
@@ -129,30 +129,29 @@ const JourneyCard = ({
 );
 
 // --- Pricing Card Component ---
-const PricingCard = ({ 
-    title, 
-    price, 
+const PricingCard = ({
+    title,
+    price,
     period,
-    features, 
-    isPopular, 
+    features,
+    isPopular,
     onAction,
-    colorClass 
-}: { 
-    title: string, 
-    price: string, 
+    colorClass
+}: {
+    title: string,
+    price: string,
     period?: string,
-    features: string[], 
+    features: string[],
     isPopular?: boolean,
     onAction: () => void,
     colorClass: string
 }) => (
-    <div className={`relative flex flex-col p-8 rounded-3xl border transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${
-        isPopular 
-            ? 'bg-background border-primary shadow-lg shadow-primary/10 ring-1 ring-primary/20' 
-            : 'bg-background-secondary/50 backdrop-blur-sm border-border'
-    }`}>
+    <div className={`relative flex flex-col p-8 rounded-3xl border transition-all duration-300 hover:-translate-y-2 hover:shadow-xl ${isPopular
+        ? 'bg-background border-primary shadow-lg shadow-primary/10 ring-1 ring-primary/20'
+        : 'bg-background-secondary/50 backdrop-blur-sm border-border'
+        }`}>
         {isPopular && (
-             <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                 <span className="bg-gradient-to-r from-primary to-accent text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg">
                     Most Popular
                 </span>
@@ -166,22 +165,21 @@ const PricingCard = ({
             </div>
         </div>
         <ul className="space-y-4 mb-8 flex-1">
-             {features.map((feat, i) => (
-                 <li key={i} className="flex items-start gap-3 text-text-secondary">
-                     <div className={`mt-0.5 p-0.5 rounded-full ${isPopular ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-500'}`}>
+            {features.map((feat, i) => (
+                <li key={i} className="flex items-start gap-3 text-text-secondary">
+                    <div className={`mt-0.5 p-0.5 rounded-full ${isPopular ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-500'}`}>
                         <CheckIcon className="w-4 h-4" />
-                     </div>
-                     <span className="text-sm leading-relaxed">{feat}</span>
-                 </li>
-             ))}
+                    </div>
+                    <span className="text-sm leading-relaxed">{feat}</span>
+                </li>
+            ))}
         </ul>
-        <button 
+        <button
             onClick={onAction}
-            className={`w-full py-3.5 rounded-xl font-bold transition-all ${
-                isPopular 
-                    ? 'bg-primary text-white hover:bg-secondary shadow-lg shadow-primary/25 btn-shine' 
-                    : 'bg-white dark:bg-white/5 text-text-primary border border-border hover:border-primary/50'
-            }`}
+            className={`w-full py-3.5 rounded-xl font-bold transition-all ${isPopular
+                ? 'bg-primary text-white hover:bg-secondary shadow-lg shadow-primary/25 btn-shine'
+                : 'bg-white dark:bg-white/5 text-text-primary border border-border hover:border-primary/50'
+                }`}
         >
             {isPopular ? 'Get Pro Access' : 'Start for Free'}
         </button>
@@ -200,7 +198,7 @@ const TestimonialCard = ({ name, handle, text, avatarColor }: any) => (
                 <p className="text-text-secondary text-xs">{handle}</p>
             </div>
             <div className="ml-auto text-primary">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" /></svg>
             </div>
         </div>
         <p className="text-text-secondary text-sm leading-relaxed">{text}</p>
@@ -208,7 +206,16 @@ const TestimonialCard = ({ name, handle, text, avatarColor }: any) => (
 );
 
 const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string) => void, isLoggedIn: boolean }> = ({ onSignUpClick, onNavigate, isLoggedIn }) => {
-    
+    const [stats, setStats] = React.useState({ users: 0, roadmaps: 0, resumes: 0 });
+
+    React.useEffect(() => {
+        // Dynamic import to avoid circular dependencies if any, though not strictly needed here
+        import('../services/statsService').then(async (service) => {
+            const data = await service.getPlatformStats();
+            setStats(data);
+        });
+    }, []);
+
     const handleCTAClick = () => {
         if (isLoggedIn) {
             onNavigate('dashboard');
@@ -219,36 +226,51 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
 
     return (
         <div className="w-full relative overflow-hidden bg-background selection:bg-primary/30">
-            
+
             {/* --- BACKGROUND EFFECTS --- */}
             <div className="absolute top-0 inset-x-0 h-[600px] bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
             <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px] -z-10 animate-blob" />
-            
+
             <div className="max-w-7xl mx-auto px-6 relative z-10">
-                
+
                 {/* --- HERO SECTION --- */}
                 <section className="pt-32 pb-16 md:pt-44 md:pb-24 text-center">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-white/5 border border-border text-text-secondary text-sm font-medium mb-8 shadow-sm hover:scale-105 transition-transform cursor-default animate-fadeInUp">
-                        <span className="relative flex h-2 w-2">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
-                        </span>
-                        Over 10,000+ Student Roadmaps Created
+                    <div className="inline-flex flex-col md:flex-row items-center gap-4 md:gap-8 mb-8 animate-fadeInUp">
+                        {/* Live Stats Badge */}
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-white/5 border border-border text-text-secondary text-sm font-medium shadow-sm cursor-default">
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
+                            </span>
+                            <span>{stats.roadmaps.toLocaleString()} Roadmaps Created</span>
+                        </div>
+
+                        {/* Extra Stats for Desktop */}
+                        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-text-secondary">
+                            <div className="flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                {stats.users.toLocaleString()} Students
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                                {stats.resumes.toLocaleString()} Resumes
+                            </div>
+                        </div>
                     </div>
-                    
+
                     <h1 className="text-5xl md:text-7xl font-extrabold text-text-primary tracking-tight mb-8 leading-[1.1] animate-fadeInUp" style={{ animationDelay: '100ms' }}>
                         Your Career Journey, <br className="hidden md:block" />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-secondary animate-text-shimmer bg-[length:200%_100%]">
                             Gamified & Guided.
                         </span>
                     </h1>
-                    
+
                     <p className="text-xl text-text-secondary mb-12 max-w-2xl mx-auto leading-relaxed animate-fadeInUp" style={{ animationDelay: '200ms' }}>
                         EduPath turns the chaos of career prep into a clear, level-by-level game plan. From your first roadmap to your final interview.
                     </p>
-                    
+
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fadeInUp" style={{ animationDelay: '300ms' }}>
-                        <button 
+                        <button
                             onClick={handleCTAClick}
                             className="btn-shine px-8 py-4 bg-primary hover:bg-secondary text-white rounded-xl font-bold text-lg transition-all shadow-xl shadow-primary/25 transform hover:-translate-y-1 w-full sm:w-auto flex items-center justify-center gap-2"
                         >
@@ -277,7 +299,7 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
                         <div className="absolute left-6 md:left-[23px] top-0 bottom-0 w-0.5 bg-border -z-10"></div>
 
                         {/* STEP 1: PLAN */}
-                        <JourneyCard 
+                        <JourneyCard
                             step="1"
                             subtitle="Discovery Phase"
                             title="Generate Your Roadmap"
@@ -288,7 +310,7 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
                         />
 
                         {/* STEP 2: PREPARE */}
-                        <JourneyCard 
+                        <JourneyCard
                             step="2"
                             subtitle="Skill Building"
                             title="Master Aptitude & Logic"
@@ -304,18 +326,18 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
                         />
 
                         {/* STEP 3: APPLY */}
-                        <JourneyCard 
+                        <JourneyCard
                             step="3"
                             subtitle="Application"
                             title="Beat the ATS Resume Bot"
-                            description="Upload your resume and the job description. Get a match score and instant, AI-rewritten bullet points to increase your chances of getting shortlisted."
+                            description="Upload your resume for deep analysis or use our intelligent Resume Builder to create a perfect, ATS-friendly resume from scratch."
                             icon={<DocumentTextIcon className="w-5 h-5" />}
                             colorClass="bg-purple-500"
                             visual={<ResumeVisual />}
                         />
 
                         {/* STEP 4: INTERVIEW */}
-                        <JourneyCard 
+                        <JourneyCard
                             step="4"
                             subtitle="Final Boss"
                             title="Ace the Mock Interview"
@@ -346,7 +368,7 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                             {/* Free Plan */}
-                            <PricingCard 
+                            <PricingCard
                                 title="Starter"
                                 price="Free"
                                 colorClass="text-text-primary"
@@ -360,7 +382,7 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
                             />
 
                             {/* Pro Plan */}
-                            <PricingCard 
+                            <PricingCard
                                 title="Pro Student"
                                 price="₹79"
                                 period="month"
@@ -387,22 +409,22 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
                         </div>
                         <h2 className="text-3xl font-bold text-text-primary">Student Vibes</h2>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <TestimonialCard 
-                            name="Rahul M." 
+                        <TestimonialCard
+                            name="Rahul M."
                             handle="@rahul_codes"
                             text="The roadmap generator saved me weeks of confusion. I finally know exactly what to study for React Native!"
                             avatarColor="bg-red-500"
                         />
-                        <TestimonialCard 
-                            name="Ananya S." 
+                        <TestimonialCard
+                            name="Ananya S."
                             handle="@ananya_design"
                             text="I used the resume analyzer before applying to my dream internship. The match score feature is a game changer."
                             avatarColor="bg-blue-500"
                         />
-                        <TestimonialCard 
-                            name="David K." 
+                        <TestimonialCard
+                            name="David K."
                             handle="@david_dev"
                             text="The mock interviewer actually gave me feedback on my speaking speed. Felt super realistic."
                             avatarColor="bg-green-500"
