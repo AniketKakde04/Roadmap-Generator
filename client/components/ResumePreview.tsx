@@ -16,9 +16,21 @@ const HeaderSection = ({ resumeData, templateType }: { resumeData: ResumeData, t
                 <div className="w-20 h-0.5 bg-gray-400 mx-auto my-3"></div>
                 <p className="text-gray-600">{resumeData.job_title || 'Target Job Title'}</p>
 
-                <div className="flex justify-center space-x-4 mt-3 text-sm text-gray-500">
+                <div className="flex justify-center flex-wrap gap-4 mt-3 text-sm text-gray-500">
                     {resumeData.email && <span>{resumeData.email}</span>}
                     {resumeData.phone && <span>• {resumeData.phone}</span>}
+                    {resumeData.linkedin_url && (
+                        <>
+                            <span>•</span>
+                            <a href={resumeData.linkedin_url} className="hover:underline text-sky-600">LinkedIn</a>
+                        </>
+                    )}
+                    {resumeData.github_url && (
+                        <>
+                            <span>•</span>
+                            <a href={resumeData.github_url} className="hover:underline text-sky-600">GitHub</a>
+                        </>
+                    )}
                 </div>
             </div>
         );
@@ -32,8 +44,19 @@ const HeaderSection = ({ resumeData, templateType }: { resumeData: ResumeData, t
                     <p className="text-xl text-purple-100">{resumeData.job_title || 'Target Job Title'}</p>
 
                     <div className="flex flex-wrap gap-4 mt-4 text-sm">
-                        {resumeData.email && <span className="bg-white/20 px-3 py-1 rounded-full">{resumeData.email}</span>}
-                        {resumeData.phone && <span className="bg-white/20 px-3 py-1 rounded-full">{resumeData.phone}</span>}
+                        {resumeData.email && <span className="bg-white/20 px-3 py-1 rounded-full flex items-center gap-2"><Mail className="w-3 h-3" /> {resumeData.email}</span>}
+                        {resumeData.phone && <span className="bg-white/20 px-3 py-1 rounded-full flex items-center gap-2"><Phone className="w-3 h-3" /> {resumeData.phone}</span>}
+                        {resumeData.linkedin_url && (
+                            <a href={resumeData.linkedin_url} className="bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full flex items-center gap-2 transition-colors">
+                                <Linkedin className="w-3 h-3" /> LinkedIn
+                            </a>
+                        )}
+                        {/* Kept White for Creative because it is on blue background */}
+                        {resumeData.github_url && (
+                            <a href={resumeData.github_url} className="bg-white/20 hover:bg-white/30 px-3 py-1 rounded-full flex items-center gap-2 transition-colors">
+                                <Github className="w-3 h-3" /> GitHub
+                            </a>
+                        )}
                     </div>
                 </div>
                 <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-white/10 rounded-full"></div>
@@ -48,9 +71,22 @@ const HeaderSection = ({ resumeData, templateType }: { resumeData: ResumeData, t
             <h1 className="text-4xl font-bold tracking-tight">{resumeData.full_name || 'Your Name'}</h1>
             <p className="text-xl text-sky-700 font-semibold">{resumeData.job_title || 'Target Job Title'}</p>
             <div className="flex justify-center items-center flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-gray-600">
-                {resumeData.email && <span>{resumeData.email}</span>}
-                {resumeData.phone && <><span>•</span><span>{resumeData.phone}</span></>}
-                {resumeData.linkedin_url && <><span>•</span><a href={resumeData.linkedin_url} className="text-sky-700 hover:underline">LinkedIn</a></>}
+                {resumeData.email && <span className="flex items-center gap-1"><Mail className="w-3 h-3" /> {resumeData.email}</span>}
+                {resumeData.phone && <span className="flex items-center gap-1"><span>•</span> <Phone className="w-3 h-3" /> {resumeData.phone}</span>}
+                {resumeData.linkedin_url && (
+                    <span className="flex items-center gap-1">
+                        <span>•</span>
+                        <Linkedin className="w-3 h-3 text-sky-700" />
+                        <a href={resumeData.linkedin_url} className="text-sky-700 hover:underline">LinkedIn</a>
+                    </span>
+                )}
+                {resumeData.github_url && (
+                    <span className="flex items-center gap-1">
+                        <span>•</span>
+                        <Github className="w-3 h-3 text-sky-700" />
+                        <a href={resumeData.github_url} className="text-sky-700 hover:underline">GitHub</a>
+                    </span>
+                )}
             </div>
         </div>
     );
