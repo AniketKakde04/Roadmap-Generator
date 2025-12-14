@@ -22,7 +22,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 import ArrowUpTrayIcon from './components/icons/ArrowUpTrayIcon';
 
 // Configure the worker for pdfjs-dist
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.5.136/build/pdf.worker.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs`;
 
 type View = 'home' | 'dashboard' | 'roadmapGenerator' | 'resume' | 'profile' | 'resumeBuilder' | 'aptitude' | 'mockInterview' | 'sharedPortfolio';
 

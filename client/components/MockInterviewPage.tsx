@@ -17,7 +17,8 @@ import HandThumbUpIcon from './icons/HandThumbUpIcon';
 import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon';
 import ArrowPathIcon from './icons/ArrowPathIcon';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.5.136/build/pdf.worker.mjs`;
+// Configure worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs`;
 
 type InterviewStage = 'setup' | 'interviewing' | 'feedback';
 

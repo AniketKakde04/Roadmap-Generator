@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { suggestProjectsFromResume } from '../services/geminiService';
 import { AnalysisReport } from '../types';
 import Loader from './Loader';
-import { 
-    BriefcaseIcon, 
-    ArrowUpTrayIcon, 
-    SparklesIcon, 
-    CheckCircleIcon, 
-    XCircleIcon, 
+import {
+    BriefcaseIcon,
+    ArrowUpTrayIcon,
+    SparklesIcon,
+    CheckCircleIcon,
+    XCircleIcon,
     LightBulbIcon,
     ChartBarIcon,
     ArrowPathIcon,
@@ -16,7 +16,7 @@ import {
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Configure worker locally for this component as well to ensure it works standalone if needed
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://aistudiocdn.com/pdfjs-dist@^4.5.136/build/pdf.worker.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs`;
 
 interface ResumeAnalyzerProps {
     onProjectSelect: (projectTitle: string) => void;
@@ -26,7 +26,7 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
     const [step, setStep] = useState<'input' | 'analyzing' | 'results'>('input');
     const [resumeText, setResumeText] = useState('');
     const [jobDescription, setJobDescription] = useState('');
-    const [jobTitle, setJobTitle] = useState(''); 
+    const [jobTitle, setJobTitle] = useState('');
     const [analysis, setAnalysis] = useState<AnalysisReport | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [fileName, setFileName] = useState<string | null>(null);
@@ -54,7 +54,19 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                     const pageText = textContent.items.map((item: any) => ('str' in item ? item.str : '')).join(' ');
                     fullText += pageText + '\n';
                 }
-                setResumeText(fullText);
+
+                // --- NEW VALIDATION ---
+                const cleanedText = fullText.trim();
+                if (cleanedText.length < 50) {
+                    // Threshold of 50 chars is arbitrary but safe for a resume. 
+                    // Empty or very short text implies parsing failed or it's an image PDF.
+                    setError('Could not extract text from this PDF. It might be a scanned image. Please upload a text-based PDF.');
+                    setResumeText(''); // Clear it so they can't proceed with bad data
+                    setFileName(null);
+                } else {
+                    setResumeText(cleanedText);
+                    console.log(`Successfully extracted ${cleanedText.length} characters from custom PDF parser.`);
+                }
             } catch (err) {
                 console.error(err);
                 setError('Failed to parse PDF. Please try again.');
@@ -70,10 +82,10 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
             setError('Please provide both your resume (PDF) and the job description.');
             return;
         }
-        
+
         setStep('analyzing');
         setError(null);
-        
+
         try {
             const result = await suggestProjectsFromResume(resumeText, jobTitle, jobDescription);
             setAnalysis(result);
@@ -92,7 +104,7 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
 
     return (
         <div className="w-full max-w-7xl mx-auto animate-fadeIn pb-12">
-            
+
             {/* Header */}
             <div className="text-center mb-10">
                 <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-500 mb-4">
@@ -113,7 +125,7 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                 </div>
             ) : step === 'results' && analysis ? (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fadeInUp">
-                    
+
                     {/* LEFT COLUMN: SCORE & SUMMARY */}
                     <div className="lg:col-span-1 space-y-6">
                         {/* Score Card */}
@@ -124,9 +136,9 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                                 <span className="text-5xl font-bold text-slate-800">{analysis.matchScore}%</span>
                             </div>
                             <p className="text-sm text-slate-500">
-                                {analysis.matchScore > 80 ? "Excellent match! You're ready to apply." : 
-                                 analysis.matchScore > 50 ? "Good base, but needs tailoring." : 
-                                 "Significant gaps found. See recommendations."}
+                                {analysis.matchScore > 80 ? "Excellent match! You're ready to apply." :
+                                    analysis.matchScore > 50 ? "Good base, but needs tailoring." :
+                                        "Significant gaps found. See recommendations."}
                             </p>
                         </div>
 
@@ -146,7 +158,7 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                                     <span className="font-bold text-red-500">{analysis.gaps.length} identified</span>
                                 </div>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => { setStep('input'); setAnalysis(null); setResumeText(''); setFileName(null); }}
                                 className="w-full mt-6 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
                             >
@@ -158,7 +170,7 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
 
                     {/* RIGHT COLUMN: DETAILED BREAKDOWN */}
                     <div className="lg:col-span-2 space-y-8">
-                        
+
                         {/* 1. Strengths & Gaps Grid */}
                         <div className="grid md:grid-cols-2 gap-6">
                             <div className="bg-emerald-50/50 border border-emerald-100 p-6 rounded-2xl">
@@ -233,7 +245,7 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                                                 <span className="font-bold">Why this works:</span> {project.reasoning}
                                             </p>
                                         </div>
-                                        <button 
+                                        <button
                                             onClick={() => onProjectSelect(project.title)}
                                             className="w-full py-2 bg-white border border-indigo-200 text-indigo-600 rounded-lg font-bold text-sm hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2"
                                         >
@@ -250,7 +262,7 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
             ) : (
                 // --- INPUT FORM STEP ---
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fadeInUp">
-                    
+
                     {/* Left Column: Job Details */}
                     <div className="space-y-6">
                         <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
@@ -260,7 +272,7 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                                 </div>
                                 <h2 className="text-xl font-bold text-slate-800">Target Role</h2>
                             </div>
-                            
+
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-2">Job Title (Optional)</label>
@@ -298,14 +310,14 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
 
                             <div className="flex-1 flex flex-col justify-center space-y-6">
                                 {/* File Upload - Main and Only Input */}
-                                <label 
+                                <label
                                     className={`border-2 border-dashed border-purple-300 rounded-3xl p-12 text-center hover:bg-purple-50 hover:border-purple-500 transition-all cursor-pointer group ${isParsing ? 'opacity-50 cursor-wait' : ''}`}
                                 >
-                                    <input 
-                                        type="file" 
-                                        className="hidden" 
-                                        accept=".pdf" 
-                                        onChange={handleFileChange} 
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        accept=".pdf"
+                                        onChange={handleFileChange}
                                         disabled={isParsing}
                                     />
                                     <div className="w-20 h-20 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
@@ -315,8 +327,8 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                                         {fileName ? `Selected: ${fileName}` : "Upload Resume PDF"}
                                     </h3>
                                     <p className="text-slate-500 max-w-xs mx-auto">
-                                        {isParsing 
-                                            ? "Extracting text from your document..." 
+                                        {isParsing
+                                            ? "Extracting text from your document..."
                                             : "Click to browse or drag and drop your file here"}
                                     </p>
                                 </label>
