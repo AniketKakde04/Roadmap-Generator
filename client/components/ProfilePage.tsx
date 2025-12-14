@@ -8,13 +8,13 @@ import EditProfileModal from './EditProfileModal';
 import { getResume, upsertResume } from '../services/resumeService';
 import Loader from './Loader';
 import { supabase } from '../services/supabase';
-import { 
-    UserIcon, 
-    MapIcon, 
-    DocumentTextIcon, 
-    GlobeAltIcon, 
-    PencilSquareIcon, 
-    TrashIcon, 
+import {
+    UserIcon,
+    MapIcon,
+    DocumentTextIcon,
+    GlobeAltIcon,
+    PencilSquareIcon,
+    TrashIcon,
     CheckBadgeIcon,
     BriefcaseIcon,
     EnvelopeIcon,
@@ -48,7 +48,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
     const [selectedRoadmap, setSelectedRoadmap] = useState<SavedRoadmap | null>(null);
     const [editMode, setEditMode] = useState(false);
     const [activeTab, setActiveTab] = useState<'roadmaps' | 'resume' | 'portfolio'>('roadmaps');
-    
+
     const [resumeData, setResumeData] = useState<ResumeData | null>(null);
     const [loadingResume, setLoadingResume] = useState(true);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -100,7 +100,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
         if (!user) return;
 
         const url = `${window.location.origin}?view=sharedPortfolio&userId=${user.id}`;
-        
+
         navigator.clipboard.writeText(url).then(() => {
             setCopySuccess(true);
             setTimeout(() => setCopySuccess(false), 2000);
@@ -130,27 +130,27 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
     return (
         <>
             {isEditModalOpen && resumeData && (
-                <EditProfileModal 
+                <EditProfileModal
                     initialData={resumeData}
                     onClose={() => setIsEditModalOpen(false)}
                     onSave={handleProfileSave}
                 />
             )}
-            
+
             <div className="w-full max-w-6xl mx-auto py-8 px-4 md:px-8 animate-fadeIn space-y-8">
-                
+
                 {/* --- 1. HERO PROFILE HEADER --- */}
                 <div className="relative bg-background-secondary border border-border rounded-2xl overflow-hidden shadow-sm">
                     {/* Decorative Background */}
                     <div className="absolute top-0 w-full h-32 bg-gradient-to-r from-primary/80 to-secondary/80"></div>
-                    
+
                     <div className="relative px-8 pt-16 pb-8">
                         {loadingResume ? <div className="py-12 flex justify-center"><Loader /></div> : (
                             <div className="flex flex-col md:flex-row items-end md:items-center gap-6">
                                 {/* Avatar */}
                                 <div className="w-32 h-32 rounded-full bg-white p-1 shadow-xl -mt-12 flex-shrink-0">
                                     <div className="w-full h-full rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-4xl font-bold text-primary border-4 border-white">
-                                        {resumeData?.full_name ? resumeData.full_name.charAt(0) : <UserIcon className="w-12 h-12 text-slate-400"/>}
+                                        {resumeData?.full_name ? resumeData.full_name.charAt(0) : <UserIcon className="w-12 h-12 text-slate-400" />}
                                     </div>
                                 </div>
 
@@ -160,7 +160,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                                         {resumeData?.full_name || userName}
                                     </h1>
                                     <p className="text-primary font-medium text-lg">{resumeData?.job_title || 'Job Title Not Set'}</p>
-                                    
+
                                     <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-3 text-sm text-text-secondary">
                                         {resumeData?.email && (
                                             <span className="flex items-center gap-1.5 bg-background px-3 py-1 rounded-full border border-border shadow-sm">
@@ -176,7 +176,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                                 </div>
 
                                 {/* Edit Action - Explicitly type="button" and stop propagation */}
-                                <button 
+                                <button
                                     type="button"
                                     onClick={(e) => {
                                         e.preventDefault();
@@ -196,21 +196,21 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                 {/* --- 2. QUICK STATS --- */}
                 {!loadingResume && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <StatsCard 
-                            label="Active Roadmaps" 
-                            value={savedRoadmaps.length} 
+                        <StatsCard
+                            label="Active Roadmaps"
+                            value={savedRoadmaps.length}
                             icon={<MapIcon className="w-6 h-6" />}
                             colorClass="bg-blue-500 text-blue-500"
                         />
-                        <StatsCard 
-                            label="Skills Mastered" 
-                            value={resumeData?.skills.length || 0} 
+                        <StatsCard
+                            label="Skills Mastered"
+                            value={resumeData?.skills.length || 0}
                             icon={<CheckBadgeIcon className="w-6 h-6" />}
                             colorClass="bg-green-500 text-green-500"
                         />
-                        <StatsCard 
-                            label="Experience Yrs" 
-                            value={resumeData?.experience.length ? `${resumeData.experience.length}+` : '0'} 
+                        <StatsCard
+                            label="Experience Yrs"
+                            value={resumeData?.experience.length ? `${resumeData.experience.length}+` : '0'}
                             icon={<BriefcaseIcon className="w-6 h-6" />}
                             colorClass="bg-purple-500 text-purple-500"
                         />
@@ -228,11 +228,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
-                                className={`flex items-center gap-2 py-3 px-6 border-b-2 font-medium transition-all whitespace-nowrap ${
-                                    activeTab === tab.id 
-                                        ? 'border-primary text-primary bg-primary/5' 
+                                className={`flex items-center gap-2 py-3 px-6 border-b-2 font-medium transition-all whitespace-nowrap ${activeTab === tab.id
+                                        ? 'border-primary text-primary bg-primary/5'
                                         : 'border-transparent text-text-secondary hover:text-text-primary hover:bg-background-hover'
-                                }`}
+                                    }`}
                             >
                                 <tab.icon className="w-5 h-5" />
                                 {tab.label}
@@ -242,7 +241,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
 
                     {/* --- TAB CONTENT --- */}
                     <div className="min-h-[400px]">
-                        
+
                         {/* A. ROADMAPS */}
                         {activeTab === 'roadmaps' && (
                             <div className="animate-fadeIn">
@@ -251,20 +250,20 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                                         {savedRoadmaps.map((roadmap) => {
                                             const completedSteps = roadmap.completedSteps || [];
                                             const progressPercent = roadmap.steps.length > 0 ? Math.round((completedSteps.length / roadmap.steps.length) * 100) : 0;
-                                            
+
                                             return (
-                                                <div 
-                                                    key={roadmap.id} 
+                                                <div
+                                                    key={roadmap.id}
                                                     onClick={() => setSelectedRoadmap(roadmap)}
                                                     className="group bg-background-secondary border border-border rounded-xl p-5 cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all duration-300 flex flex-col h-full relative overflow-hidden"
                                                 >
                                                     <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary to-secondary opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                                                    
+
                                                     <div className="flex justify-between items-start mb-3">
                                                         <h3 className="font-bold text-lg text-text-primary group-hover:text-primary transition-colors line-clamp-1" title={roadmap.title}>
                                                             {roadmap.title}
                                                         </h3>
-                                                        <button 
+                                                        <button
                                                             onClick={(e) => { e.stopPropagation(); onDeleteRoadmap(roadmap.id); }}
                                                             className="text-text-secondary hover:text-error p-1.5 rounded-full hover:bg-error/10 transition-colors"
                                                             title="Delete Roadmap"
@@ -272,19 +271,19 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                                                             <TrashIcon className="w-5 h-5" />
                                                         </button>
                                                     </div>
-                                                    
+
                                                     <p className="text-text-secondary text-sm line-clamp-2 mb-4 flex-grow">
                                                         {roadmap.description}
                                                     </p>
-                                                    
+
                                                     <div className="mt-auto">
                                                         <div className="flex justify-between text-xs font-semibold mb-1">
                                                             <span className="text-primary">{progressPercent}% Complete</span>
                                                             <span className="text-text-secondary">{completedSteps.length}/{roadmap.steps.length} Steps</span>
                                                         </div>
                                                         <div className="w-full bg-background-accent rounded-full h-2 overflow-hidden">
-                                                            <div 
-                                                                className="bg-primary h-full rounded-full transition-all duration-500 ease-out" 
+                                                            <div
+                                                                className="bg-primary h-full rounded-full transition-all duration-500 ease-out"
                                                                 style={{ width: `${progressPercent}%` }}
                                                             ></div>
                                                         </div>
@@ -317,7 +316,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                                                     <CheckBadgeIcon className="w-5 h-5" />
                                                     <span>Ready for Export</span>
                                                 </div>
-                                                <button 
+                                                <button
                                                     onClick={() => onNavigate('resumeBuilder')}
                                                     className="w-full bg-primary text-white font-semibold py-3 px-4 rounded-lg hover:bg-secondary transition-all shadow-md shadow-primary/20 flex items-center justify-center gap-2"
                                                 >
@@ -327,8 +326,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                                             </div>
                                         </div>
                                         <div className="lg:w-2/3 bg-white border border-border rounded-xl p-4 shadow-inner h-[600px] overflow-y-auto">
-                                             {/* Using scale to fit better */}
-                                            <div className="transform origin-top scale-[0.85] w-[115%]">
+                                            {/* Using scale to fit better */}
+                                            <div className="transform origin-top scale-[0.6] md:scale-[0.85] w-[166%] md:w-[115%]">
                                                 <ResumePreview resumeData={resumeData} />
                                             </div>
                                         </div>
@@ -337,8 +336,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                                     <div className="text-center py-16 border-2 border-dashed border-border rounded-xl bg-background-secondary/50">
                                         <DocumentTextIcon className="w-12 h-12 text-text-secondary/50 mb-3 mx-auto" />
                                         <p className="text-text-secondary font-medium mb-4">You haven't created a resume yet.</p>
-                                        <button 
-                                            onClick={() => onNavigate('resumeBuilder')} 
+                                        <button
+                                            onClick={() => onNavigate('resumeBuilder')}
                                             className="bg-primary text-white font-semibold py-2 px-6 rounded-lg hover:bg-secondary transition-all shadow-md"
                                         >
                                             Create Your Resume
@@ -363,12 +362,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                                                     <p className="text-sm text-text-secondary mt-1">Share your professional journey with the world.</p>
                                                 </div>
                                             </div>
-                                            <button 
+                                            <button
                                                 onClick={handleCopyLink}
                                                 className="flex items-center gap-2 bg-white border border-border text-text-primary font-semibold py-2.5 px-5 rounded-lg hover:bg-background-hover hover:border-primary transition-all shadow-sm group"
                                             >
                                                 {copySuccess ? (
-                                                    <span className="text-success flex items-center gap-2"><CheckBadgeIcon className="w-5 h-5"/> Copied!</span>
+                                                    <span className="text-success flex items-center gap-2"><CheckBadgeIcon className="w-5 h-5" /> Copied!</span>
                                                 ) : (
                                                     <>
                                                         <LinkIcon className="w-5 h-5 text-text-secondary group-hover:text-primary" />
@@ -402,8 +401,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                                     <div className="text-center py-16 border-2 border-dashed border-border rounded-xl bg-background-secondary/50">
                                         <GlobeAltIcon className="w-12 h-12 text-text-secondary/50 mb-3 mx-auto" />
                                         <p className="text-text-secondary font-medium mb-4">Complete your resume first to generate a portfolio.</p>
-                                        <button 
-                                            onClick={() => onNavigate('resumeBuilder')} 
+                                        <button
+                                            onClick={() => onNavigate('resumeBuilder')}
                                             className="bg-primary text-white font-semibold py-2 px-6 rounded-lg hover:bg-secondary transition-all shadow-md"
                                         >
                                             Go to Resume Builder

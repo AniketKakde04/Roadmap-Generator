@@ -231,10 +231,10 @@ const ResumeBuilderPage: React.FC = () => {
                 />
             )}
 
-            <div className="flex flex-col lg:flex-row gap-6 p-4 md:p-8 h-[calc(100vh-64px)]">
+            <div className="flex flex-col lg:flex-row gap-6 p-4 md:p-8 min-h-[calc(100vh-64px)] lg:h-[calc(100vh-64px)]">
                 {/* Left Side: Form Controls */}
-                <div className="w-full lg:w-1/2 xl:w-2/5 flex-shrink-0 h-full flex flex-col">
-                    <div className="bg-background-secondary p-4 rounded-xl border border-border h-full flex flex-col shadow-lg">
+                <div className="w-full lg:w-1/2 xl:w-2/5 flex-shrink-0 h-auto lg:h-full flex flex-col order-2 lg:order-1">
+                    <div className="bg-background-secondary p-4 rounded-xl border border-border h-[600px] lg:h-full flex flex-col shadow-lg">
                         <div className="flex justify-between items-center mb-4 pb-3 border-b border-border">
                             <h2 className="text-xl font-bold text-text-primary flex items-center gap-2">
                                 <FiLayout className="w-5 h-5 text-primary" />
@@ -381,7 +381,7 @@ const ResumeBuilderPage: React.FC = () => {
                 </div>
 
                 {/* Right Side: Preview */}
-                <div className="w-full lg:w-1/2 xl:w-3/5 overflow-y-auto flex flex-col">
+                <div className="w-full lg:w-1/2 xl:w-3/5 h-auto lg:h-full overflow-hidden lg:overflow-y-auto flex flex-col order-1 lg:order-2">
                     <div className="flex items-center justify-between mb-4 p-4 bg-background-secondary border border-border rounded-lg shadow-md">
                         <div className="flex items-center gap-4">
                             <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">

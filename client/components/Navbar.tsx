@@ -13,8 +13,8 @@ interface NavbarProps {
     onSignOut: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ 
-    currentView, onNavigate, isLoggedIn, onSignInClick, onSignUpClick, onSignOut 
+const Navbar: React.FC<NavbarProps> = ({
+    currentView, onNavigate, isLoggedIn, onSignInClick, onSignUpClick, onSignOut
 }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -61,7 +61,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     {/* Right Side Actions */}
                     <div className="hidden md:flex items-center space-x-4 flex-shrink-0"> {/* Added flex-shrink-0 */}
                         <ThemeToggle />
-                        
+
                         <a href="https://github.com/aniketkakde04/Roadmap-Generator" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-primary transition-colors">
                             <GitHubIcon className="w-6 h-6" />
                         </a>
@@ -70,7 +70,7 @@ const Navbar: React.FC<NavbarProps> = ({
                             <div className="relative flex items-center">
                                 <button onClick={() => handleNav('profile')} className="w-8 h-8 rounded-full bg-background-accent flex items-center justify-center text-primary ring-2 ring-transparent hover:ring-primary transition-all" title="Profile">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                                      <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
+                                        <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" clipRule="evenodd" />
                                     </svg>
                                 </button>
                                 <button
@@ -104,7 +104,7 @@ const Navbar: React.FC<NavbarProps> = ({
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className="inline-flex items-center justify-center p-2 rounded-md text-text-secondary hover:text-text-primary hover:bg-background-hover focus:outline-none"
                         >
-                           <span className="sr-only">Open main menu</span>
+                            <span className="sr-only">Open main menu</span>
                             {!isMobileMenuOpen ? (
                                 <svg className="block h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                             ) : (
@@ -116,14 +116,17 @@ const Navbar: React.FC<NavbarProps> = ({
             </div>
 
             {/* Mobile Menu */}
-             {isMobileMenuOpen && (
+            {isMobileMenuOpen && (
                 <div className="md:hidden bg-background border-t border-border">
                     <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
                         {isLoggedIn ? (
                             <>
                                 <button onClick={() => handleNav('dashboard')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Dashboard</button>
-                                <button onClick={() => handleNav('roadmapGenerator')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Roadmap</button>
-                                <button onClick={() => handleNav('resumeBuilder')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Resume</button>
+                                <button onClick={() => handleNav('roadmapGenerator')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Roadmap Generator</button>
+                                <button onClick={() => handleNav('resume')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Resume Analyzer</button>
+                                <button onClick={() => handleNav('resumeBuilder')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Resume Builder</button>
+                                <button onClick={() => handleNav('aptitude')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Aptitude Prep</button>
+                                <button onClick={() => handleNav('mockInterview')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Mock Interview</button>
                                 <button onClick={() => handleNav('profile')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Profile</button>
                                 <button onClick={() => { onSignOut(); setIsMobileMenuOpen(false); }} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-error hover:bg-background-hover">Sign Out</button>
                             </>
@@ -135,7 +138,7 @@ const Navbar: React.FC<NavbarProps> = ({
                         )}
                     </div>
                 </div>
-             )}
+            )}
         </nav>
     );
 };

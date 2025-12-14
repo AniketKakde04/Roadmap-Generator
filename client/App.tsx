@@ -11,9 +11,9 @@ import ResumeAnalyzer from './components/ResumeAnalyzer';
 import ProfilePage from './components/ProfilePage';
 import ResumeBuilderPage from './components/ResumeBuilderPage';
 import HomePage from './components/HomePage';
-import AptitudeDashboard from './components/AptitudeDashboard'; 
+import AptitudeDashboard from './components/AptitudeDashboard';
 import MockInterviewPage from './components/MockInterviewPage';
-import PortfolioPreview from './components/PortfolioPreview'; 
+import PortfolioPreview from './components/PortfolioPreview';
 import OnboardingTour, { TourStep } from './components/OnboardingTour'; // Import Tour
 import { getSession, onAuthStateChange, signOutUser } from './services/authService';
 import { getSavedRoadmaps, saveRoadmap, deleteRoadmap, updateRoadmapProgress, updateRoadmap } from './services/roadmapService';
@@ -53,10 +53,10 @@ const App: React.FC = () => {
     const [user, setUser] = useState<User | null>(null);
     const [modalView, setModalView] = useState<'signIn' | 'signUp' | null>(null);
     const [savedRoadmaps, setSavedRoadmaps] = useState<SavedRoadmap[]>([]);
-    
+
     // Public Portfolio Data
     const [publicResumeData, setPublicResumeData] = useState<ResumeData | null>(null);
-    
+
     // --- TOUR STATE ---
     const [showTour, setShowTour] = useState(false);
 
@@ -105,28 +105,28 @@ const App: React.FC = () => {
                 if (data) setPublicResumeData(data);
             });
         }
-        
+
         const checkUser = async () => {
             const session = await getSession();
             const currentUser = session?.user ?? null;
             setUser(currentUser);
-            
+
             if (publicView !== 'sharedPortfolio') {
                 if (currentUser) {
-                     setView(v => v === 'home' ? 'dashboard' : v);
-                     
-                     // Check for Onboarding Tour
-                     const hasSeenTour = localStorage.getItem('onboarding_complete');
-                     if (!hasSeenTour) {
-                         // Small delay to ensure UI is rendered
-                         setTimeout(() => setShowTour(true), 1000);
-                     }
+                    setView(v => v === 'home' ? 'dashboard' : v);
+
+                    // Check for Onboarding Tour
+                    const hasSeenTour = localStorage.getItem('onboarding_complete');
+                    if (!hasSeenTour) {
+                        // Small delay to ensure UI is rendered
+                        setTimeout(() => setShowTour(true), 1000);
+                    }
                 } else {
                     setView('home');
                 }
             } else if (currentUser && !sharedUserId) {
-                 const data = await getResume(currentUser.id);
-                 if (data) setPublicResumeData(data);
+                const data = await getResume(currentUser.id);
+                if (data) setPublicResumeData(data);
             }
         };
         checkUser();
@@ -134,7 +134,7 @@ const App: React.FC = () => {
         const { data: authListener } = onAuthStateChange((_event, session) => {
             const currentUser = session?.user ?? null;
             setUser(currentUser);
-            
+
             const currentParams = new URLSearchParams(window.location.search);
             if (currentParams.get('view') !== 'sharedPortfolio') {
                 if (currentUser) {
@@ -203,7 +203,7 @@ const App: React.FC = () => {
         setIsLoading(true);
         setError(null);
         setRoadmap(null);
-        
+
         try {
             let result: RoadmapType;
             if (generationMode === 'topic') {
@@ -225,7 +225,7 @@ const App: React.FC = () => {
             setIsLoading(false);
         }
     }, [generationMode, topic, level, timeline, resumeText, jobTitle, jobDescription]);
-    
+
     useEffect(() => {
         if (autoGenerate && topic) {
             setView('roadmapGenerator');
@@ -234,7 +234,7 @@ const App: React.FC = () => {
             setAutoGenerate(false);
         }
     }, [autoGenerate, topic, handleGenerateRoadmap]);
-    
+
     const handleSaveRoadmap = async () => {
         if (!roadmap || !user) return;
         try {
@@ -247,26 +247,26 @@ const App: React.FC = () => {
     };
 
     const handleUpdateRoadmap = async (updatedRoadmap: SavedRoadmap) => {
-       const originalRoadmaps = [...savedRoadmaps];
-       const updatedList = originalRoadmaps.map(r => r.id === updatedRoadmap.id ? updatedRoadmap : r);
-       setSavedRoadmaps(updatedList);
-       try {
-           await updateRoadmap(updatedRoadmap);
-       } catch (e: any) {
-           setError("Failed to save changes.");
-           setSavedRoadmaps(originalRoadmaps);
-       }
+        const originalRoadmaps = [...savedRoadmaps];
+        const updatedList = originalRoadmaps.map(r => r.id === updatedRoadmap.id ? updatedRoadmap : r);
+        setSavedRoadmaps(updatedList);
+        try {
+            await updateRoadmap(updatedRoadmap);
+        } catch (e: any) {
+            setError("Failed to save changes.");
+            setSavedRoadmaps(originalRoadmaps);
+        }
     };
 
     const handleDeleteRoadmap = async (roadmapId: string) => {
-       const originalRoadmaps = [...savedRoadmaps];
-       setSavedRoadmaps(prev => prev.filter(r => r.id !== roadmapId));
-       try {
-           await deleteRoadmap(roadmapId);
-       } catch (e: any) {
-           setError("Failed to delete roadmap.");
-           setSavedRoadmaps(originalRoadmaps);
-       }
+        const originalRoadmaps = [...savedRoadmaps];
+        setSavedRoadmaps(prev => prev.filter(r => r.id !== roadmapId));
+        try {
+            await deleteRoadmap(roadmapId);
+        } catch (e: any) {
+            setError("Failed to delete roadmap.");
+            setSavedRoadmaps(originalRoadmaps);
+        }
     };
 
     const handleProgressToggle = async (roadmapId: string, stepIndex: number) => {
@@ -276,7 +276,7 @@ const App: React.FC = () => {
         const newCompletedSteps = roadmapToUpdate.completedSteps.includes(stepIndex)
             ? roadmapToUpdate.completedSteps.filter(i => i !== stepIndex)
             : [...roadmapToUpdate.completedSteps, stepIndex];
-        const updatedRoadmaps = originalRoadmaps.map(r => 
+        const updatedRoadmaps = originalRoadmaps.map(r =>
             r.id === roadmapId ? { ...r, completedSteps: newCompletedSteps } : r
         );
         setSavedRoadmaps(updatedRoadmaps);
@@ -287,7 +287,7 @@ const App: React.FC = () => {
             setSavedRoadmaps(originalRoadmaps);
         }
     };
-    
+
     const handleProjectSelect = (projectTitle: string) => {
         setTopic(projectTitle);
         setAutoGenerate(true);
@@ -302,23 +302,23 @@ const App: React.FC = () => {
             setTimeout(() => setShowTour(true), 500);
         }
     };
-    
+
     const handleSignOut = async () => {
         await signOutUser();
         setView('home');
     };
-    
+
     const renderContent = () => {
         const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
-        
+
         // --- PUBLIC PORTFOLIO VIEW LOGIC ---
         if (view === 'sharedPortfolio') {
-             if (!publicResumeData) return <div className="w-full min-h-screen flex items-center justify-center bg-white"><Loader /></div>;
-             return (
+            if (!publicResumeData) return <div className="w-full min-h-screen flex items-center justify-center bg-white"><Loader /></div>;
+            return (
                 <div className="w-full min-h-screen bg-white relative">
                     <PortfolioPreview data={publicResumeData} readOnly={true} />
-                    <a 
-                        href="/" 
+                    <a
+                        href="/"
                         className="fixed bottom-6 left-6 z-50 flex items-center gap-2 bg-white/90 backdrop-blur border border-slate-200 px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all group no-underline"
                         title="Create your own portfolio with EduPath"
                     >
@@ -326,49 +326,49 @@ const App: React.FC = () => {
                         <span className="text-xs font-medium text-slate-500 group-hover:text-primary transition-colors">Made with EduPath</span>
                     </a>
                 </div>
-             );
+            );
         }
 
         if (!user && view !== 'home') {
-             return <HomePage onSignUpClick={() => setModalView('signUp')} onNavigate={setView as any} isLoggedIn={false} />;
+            return <HomePage onSignUpClick={() => setModalView('signUp')} onNavigate={setView as any} isLoggedIn={false} />;
         }
 
         switch (view) {
             case 'home':
                 return <HomePage onSignUpClick={() => setModalView('signUp')} onNavigate={setView as any} isLoggedIn={!!user} />;
-            
+
             case 'dashboard':
                 return <Dashboard userName={userName} onNavigate={setView as any} stats={{ roadmaps: savedRoadmaps.length }} />;
-            
+
             case 'resume':
                 return <ResumeAnalyzer onProjectSelect={handleProjectSelect} />;
-            
+
             case 'profile':
-                 return <ProfilePage 
-                        userName={userName} 
-                        savedRoadmaps={savedRoadmaps} 
-                        onProgressToggle={handleProgressToggle} 
-                        onDeleteRoadmap={handleDeleteRoadmap} 
-                        onUpdateRoadmap={handleUpdateRoadmap} 
-                        onNavigate={setView as any} 
-                    />;
+                return <ProfilePage
+                    userName={userName}
+                    savedRoadmaps={savedRoadmaps}
+                    onProgressToggle={handleProgressToggle}
+                    onDeleteRoadmap={handleDeleteRoadmap}
+                    onUpdateRoadmap={handleUpdateRoadmap}
+                    onNavigate={setView as any}
+                />;
             case 'resumeBuilder':
                 return <ResumeBuilderPage />;
             case 'aptitude':
                 return <AptitudeDashboard />;
             case 'mockInterview':
                 return <MockInterviewPage />;
-            
+
             case 'roadmapGenerator':
             default:
                 const isCurrentRoadmapSaved = !!(roadmap && savedRoadmaps.some(r => r.title === roadmap.title && r.description === roadmap.description));
-                const canGenerate = generationMode === 'topic' 
+                const canGenerate = generationMode === 'topic'
                     ? !isLoading && topic.trim()
                     : !isLoading && !isParsing && resumeFile && jobTitle.trim() && jobDescription.trim();
 
                 return (
                     <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
-                         <header className="w-full text-center pt-8 md:pt-12">
+                        <header className="w-full text-center pt-8 md:pt-12">
                             <h1 className="text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
                                 AI Roadmap Generator
                             </h1>
@@ -379,7 +379,7 @@ const App: React.FC = () => {
 
                         <main className="w-full flex-grow flex flex-col items-center">
                             <div className="w-full max-w-3xl p-6 bg-background-secondary/80 backdrop-blur-md rounded-xl shadow-xl border border-border mt-8">
-                                
+
                                 <div className="flex mb-6 p-1 bg-background-accent rounded-lg">
                                     <button
                                         onClick={() => setGenerationMode('topic')}
@@ -431,7 +431,7 @@ const App: React.FC = () => {
                                         <div className="space-y-4 animate-fadeIn">
                                             <div>
                                                 <label htmlFor="resume-upload" className="block text-sm font-medium text-text-primary mb-2">
-                                                   1. Upload Your Resume (PDF)
+                                                    1. Upload Your Resume (PDF)
                                                 </label>
                                                 <label
                                                     htmlFor="resume-upload"
@@ -447,7 +447,7 @@ const App: React.FC = () => {
                                                     </div>
                                                 </label>
                                             </div>
-                                            
+
                                             <div>
                                                 <label htmlFor="job-title" className="block text-sm font-medium text-text-primary mb-2">
                                                     2. Target Job Title
@@ -475,7 +475,7 @@ const App: React.FC = () => {
                                         </div>
                                     )}
 
-                                     <div>
+                                    <div>
                                         <label htmlFor="timeline" className="block text-sm font-medium text-text-primary mb-2">
                                             {generationMode === 'topic' ? 'Preferred Timeline (Optional)' : '4. Prep Timeline'}
                                         </label>
@@ -502,15 +502,15 @@ const App: React.FC = () => {
                             <div className="w-full mt-10">
                                 {isLoading && <Loader />}
                                 {roadmap && (
-                                     <div>
+                                    <div>
                                         {user && (
                                             <div className="text-center mb-6">
-                                                <button 
+                                                <button
                                                     onClick={handleSaveRoadmap}
                                                     disabled={isCurrentRoadmapSaved}
                                                     className={`bg-success text-white font-semibold py-2 px-6 rounded-full hover:bg-opacity-90 disabled:bg-background-accent disabled:text-success shadow-lg transition-all ${isCurrentRoadmapSaved ? 'cursor-default' : ''}`}
                                                 >
-                                                     {isCurrentRoadmapSaved ? '✓ Saved' : 'Save Roadmap'}
+                                                    {isCurrentRoadmapSaved ? '✓ Saved' : 'Save Roadmap'}
                                                 </button>
                                             </div>
                                         )}
@@ -523,47 +523,63 @@ const App: React.FC = () => {
                 );
         }
     };
-    
+
     return (
         <div className="min-h-screen bg-background text-text-primary font-sans transition-colors duration-300 selection:bg-primary/30">
             {/* Render Tour if conditions met */}
             {showTour && (
-                <OnboardingTour 
-                    steps={tourSteps} 
+                <OnboardingTour
+                    steps={tourSteps}
                     onComplete={handleTourComplete}
-                    onSkip={handleTourComplete} 
+                    onSkip={handleTourComplete}
                 />
             )}
 
             {view === 'sharedPortfolio' ? (
                 renderContent()
             ) : user ? (
-                <div className="flex h-screen overflow-hidden">
-                    <VerticalNavbar 
-                        currentView={view}
-                        onNavigate={(v) => setView(v as View)}
-                        isLoggedIn={true}
-                        onSignInClick={() => {}}
-                        onSignUpClick={() => {}}
-                        onSignOut={handleSignOut}
-                    />
+                <div className="flex h-screen overflow-hidden flex-col md:flex-row">
+                    {/* Desktop Sidebar */}
+                    <div className="hidden md:block h-full">
+                        <VerticalNavbar
+                            currentView={view}
+                            onNavigate={(v) => setView(v as View)}
+                            isLoggedIn={true}
+                            onSignInClick={() => { }}
+                            onSignUpClick={() => { }}
+                            onSignOut={handleSignOut}
+                        />
+                    </div>
+
+                    {/* Mobile Top Navbar */}
+                    <div className="md:hidden">
+                        <Navbar
+                            currentView={view}
+                            onNavigate={(v) => setView(v as View)}
+                            isLoggedIn={true}
+                            onSignInClick={() => { }}
+                            onSignUpClick={() => { }}
+                            onSignOut={handleSignOut}
+                        />
+                    </div>
+
                     <main className="flex-1 overflow-y-auto bg-background relative scrollbar-hide">
-                         <div className="p-4 md:p-8 max-w-[1600px] mx-auto">
+                        <div className="p-4 md:p-8 max-w-[1600px] mx-auto pb-20 md:pb-8">
                             {renderContent()}
-                         </div>
+                        </div>
                     </main>
                 </div>
             ) : (
                 <div className="flex flex-col min-h-screen bg-background">
-                    <Navbar 
-                        currentView={view} 
+                    <Navbar
+                        currentView={view}
                         onNavigate={(v) => setView(v as View)}
                         isLoggedIn={false}
                         onSignInClick={() => setModalView('signIn')}
                         onSignUpClick={() => setModalView('signUp')}
-                        onSignOut={() => {}}
+                        onSignOut={() => { }}
                     />
-                     <div className="flex-grow">
+                    <div className="flex-grow">
                         <div className="flex flex-col items-center">
                             <div key={view} className="w-full animate-fadeIn">
                                 {renderContent()}

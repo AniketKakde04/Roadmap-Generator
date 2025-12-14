@@ -300,9 +300,8 @@ const MockInterviewPage: React.FC = () => {
                 </label>
                 <label
                   htmlFor="resume-upload"
-                  className={`relative cursor-pointer flex justify-center w-full rounded-lg border-2 border-dashed ${
-                    error ? 'border-error' : 'border-border'
-                  } px-6 py-10 hover:border-primary transition-colors bg-background`}
+                  className={`relative cursor-pointer flex justify-center w-full rounded-lg border-2 border-dashed ${error ? 'border-error' : 'border-border'
+                    } px-6 py-10 hover:border-primary transition-colors bg-background`}
                 >
                   <div className="text-center">
                     <ArrowUpTrayIcon className="mx-auto h-12 w-12 text-text-secondary" />
@@ -356,7 +355,7 @@ const MockInterviewPage: React.FC = () => {
             className="w-full max-w-5xl mx-auto p-4 md:p-8 bg-background-secondary border border-border rounded-xl shadow-lg animate-fadeIn flex flex-col"
             style={{ height: 'calc(100vh - 6rem)' }}
           >
-            <div className="flex-1 grid grid-cols-2 gap-4 mb-4 overflow-hidden">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 overflow-hidden">
               {/* Left: Interviewer */}
               <div className="flex flex-col bg-background rounded-lg border border-border p-6 items-center justify-center shadow-sm">
                 <div className="w-36 h-36 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4 drop-shadow-lg">
