@@ -37,6 +37,7 @@ const App: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [autoGenerate, setAutoGenerate] = useState(false);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     // State for Generation
     const [topic, setTopic] = useState<string>('');
@@ -146,7 +147,7 @@ const App: React.FC = () => {
         });
 
         return () => {
-            authListener?.subscription.unsubscribe();
+            authListener?.subscription?.unsubscribe();
         };
     }, []);
 
@@ -235,11 +236,15 @@ const App: React.FC = () => {
         }
     }, [autoGenerate, topic, handleGenerateRoadmap]);
 
+
+
     const handleSaveRoadmap = async () => {
         if (!roadmap || !user) return;
         try {
             const newSavedRoadmap = await saveRoadmap(roadmap);
             setSavedRoadmaps(prev => [...prev, newSavedRoadmap]);
+            setSuccessMessage("Roadmap saved in my profile");
+            setTimeout(() => setSuccessMessage(null), 3000);
         } catch (e: any) {
             setError("Failed to save roadmap. Please try again.");
             console.error(e.message);
@@ -595,6 +600,16 @@ const App: React.FC = () => {
                     onClose={() => setModalView(null)}
                     onAuthSuccess={handleAuthSuccess}
                 />
+            )}
+
+            {/* Success Toast */}
+            {successMessage && (
+                <div className="fixed bottom-6 right-6 bg-success text-white px-6 py-3 rounded-lg shadow-lg animate-fadeIn z-50 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    {successMessage}
+                </div>
             )}
         </div>
     );
