@@ -69,7 +69,7 @@ export interface ResumeData {
   achievements?: AchievementEntry[];
   certifications?: CertificationEntry[];
   updated_at?: string;
-  templateType?: 'single-column' | 'two-column' | 'minimalist' | 'creative' | 'right-sidebar';
+  templateType?: 'single-column' | 'two-column' | 'minimalist' | 'creative' | 'right-sidebar' | 'ivy-league';
 }
 
 export interface EducationEntry {

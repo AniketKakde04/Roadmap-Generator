@@ -156,6 +156,43 @@ const template4: TemplateData = {
 
 
 
+const template5: TemplateData = {
+  templateType: 'ivy-league',
+  full_name: 'James Wilson',
+  job_title: 'Investment Banking Analyst',
+  email: 'james.wilson@example.com',
+  phone: '(555) 789-0123',
+  linkedin_url: 'linkedin.com/in/jwilson',
+  summary: 'Analytical finance professional with a strong foundation in financial modeling and valuation. Proven track record in deal execution and client relationship management.',
+  skills: [
+    { id: '1', name: 'Financial Modeling' },
+    { id: '2', name: 'Valuation' },
+    { id: '3', name: 'M&A' },
+    { id: '4', name: 'Excel (Advanced)' },
+    { id: '5', name: 'Bloomberg Terminal' },
+  ],
+  experience: [
+    {
+      id: '1',
+      title: 'Investment Banking Analyst',
+      company: 'Goldman Sachs',
+      startDate: '2021',
+      endDate: 'Present',
+      description: 'Performed extensive financial analysis for M&A transactions worth over $500M.\n- Built complex financial models including LBO and DCF analysis\n- Prepared pitch decks and presentation materials for senior management',
+    },
+  ],
+  education: [
+    {
+      id: '1',
+      university: 'Harvard University',
+      degree: 'B.A. in Economics',
+      startDate: '2017',
+      endDate: '2021',
+    },
+  ],
+};
+
+
 const template6: TemplateData = {
   templateType: 'right-sidebar',
   full_name: 'Aniket Kakde',
@@ -195,6 +232,8 @@ const template6: TemplateData = {
     { id: '2', description: 'Best Engineering Student Award.' }
   ],
 };
+
+
 
 interface TemplatePreviewProps {
   template: {
@@ -261,6 +300,19 @@ const TemplatePreview: React.FC<TemplatePreviewProps> = ({ template, isSelected,
             <div className="h-2 bg-white/20 rounded w-3/4"></div>
           </div>
         )}
+        {template.id === 5 && (
+          <div className="space-y-2 text-center">
+            <div className="h-4 bg-white/30 rounded w-1/2 mx-auto"></div>
+            <div className="h-px bg-white/30 w-full my-1"></div>
+            <div className="h-2 bg-white/20 rounded w-3/4 mx-auto"></div>
+            <div className="h-px bg-white/30 w-full my-1"></div>
+            <div className="space-y-1 text-left">
+              <div className="h-3 bg-white/20 rounded w-1/4"></div>
+              <div className="h-px bg-white/20 w-full"></div>
+              <div className="h-2 bg-white/10 rounded w-full"></div>
+            </div>
+          </div>
+        )}
 
         {template.id === 6 && (
           <div className="flex h-full gap-2">
@@ -272,6 +324,26 @@ const TemplatePreview: React.FC<TemplatePreviewProps> = ({ template, isSelected,
             <div className="w-1/3 border-l border-white/20 space-y-1 pl-1">
               <div className="h-3 bg-white/30 rounded w-full"></div>
               <div className="h-2 bg-white/20 rounded w-3/4"></div>
+            </div>
+          </div>
+        )}
+
+        {template.id === 7 && (
+          <div className="space-y-2">
+            <div className="text-center space-y-1">
+              <div className="h-4 bg-white/30 rounded w-2/3 mx-auto"></div>
+              <div className="h-2 bg-white/20 rounded w-1/3 mx-auto"></div>
+              <div className="h-px bg-white/30 w-full my-1"></div>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              <div className="col-span-1 space-y-1">
+                <div className="h-2 bg-white/20 rounded w-full"></div>
+                <div className="h-2 bg-white/20 rounded w-3/4"></div>
+              </div>
+              <div className="col-span-3 space-y-1">
+                <div className="h-2 bg-white/30 rounded w-full"></div>
+                <div className="h-2 bg-white/20 rounded w-3/4"></div>
+              </div>
             </div>
           </div>
         )}
@@ -297,6 +369,13 @@ const ResumeTemplates: React.FC<ResumeTemplatesProps> = ({ onSelectTemplate }) =
 
   const templates = [
     {
+      id: 5,
+      name: 'Ivy League',
+      data: template5,
+      color: 'bg-slate-700',
+      description: 'Classic, ATS-friendly serif design'
+    },
+    {
       id: 1,
       name: 'Professional',
       data: template1,
@@ -311,20 +390,19 @@ const ResumeTemplates: React.FC<ResumeTemplatesProps> = ({ onSelectTemplate }) =
       description: 'Two-column modern design with sidebar'
     },
     {
-      id: 3,
-      name: 'Minimalist',
-      data: template3,
-      color: 'bg-emerald-600',
-      description: 'Simple and clean with ample white space'
-    },
-    {
       id: 4,
       name: 'Creative',
       data: template4,
       color: 'bg-amber-600',
       description: 'Bold and creative layout with color accents'
     },
-
+    {
+      id: 3,
+      name: 'Minimalist',
+      data: template3,
+      color: 'bg-emerald-600',
+      description: 'Simple and clean with ample white space'
+    },
     {
       id: 6,
       name: 'Compact',

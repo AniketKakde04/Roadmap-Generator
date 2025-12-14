@@ -430,10 +430,11 @@ const ResumeBuilderPage: React.FC = () => {
                         <h4 className="text-sm font-semibold text-text-primary mb-3">Select Template</h4>
                         <div className="flex gap-2 overflow-x-auto">
                             {[
+                                { id: 5, name: 'Classic', icon: <FiBook className="w-4 h-4" />, type: 'ivy-league' },
                                 { id: 1, name: 'Modern', icon: <FiLayout className="w-4 h-4" />, type: 'single-column' },
                                 { id: 2, name: 'Split', icon: <FiColumns className="w-4 h-4" />, type: 'two-column' },
-                                { id: 3, name: 'Minimal', icon: <FiMinimize2 className="w-4 h-4" />, type: 'minimalist' },
                                 { id: 4, name: 'Bold', icon: <FiZap className="w-4 h-4" />, type: 'creative' },
+                                { id: 3, name: 'Minimal', icon: <FiMinimize2 className="w-4 h-4" />, type: 'minimalist' },
                                 { id: 6, name: 'Compact', icon: <FiSidebar className="w-4 h-4" />, type: 'right-sidebar' }
                             ].map(template => (
                                 <button
