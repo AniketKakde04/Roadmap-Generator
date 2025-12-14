@@ -64,7 +64,7 @@ const VerticalNavbar: React.FC<VerticalNavbarProps> = ({ currentView, onNavigate
   // Added tourId to items
   const navItems = [
     { icon: <HomeIcon className="w-6 h-6" />, label: 'Dashboard', view: 'dashboard', tourId: 'nav-dashboard' },
-    { icon: <MapIcon className="w-6 h-6" />, label: 'Roadmap Generator', view: 'roadmapGenerator', tourId: 'nav-roadmap', disabled: true },
+    { icon: <MapIcon className="w-6 h-6" />, label: 'Roadmap Generator', view: 'roadmapGenerator', tourId: 'nav-roadmap' },
     { icon: <DocumentTextIcon className="w-6 h-6" />, label: 'Resume Analyzer', view: 'resume', tourId: 'nav-resume' },
     { icon: <BriefcaseIcon className="w-6 h-6" />, label: 'Resume Builder', view: 'resumeBuilder', tourId: 'nav-builder' },
     { icon: <AcademicCapIcon className="w-6 h-6" />, label: 'Aptitude Prep', view: 'aptitude', tourId: 'nav-aptitude', disabled: true },

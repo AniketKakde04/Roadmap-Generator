@@ -45,9 +45,8 @@ const Navbar: React.FC<NavbarProps> = ({
                                     </button>
                                 </li>
                                 <li>
-                                    <button disabled className="text-sm font-medium text-text-secondary/50 cursor-not-allowed relative group">
+                                    <button onClick={() => handleNav('roadmapGenerator')} className={`text-sm font-medium transition-colors ${currentView === 'roadmapGenerator' ? 'text-primary' : 'text-text-secondary hover:text-text-primary'}`}>
                                         Roadmap
-                                        <span className="absolute -top-3 -right-6 text-[10px] bg-background-accent px-1.5 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">Soon</span>
                                     </button>
                                 </li>
                                 <li>
@@ -123,12 +122,7 @@ const Navbar: React.FC<NavbarProps> = ({
                         {isLoggedIn ? (
                             <>
                                 <button onClick={() => handleNav('dashboard')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Dashboard</button>
-
-                                {/* Disabled Links */}
-                                <div className="px-3 py-2 flex items-center justify-between text-base font-medium text-text-secondary/50 cursor-not-allowed">
-                                    <span>Roadmap Generator</span>
-                                    <span className="text-xs bg-background-accent px-2 py-0.5 rounded-full">Soon</span>
-                                </div>
+                                <button onClick={() => handleNav('roadmapGenerator')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Roadmap Generator</button>
 
                                 <button onClick={() => handleNav('resume')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Resume Analyzer</button>
                                 <button onClick={() => handleNav('resumeBuilder')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Resume Builder</button>
