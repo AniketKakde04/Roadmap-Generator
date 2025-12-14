@@ -317,6 +317,66 @@ The output MUST be a valid JSON object matching the provided schema.`;
 }
 
 export async function generateRoadmap(topic: string, level: string, timeline: string): Promise<Roadmap> {
+    // TOGGLE: Set to true to use N8N, false to use Gemini directly
+    const USE_N8N = false;
+
+    if (USE_N8N) {
+        return generateRoadmapViaN8N(topic, level, timeline);
+    } else {
+        return generateRoadmapViaGemini(topic, level, timeline);
+    }
+}
+
+async function generateRoadmapViaGemini(topic: string, level: string, timeline: string): Promise<Roadmap> {
+    try {
+        console.log(`Generating Roadmap via Gemini for topic: ${topic}`);
+
+        const prompt = `You are an expert curriculum designer and career coach.
+Your task is to create a comprehensive, step-by-step learning roadmap for the following topic:
+
+**Topic:** ${topic}
+**Difficulty Level:** ${level}
+**Target Timeline:** ${timeline || 'Flexible'}
+
+Requirements:
+1.  **Structure:** Break down the learning path into logical steps (e.g., "Foundations", "Core Concepts", "Advanced Topics").
+2.  **Resources:** For EACH step, provide 2-3 high-quality, free online resources (documentation, videos, articles).
+3.  **Clarity:** Be specific about what to learn in each step.
+4.  **Goal:** The user should be job-ready or proficient by the end of this roadmap.
+
+The output MUST be a valid JSON object matching the provided \`roadmapSchema\`.`;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: roadmapSchema,
+            },
+        });
+
+        const jsonText = (response.text || "").trim();
+        const roadmapData: Roadmap = JSON.parse(jsonText);
+
+        if (!roadmapData.title || !Array.isArray(roadmapData.steps)) {
+            throw new Error("Invalid roadmap structure received from AI.");
+        }
+
+        // Ensure title reflects the topic
+        roadmapData.title = roadmapData.title || `Roadmap for ${topic}`;
+
+        return roadmapData;
+
+    } catch (error) {
+        console.error("Error generating roadmap via Gemini:", error);
+        if (error instanceof Error) {
+            throw new Error(`Failed to generate roadmap: ${error.message}`);
+        }
+        throw new Error("An unknown error occurred while generating the roadmap.");
+    }
+}
+
+async function generateRoadmapViaN8N(topic: string, level: string, timeline: string): Promise<Roadmap> {
     try {
         // Check if the webhook URL is configured
         if (!N8N_WEBHOOK_URL) {
