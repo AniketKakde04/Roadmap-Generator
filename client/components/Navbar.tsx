@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import GitHubIcon from './icons/GitHubIcon';
+
 import ThemeToggle from '../src/components/ThemeToggle';
 
 type View = 'home' | 'dashboard' | 'roadmapGenerator' | 'resume' | 'profile' | 'resumeBuilder' | 'aptitude' | 'mockInterview';
@@ -62,9 +62,7 @@ const Navbar: React.FC<NavbarProps> = ({
                     <div className="hidden md:flex items-center space-x-4 flex-shrink-0"> {/* Added flex-shrink-0 */}
                         <ThemeToggle />
 
-                        <a href="https://github.com/aniketkakde04/Roadmap-Generator" target="_blank" rel="noopener noreferrer" className="text-text-secondary hover:text-primary transition-colors">
-                            <GitHubIcon className="w-6 h-6" />
-                        </a>
+
 
                         {isLoggedIn ? (
                             <div className="relative flex items-center">
