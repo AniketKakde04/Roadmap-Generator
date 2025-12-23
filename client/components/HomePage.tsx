@@ -10,6 +10,10 @@ import {
     StarIcon
 } from '@heroicons/react/24/outline';
 
+import TestimonialsSection from './TestimonialsSection';
+import FeedbackModal from './FeedbackModal';
+import { supabase } from '../services/supabase';
+
 // --- Visual Components for the Cards ---
 
 const RoadmapVisual = () => (
@@ -198,27 +202,10 @@ const PricingCard = ({
     </div>
 );
 
-// --- Testimonial "Tweet" ---
-const TestimonialCard = ({ name, handle, text, avatarColor }: any) => (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow">
-        <div className="flex items-center gap-3 mb-4">
-            <div className={`w-10 h-10 rounded-full ${avatarColor} flex items-center justify-center text-white font-bold`}>
-                {name.charAt(0)}
-            </div>
-            <div>
-                <p className="font-bold text-text-primary text-sm">{name}</p>
-                <p className="text-text-secondary text-xs">{handle}</p>
-            </div>
-            <div className="ml-auto text-primary">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" /></svg>
-            </div>
-        </div>
-        <p className="text-text-secondary text-sm leading-relaxed">{text}</p>
-    </div>
-);
-
 const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string) => void, isLoggedIn: boolean }> = ({ onSignUpClick, onNavigate, isLoggedIn }) => {
     const [stats, setStats] = React.useState({ users: 0, roadmaps: 0, resumes: 0 });
+    const [showFeedbackModal, setShowFeedbackModal] = React.useState(false);
+    const [currentUserId, setCurrentUserId] = React.useState<string | null>(null);
 
     React.useEffect(() => {
         // Dynamic import to avoid circular dependencies if any, though not strictly needed here
@@ -226,6 +213,12 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
             const data = await service.getPlatformStats();
             setStats(data);
         });
+
+        const getUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setCurrentUserId(user?.id || null);
+        };
+        getUser();
     }, []);
 
     const handleCTAClick = () => {
@@ -238,6 +231,12 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
 
     return (
         <div className="w-full relative overflow-hidden bg-background selection:bg-primary/30">
+            {showFeedbackModal && (
+                <FeedbackModal
+                    onClose={() => setShowFeedbackModal(false)}
+                    currentUserId={currentUserId}
+                />
+            )}
 
             {/* --- BACKGROUND EFFECTS --- */}
             <div className="absolute top-0 inset-x-0 h-[600px] bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
@@ -248,25 +247,13 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
                 {/* --- HERO SECTION --- */}
                 <section className="pt-32 pb-16 md:pt-44 md:pb-24 text-center">
                     <div className="inline-flex flex-col md:flex-row items-center gap-4 md:gap-8 mb-8 animate-fadeInUp">
-                        {/* Live Stats Badge */}
+                        {/* Live Stats Badge - Students */}
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-white/5 border border-border text-text-secondary text-sm font-medium shadow-sm cursor-default">
                             <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                             </span>
-                            <span>{stats.roadmaps.toLocaleString()} Roadmaps Created</span>
-                        </div>
-
-                        {/* Extra Stats for Desktop */}
-                        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-text-secondary">
-                            <div className="flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                                {stats.users.toLocaleString()} Students
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
-                                {stats.resumes.toLocaleString()} Resumes
-                            </div>
+                            <span>{stats.users.toLocaleString()} Students</span>
                         </div>
                     </div>
 
@@ -414,36 +401,20 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
                     </div>
                 </section>
 
-                {/* --- STUDENT VIBES (Testimonials) --- */}
-                <section className="py-20 border-t border-border/50">
-                    <div className="text-center mb-12">
-                        <div className="inline-flex items-center justify-center p-3 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-full mb-4">
-                            <StarIcon className="w-6 h-6 fill-current" />
-                        </div>
-                        <h2 className="text-3xl font-bold text-text-primary">Student Vibes</h2>
-                    </div>
+                {/* --- TESTIMONIALS (DYNAMIC) --- */}
+                <div className="border-t border-border/50">
+                    <TestimonialsSection />
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <TestimonialCard
-                            name="Rahul M."
-                            handle="@rahul_codes"
-                            text="The roadmap generator saved me weeks of confusion. I finally know exactly what to study for React Native!"
-                            avatarColor="bg-red-500"
-                        />
-                        <TestimonialCard
-                            name="Ananya S."
-                            handle="@ananya_design"
-                            text="I used the resume analyzer before applying to my dream internship. The match score feature is a game changer."
-                            avatarColor="bg-blue-500"
-                        />
-                        <TestimonialCard
-                            name="David K."
-                            handle="@david_dev"
-                            text="The mock interviewer actually gave me feedback on my speaking speed. Felt super realistic."
-                            avatarColor="bg-green-500"
-                        />
+                    <div className="text-center pb-20">
+                        <button
+                            onClick={() => setShowFeedbackModal(true)}
+                            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-background-secondary border border-border hover:border-primary text-text-primary font-medium transition-all shadow-sm hover:shadow-md"
+                        >
+                            <ChatBubbleLeftRightIcon className="w-5 h-5 text-primary" />
+                            Share Your Success Story
+                        </button>
                     </div>
-                </section>
+                </div>
 
                 {/* --- SIMPLE FOOTER --- */}
                 <footer className="py-12 border-t border-border text-center">

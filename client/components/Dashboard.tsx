@@ -4,7 +4,9 @@ import {
   DocumentTextIcon,
   BriefcaseIcon,
   AcademicCapIcon,
-  ChatBubbleLeftRightIcon
+  ChatBubbleLeftRightIcon,
+  QueueListIcon,
+  RocketLaunchIcon
 } from '@heroicons/react/24/outline';
 
 interface DashboardProps {
@@ -64,6 +66,24 @@ const Dashboard: React.FC<DashboardProps> = ({ userName, onNavigate, stats }) =>
       color: 'bg-emerald-500',
       hover: 'hover:bg-emerald-600',
       // disabled: true // Enabled now
+    },
+    {
+      id: 'resources',
+      tourId: 'tour-resources-card',
+      title: 'Learning Resources',
+      description: 'Access curated study materials, video lectures, and tools.',
+      icon: <QueueListIcon className="w-8 h-8" />,
+      color: 'bg-orange-500',
+      hover: 'hover:bg-orange-600'
+    },
+    {
+      id: 'projects',
+      tourId: 'tour-projects-card',
+      title: 'Student Projects',
+      description: 'Showcase your work and explore projects by other students.',
+      icon: <RocketLaunchIcon className="w-8 h-8" />,
+      color: 'bg-red-500',
+      hover: 'hover:bg-red-600'
     }
   ];
 

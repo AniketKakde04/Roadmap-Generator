@@ -152,6 +152,17 @@ export interface InterviewFeedback {
 }
 
 // --- (Existing Database type is updated automatically by Supabase CLI, but this is a manual representation) ---
+export interface Feedback {
+  id: string;
+  user_id: string;
+  name: string;
+  role: string;
+  message: string;
+  rating: number;
+  is_featured: boolean;
+  created_at: string;
+}
+
 export type Json =
   | string
   | number
@@ -249,6 +260,38 @@ export type Database = {
           github_link?: string | null
           linkedin_profile?: string | null
           email?: string | null
+          created_at?: string
+        }
+      }
+      feedbacks: {
+        Row: {
+          id: string
+          user_id: string | null
+          name: string
+          role: string | null
+          message: string
+          rating: number | null
+          is_featured: boolean | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          name: string
+          role?: string | null
+          message: string
+          rating?: number | null
+          is_featured?: boolean | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          name?: string
+          role?: string | null
+          message?: string
+          rating?: number | null
+          is_featured?: boolean | null
           created_at?: string
         }
       }
