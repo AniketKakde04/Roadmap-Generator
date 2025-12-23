@@ -25,7 +25,7 @@ const LearningResources: React.FC = () => {
                         </div>
                         <div>
                             <h2 className="text-2xl font-bold text-text-primary">Perfect Guide for Engineering Students</h2>
-                            <p className="text-text-secondary text-sm">Essential quantitative aptitude topics for placements and interviews.</p>
+                            <p className="text-text-secondary text-sm">Interships,Hackathons,</p>
                         </div>
                     </div>
 
