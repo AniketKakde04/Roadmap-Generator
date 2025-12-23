@@ -24,7 +24,7 @@ const LearningResources: React.FC = () => {
                             <PlayCircleIcon className="w-8 h-8" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-text-primary">Featured Playlist: Aptitude & Reasoning</h2>
+                            <h2 className="text-2xl font-bold text-text-primary">Perfect Guide for Engineering Students</h2>
                             <p className="text-text-secondary text-sm">Essential quantitative aptitude topics for placements and interviews.</p>
                         </div>
                     </div>
