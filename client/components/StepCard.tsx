@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Step } from '../types';
-import ResourceLink from './ResourceLink';
 
 interface StepCardProps {
   step: Step;
@@ -44,14 +43,6 @@ const StepCard: React.FC<StepCardProps> = ({ step, index, className = '', style,
         <p className="text-sm leading-relaxed tracking-wide text-text-secondary mb-4">
           {step.description}
         </p>
-        <div>
-          <h4 className="text-sm font-semibold text-text-primary mb-2 border-b border-border pb-1">Free Resources:</h4>
-          <div className="space-y-1">
-            {step.resources.map((resource, i) => (
-              <ResourceLink key={i} resource={resource} />
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );

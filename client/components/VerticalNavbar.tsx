@@ -8,7 +8,9 @@ import {
   AcademicCapIcon,
   ChatBubbleLeftRightIcon,
   ChevronLeftIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  QueueListIcon,
+  RocketLaunchIcon
 } from '@heroicons/react/24/outline';
 import ThemeToggle from '../src/components/ThemeToggle';
 
@@ -67,7 +69,9 @@ const VerticalNavbar: React.FC<VerticalNavbarProps> = ({ currentView, onNavigate
     { icon: <MapIcon className="w-6 h-6" />, label: 'Roadmap Generator', view: 'roadmapGenerator', tourId: 'nav-roadmap' },
     { icon: <DocumentTextIcon className="w-6 h-6" />, label: 'Resume Analyzer', view: 'resume', tourId: 'nav-resume' },
     { icon: <BriefcaseIcon className="w-6 h-6" />, label: 'Resume Builder', view: 'resumeBuilder', tourId: 'nav-builder' },
-    { icon: <AcademicCapIcon className="w-6 h-6" />, label: 'Aptitude Prep', view: 'aptitude', tourId: 'nav-aptitude', disabled: true },
+    { icon: <QueueListIcon className="w-6 h-6" />, label: 'Resources', view: 'resources', tourId: 'nav-resources' },
+    { icon: <RocketLaunchIcon className="w-6 h-6" />, label: 'Projects', view: 'projects', tourId: 'nav-projects' },
+    { icon: <AcademicCapIcon className="w-6 h-6" />, label: 'Aptitude Prep', view: 'aptitude', tourId: 'nav-aptitude' },
     { icon: <ChatBubbleLeftRightIcon className="w-6 h-6" />, label: 'Mock Interview', view: 'mockInterview', tourId: 'nav-interview', disabled: true },
     { icon: <UserIcon className="w-6 h-6" />, label: 'My Profile', view: 'profile', tourId: 'nav-profile' },
   ];

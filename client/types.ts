@@ -160,6 +160,19 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+export interface StudentProject {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string;
+  project_link?: string;
+  github_link?: string;
+  linkedin_profile?: string;
+  email?: string;
+  created_at: string;
+  user_name?: string; // Optional, joined from users table if needed
+}
+
 export type Database = {
   public: {
     Tables: {
@@ -203,6 +216,41 @@ export type Database = {
             referencedColumns: ["id"]
           }
         ]
+      }
+      student_projects: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          description: string
+          project_link: string | null
+          github_link: string | null
+          linkedin_profile: string | null
+          email: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          description: string
+          project_link?: string | null
+          github_link?: string | null
+          linkedin_profile?: string | null
+          email?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          description?: string
+          project_link?: string | null
+          github_link?: string | null
+          linkedin_profile?: string | null
+          email?: string | null
+          created_at?: string
+        }
       }
       users: {
         Row: {

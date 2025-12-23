@@ -63,7 +63,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userName, onNavigate, stats }) =>
       icon: <AcademicCapIcon className="w-8 h-8" />,
       color: 'bg-emerald-500',
       hover: 'hover:bg-emerald-600',
-      disabled: true // Coming Soon
+      // disabled: true // Enabled now
     }
   ];
 

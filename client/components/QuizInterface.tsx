@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { AptitudeTopic, AptitudeQuestion } from '../types';
-import { getQuizQuestions, getStudyGuideForTopic } from '../services/aptitudeService'; 
+import { getQuizQuestions, getStudyGuideForTopic } from '../services/aptitudeService';
 import Loader from './Loader';
 import QuizResults from './QuizResults';
 import ReactMarkdown from 'react-markdown';
 import BookOpenIcon from './icons/BookOpenIcon';
 import XMarkIcon from './icons/XMarkIcon';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CheckIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className={className}>
@@ -16,40 +17,23 @@ const CheckIcon: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) 
 interface QuizInterfaceProps {
     topic: AptitudeTopic;
     onBack: () => void;
+    defaultTab?: 'notes' | 'quiz';
 }
 
 const QUIZ_LENGTH = 10;
 
+interface NoteCard {
+    title: string;
+    content: string;
+}
+
 const QuizInterface: React.FC<QuizInterfaceProps> = ({ topic, onBack }) => {
-    const [questions, setQuestions] = useState<AptitudeQuestion[]>([]);
-    const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
-    const [quizFinished, setQuizFinished] = useState(false);
-    const [selectedOption, setSelectedOption] = useState<number | null>(null);
-    const [showFeedback, setShowFeedback] = useState(false);
-    
+    // --- Notes State ---
     const [studyGuide, setStudyGuide] = useState<string | null>(null);
     const [isLoadingStudyGuide, setIsLoadingStudyGuide] = useState(true);
+    const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
-    useEffect(() => {
-        const fetchQuestions = async () => {
-            try {
-                const data = await getQuizQuestions(topic, QUIZ_LENGTH);
-                if (data.length === 0) {
-                    setError("No questions found for this topic yet.");
-                }
-                setQuestions(data.filter(q => q));
-            } catch (err) {
-                setError("Failed to load questions.");
-            } finally {
-                setIsLoadingQuestions(false);
-            }
-        };
-        fetchQuestions();
-    }, [topic]);
-
+    // --- Fetch Study Guide ---
     useEffect(() => {
         const fetchStudyGuide = async () => {
             setIsLoadingStudyGuide(true);
@@ -65,195 +49,143 @@ const QuizInterface: React.FC<QuizInterfaceProps> = ({ topic, onBack }) => {
         fetchStudyGuide();
     }, [topic]);
 
-    if (isLoadingQuestions) return <Loader />;
-    if (error) return <p className="text-error text-center">{error}</p>;
-    if (quizFinished) {
-        return <QuizResults questions={questions} userAnswers={selectedAnswers} onBack={onBack} />;
-    }
-    if (questions.length === 0) {
-        return (
-             <div className="text-center">
-                <p className="text-text-secondary">Could not load questions for "{topic.name}".</p>
-                <button onClick={onBack} className="mt-4 text-sm font-semibold text-primary hover:text-secondary">
-                    &larr; Back to topics
-                </button>
-            </div>
-        );
-    }
+    // --- Parse Study Guide into Cards ---
+    const noteCards: NoteCard[] = useMemo(() => {
+        if (!studyGuide) return [];
+        // Split by H2 headers (## )
+        const rawSections = studyGuide.split(/\n(?=## )/g); // positive lookahead to keep delimiter
 
-    const currentQuestion = questions[currentQuestionIndex];
-    if (!currentQuestion) {
-        setQuizFinished(true);
-        return <QuizResults questions={questions} userAnswers={selectedAnswers} onBack={onBack} />;
-    }
+        return rawSections.map(section => {
+            const lines = section.trim().split('\n');
+            let title = "Introduction";
+            let content = section;
 
-    const isCorrect = selectedOption === currentQuestion.correct_answer_index;
-    const progressPercent = ((currentQuestionIndex) / questions.length) * 100;
+            if (lines[0].startsWith('## ')) {
+                title = lines[0].replace('## ', '').trim();
+                content = lines.slice(1).join('\n').trim();
+            } else if (lines[0].startsWith('# ')) {
+                title = lines[0].replace('# ', '').trim();
+                content = lines.slice(1).join('\n').trim();
+            }
 
-    const handleOptionSelect = (index: number) => {
-        if (showFeedback) return;
-        setSelectedOption(index);
+            return { title, content };
+        }).filter(card => card.content.length > 0);
+    }, [studyGuide]);
+
+
+    // --- Handlers: Notes ---
+    const handleNextCard = () => {
+        if (currentCardIndex < noteCards.length - 1) {
+            setCurrentCardIndex(prev => prev + 1);
+        }
     };
 
-    const handleCheckAnswer = () => {
-        if (selectedOption === null) return;
-        setSelectedAnswers(prev => ({ ...prev, [currentQuestion.id]: selectedOption }));
-        setShowFeedback(true);
-    };
-    
-    const handleNextQuestion = () => {
-        setShowFeedback(false);
-        setSelectedOption(null);
-        if (currentQuestionIndex < questions.length - 1) {
-            setCurrentQuestionIndex(prev => prev + 1);
-        } else {
-            setQuizFinished(true);
+    const handlePrevCard = () => {
+        if (currentCardIndex > 0) {
+            setCurrentCardIndex(prev => prev - 1);
         }
     };
 
     return (
-        <div className="w-full max-w-7xl mx-auto py-8 animate-fadeIn grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 md:px-8">
-            
-            {/* --- LEFT COLUMN (Study Guide) - 4 Cols (33%) --- */}
-            <aside className="lg:col-span-4 lg:sticky lg:top-24 h-fit order-2 lg:order-1">
-                <div className="bg-background-secondary shadow-md border border-border rounded-xl overflow-hidden">
-                    <div className="p-4 bg-background border-b border-border flex items-center space-x-3">
-                        <BookOpenIcon className="w-5 h-5 text-primary" />
-                        <h2 className="text-lg font-bold text-text-primary">Study Guide</h2>
+        <div className="w-full max-w-5xl mx-auto py-8 animate-fadeIn px-4 md:px-8 min-h-screen flex flex-col">
+
+            {/* --- Header --- */}
+            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                <button onClick={onBack} className="text-sm font-semibold text-text-secondary hover:text-primary flex items-center transition-colors self-start md:self-auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 mr-2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                    </svg>
+                    Back to Topics
+                </button>
+            </div>
+
+            <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent text-center mb-8">
+                {topic.name}
+            </h1>
+
+            {/* --- NOTES CONTENT --- */}
+            <div className="flex-1 flex flex-col items-center justify-center max-w-3xl mx-auto w-full">
+                {isLoadingStudyGuide ? (
+                    <div className="flex flex-col items-center">
+                        <Loader />
+                        <p className="mt-4 text-text-secondary animate-pulse">Loading study material...</p>
                     </div>
-                    <div className="p-5 max-h-[60vh] overflow-y-auto">
-                        {isLoadingStudyGuide ? (
-                            <p className="text-text-secondary italic text-sm">Loading...</p>
-                        ) : (
-                            <div 
-                                className="prose prose-sm prose-slate text-text-secondary 
-                                           prose-headings:text-text-primary prose-headings:font-bold
-                                           prose-strong:text-text-primary
-                                           prose-ul:list-disc prose-li:my-1
-                                           prose-code:text-primary prose-code:bg-primary/10 prose-code:px-1 prose-code:rounded"
+                ) : noteCards.length > 0 ? (
+                    <div className="w-full">
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={currentCardIndex}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                transition={{ duration: 0.3 }}
+                                className="bg-background border border-border rounded-2xl p-8 shadow-lg min-h-[400px] flex flex-col"
                             >
-                                <ReactMarkdown>
-                                    {studyGuide || "No study guide available for this topic."}
-                                </ReactMarkdown>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </aside>
+                                <div className="flex items-center space-x-3 mb-6 border-b border-border pb-4">
+                                    <BookOpenIcon className="w-6 h-6 text-primary" />
+                                    <h2 className="text-xl font-bold text-text-primary">{noteCards[currentCardIndex].title}</h2>
+                                </div>
 
-            {/* --- RIGHT COLUMN (Quiz Interface) - 8 Cols (66%) --- */}
-            <main className="lg:col-span-8 order-1 lg:order-2">
-                <div className="flex justify-between items-center mb-6">
-                     <button onClick={onBack} className="text-sm font-semibold text-text-secondary hover:text-primary flex items-center transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 mr-2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                        </svg>
-                        Back
-                    </button>
-                    <span className="text-sm font-medium text-text-secondary bg-background-secondary px-3 py-1 rounded-full border border-border">
-                        {topic.name}
-                    </span>
-                </div>
-                
-                {/* --- Progress Bar --- */}
-                <div className="mb-8">
-                    <div className="flex justify-between items-center mb-2">
-                        <h1 className="text-2xl font-bold text-text-primary">Question {currentQuestionIndex + 1} <span className="text-text-secondary text-lg font-normal">/ {questions.length}</span></h1>
-                    </div>
-                    <div className="w-full bg-background-accent rounded-full h-2 shadow-inner">
-                        <div 
-                            className="bg-primary h-2 rounded-full shadow-sm transition-all duration-300 ease-out" 
-                            style={{ width: `${progressPercent}%` }}
-                        ></div>
-                    </div>
-                </div>
-
-                {/* --- Quiz Box --- */}
-                <div className="bg-background border border-border rounded-2xl p-6 md:p-10 shadow-lg">
-                    <p className="text-xl md:text-2xl font-medium text-text-primary mb-8 leading-relaxed">
-                        {currentQuestion.question_text}
-                    </p>
-                    
-                    <div className="space-y-4">
-                        {currentQuestion.options.map((option, index) => {
-                            const isSelected = selectedOption === index;
-                            const isCorrectAnswer = index === currentQuestion.correct_answer_index;
-
-                            let optionClass = "bg-background-secondary border-border hover:border-primary/50 hover:bg-background-hover cursor-pointer";
-                            let letterClass = "bg-background-accent text-text-secondary group-hover:bg-primary group-hover:text-white";
-                            let textClass = "text-text-primary";
-
-                            if (showFeedback) {
-                                if (isCorrectAnswer) {
-                                    optionClass = "bg-success/10 border-success cursor-default";
-                                    letterClass = "bg-success text-white";
-                                    textClass = "text-success-dark font-medium";
-                                } else if (isSelected && !isCorrectAnswer) {
-                                    optionClass = "bg-error/10 border-error cursor-default";
-                                    letterClass = "bg-error text-white";
-                                    textClass = "text-error font-medium";
-                                } else {
-                                    optionClass = "bg-background-secondary/50 border-transparent opacity-50 cursor-default";
-                                    letterClass = "bg-background-accent text-text-secondary opacity-50";
-                                    textClass = "text-text-secondary opacity-50";
-                                }
-                            } else if (isSelected) {
-                                optionClass = "bg-primary/5 border-primary shadow-md";
-                                letterClass = "bg-primary text-white";
-                                textClass = "text-primary font-medium";
-                            }
-
-                            return (
-                                <button
-                                    key={index}
-                                    onClick={() => handleOptionSelect(index)}
-                                    disabled={showFeedback}
-                                    className={`group w-full text-left p-4 md:p-5 rounded-xl border-2 transition-all duration-200 flex items-start md:items-center space-x-4 ${optionClass}`}
-                                >
-                                    <span 
-                                        className={`flex-shrink-0 w-8 h-8 rounded-full font-bold text-sm flex items-center justify-center transition-all duration-200 mt-0.5 md:mt-0 ${letterClass}`}
+                                <div className="flex-1 overflow-y-auto px-2">
+                                    <ReactMarkdown
+                                        components={{
+                                            h1: ({ node, ...props }) => <h1 className="text-2xl font-bold text-primary mb-4" {...props} />,
+                                            h2: ({ node, ...props }) => <h2 className="text-xl font-bold text-text-primary mb-3 mt-6 border-b border-border pb-2" {...props} />,
+                                            h3: ({ node, ...props }) => <h3 className="text-lg font-semibold text-text-primary mb-2 mt-4" {...props} />,
+                                            p: ({ node, ...props }) => <p className="text-text-secondary mb-4 leading-relaxed" {...props} />,
+                                            ul: ({ node, ...props }) => <ul className="list-disc pl-5 space-y-2 mb-4 text-text-secondary" {...props} />,
+                                            ol: ({ node, ...props }) => <ol className="list-decimal pl-5 space-y-2 mb-4 text-text-secondary" {...props} />,
+                                            li: ({ node, ...props }) => <li className="pl-1" {...props} />,
+                                            strong: ({ node, ...props }) => <strong className="font-bold text-text-primary" {...props} />,
+                                            blockquote: ({ node, ...props }) => (
+                                                <div className="bg-accent/10 border-l-4 border-accent p-4 rounded-r-lg my-6 text-text-secondary italic">
+                                                    {props.children}
+                                                </div>
+                                            ),
+                                            code: ({ node, ...props }) => (
+                                                <code className="bg-background-secondary px-1.5 py-0.5 rounded text-primary font-mono text-sm border border-border" {...props} />
+                                            ),
+                                        }}
                                     >
-                                        {String.fromCharCode(65 + index)}
-                                    </span>
-                                    <span className={`text-base ${textClass}`}>{option}</span>
-                                </button>
-                            );
-                        })}
-                    </div>
-                    
-                    <div className="mt-10 pt-6 border-t border-border flex justify-end">
-                        {!showFeedback ? (
+                                        {noteCards[currentCardIndex].content}
+                                    </ReactMarkdown>
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
+
+                        {/* Navigation Controls */}
+                        <div className="flex justify-between items-center mt-6">
                             <button
-                                onClick={handleCheckAnswer}
-                                disabled={selectedOption === null}
-                                className="w-full md:w-auto bg-primary text-white font-bold py-3 px-8 rounded-xl hover:bg-secondary transition-all shadow-lg shadow-primary/20 disabled:bg-background-accent disabled:text-text-secondary disabled:shadow-none disabled:cursor-not-allowed transform active:scale-95"
+                                onClick={handlePrevCard}
+                                disabled={currentCardIndex === 0}
+                                className="px-4 py-2 text-sm font-medium rounded-lg transition-colors
+                                             disabled:opacity-30 disabled:cursor-not-allowed
+                                             text-text-secondary hover:bg-background-secondary hover:text-text-primary border border-transparent hover:border-border"
                             >
-                                Check Answer
+                                &larr; Previous
                             </button>
-                        ) : (
-                            <div className="w-full space-y-6 animate-fadeIn">
-                                <div className={`p-5 rounded-xl border ${isCorrect ? 'bg-success/10 border-success' : 'bg-error/10 border-error'}`}>
-                                    <div className="flex items-center space-x-3 mb-2">
-                                        {isCorrect ? <CheckIcon className="w-6 h-6 text-success" /> : <XMarkIcon className="w-6 h-6 text-error" />}
-                                        <h3 className={`text-lg font-bold ${isCorrect ? 'text-success' : 'text-error'}`}>
-                                            {isCorrect ? 'Correct Answer!' : 'Incorrect Answer'}
-                                        </h3>
-                                    </div>
-                                    <p className="text-text-secondary ml-9 leading-relaxed">{currentQuestion.explanation}</p>
-                                </div>
-                                <div className="flex justify-end">
-                                    <button
-                                        onClick={handleNextQuestion}
-                                        className="w-full md:w-auto bg-text-primary text-white font-bold py-3 px-8 rounded-xl hover:bg-text-secondary transition-all shadow-lg transform active:scale-95"
-                                    >
-                                        {currentQuestionIndex < questions.length - 1 ? 'Next Question →' : 'See Results'}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+
+                            <span className="text-sm font-medium text-text-secondary">
+                                {currentCardIndex + 1} / {noteCards.length}
+                            </span>
+
+                            <button
+                                onClick={handleNextCard}
+                                disabled={currentCardIndex === noteCards.length - 1}
+                                className="px-4 py-2 text-sm font-medium rounded-lg transition-colors
+                                             disabled:opacity-30 disabled:cursor-not-allowed
+                                             text-text-secondary hover:bg-background-secondary hover:text-text-primary border border-transparent hover:border-border"
+                            >
+                                Next &rarr;
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </main>
+                ) : (
+                    <div className="text-center p-12 border border-dashed border-border rounded-xl">
+                        <p className="text-text-secondary">No notes available for this topic.</p>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

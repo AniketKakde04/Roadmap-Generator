@@ -2,6 +2,8 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Roadmap, ProjectSuggestion, AnalysisReport, ChatMessage, InterviewFeedback, AptitudeQuestion, GeneratedAptitudeQuestion } from '../types';
 import { base64ToArrayBuffer, pcmToWav } from './audioUtils';
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 
@@ -16,172 +18,21 @@ const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 // --- NEW: Text content extracted from 'Master Formula Sheets.pdf' ---
 // This is used as the context for the AI to generate study guides.
-const PDF_TEXT_CONTENT = `
-CHAPTER WISE FORMULAS
 
-Chapter 1: Number System - Important Formulas
-1. Divisibility Rules:
-   - Div by 2: last digit even
-   - Div by 3: sum of digits divisible by 3
-   - Div by 4: last 2 digits divisible by 4
-   - Div by 5: ends in 0 or 5
-   - Div by 6: divisible by 2 and 3
-   - Div by 8: last 3 digits divisible by 8
-   - Div by 9: sum of digits divisible by 9
-   - Div by 10: ends in 0
-   - Div by 11: alt. sum of digits divisible by 11
-2. HCF & LCM:
-   - Product of two numbers = HCF x LCM
-   - LCM of fractions = LCM of numerators / HCF of denominators
-   - HCF of fractions = HCF of numerators / LCM of denominators
-3. Number Types:
-   - Prime = divisible by only 1 and itself
-   - Composite = more than 2 factors
-
-Chapter 2: Percentages - Important Formulas
-1. Percentage = (Part/Whole) x 100
-2. x increased by y% = x * (1 + y/100)
-3. x decreased by y% = x * (1 - y/100)
-4. Successive change: Net % = x + y + (xy/100)
-5. Population change:
-   - After n years = P * (1 ± R/100)^n
-6. % Change = [(New - Old) / Old] * 100
-7. If A is R% more than B, B is less than A by [R / (100+R)] * 100 %
-
-Chapter 3: Profit and Loss - Important Formulas
-1. Profit = S.P. - C.P.
-2. Loss = C.P. - S.P.
-3. Profit % = (Profit / C.P.) * 100
-4. Loss % = (Loss / C.P.) * 100
-5. S.P. = C.P. * (1 + Profit%/100)
-6. S.P. = C.P. * (1 - Loss%/100)
-7. Discount = M.P. - S.P. (M.P. = Marked Price)
-8. Dishonest Dealer: Profit % = (Error / (True Value - Error)) * 100
-
-Chapter 4: Simple & Compound Interest
-1. Simple Interest (S.I.) = (P * R * T) / 100
-2. Amount (Simple) = P + S.I.
-3. Compound Interest (C.I.) = P * (1 + R/100)^T - P
-4. Amount (Compound) = P * (1 + R/100)^T
-5. Compounded Half-yearly: Amount = P * (1 + (R/2)/100)^(2*T)
-6. Compounded Quarterly: Amount = P * (1 + (R/4)/100)^(4*T)
-7. Difference b/w C.I. & S.I. for 2 years = P * (R/100)^2
-
-Chapter 5: Ratio and Proportion
-1. Ratio A:B = A/B
-2. Proportion a:b :: c:d => a*d = b*c
-3. Compounded Ratio = (a/b) * (c/d) * (e/f)
-4. Duplicate ratio = a^2 : b^2
-5. Triplicate ratio = a^3 : b^3
-6. Mean proportional (b/w a and c) = sqrt(a*c)
-
-Chapter 6: Time and Work
-1. (Work from) 1 day = 1 / (Total days to complete)
-2. If A takes 'x' days, B takes 'y' days, (A+B) together = (x*y) / (x+y) days
-3. M1*D1*H1 / W1 = M2*D2*H2 / W2 (M=Men, D=Days, H=Hours, W=Work)
-4. Efficiency is inversely proportional to Time taken.
-
-Chapter 7: Time, Speed and Distance
-1. Speed = Distance / Time
-2. 1 km/hr = 5/18 m/s
-3. 1 m/s = 18/5 km/hr
-4. Average Speed = Total Distance / Total Time
-5. Avg. speed (equal distances) = (2*x*y) / (x+y)
-6. Relative speed (same direction) = s1 - s2
-7. Relative speed (opposite direction) = s1 + s2
-8. Train crossing pole: Distance = length of train
-9. Train crossing platform: Distance = length of train + length of platform
-
-Chapter 8: Boats and Streams
-1. Downstream speed (v) = u + s (u=boat speed, s=stream speed)
-2. Upstream speed (u) = u - s
-3. Speed of boat (u) = (v + u) / 2
-4. Speed of stream (s) = (v - u) / 2
-
-Chapter 9: Permutation & Combination
-1. Factorial n! = n * (n-1) * ... * 1
-2. Permutation (Arrangement): nPr = n! / (n-r)!
-3. Combination (Selection): nCr = n! / (r! * (n-r)!)
-4. Circular permutation = (n-1)!
-5. nCr = nC(n-r)
-
-Chapter 10: Probability
-1. P(E) = (Number of favorable outcomes) / (Total number of outcomes)
-2. 0 <= P(E) <= 1
-3. P(Not E) = 1 - P(E)
-4. P(A or B) = P(A) + P(B) - P(A and B)
-5. Mutually Exclusive P(A or B) = P(A) + P(B)
-6. Independent Events P(A and B) = P(A) * P(B)
-7. Odds in favor = Favorable / Unfavorable
-8. Odds against = Unfavorable / Favorable
-
-Chapter 11: Averages
-1. Average = (Sum of observations) / (Number of observations)
-2. Sum = Average * Number
-
-Chapter 12: Problems on Ages
-1. Use linear equations (e.g., Let age be x)
-2. 'n' years ago: Age = x - n
-3. 'n' years hence: Age = x + n
-4. Ratio logic: e.g., 5:6 => 5x and 6x
-
-Chapter 13: Clocks
-1. Angle b/w hands = |30*H - (11/2)*M|
-2. Hands coincide (0 deg) = 22 times in 24 hrs
-3. Hands opposite (180 deg) = 22 times in 24 hrs
-4. Hands perpendicular (90 deg) = 44 times in 24 hrs
-
-Chapter 14: Calendars
-1. Odd days = (Total days) % 7
-2. Leap year: Divisible by 4 (or 400 for centuries)
-3. Non-leap year = 1 odd day
-4. Leap year = 2 odd days
-5. Day codes: Sun=0, Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6
-
-Chapter 15: Direction Sense
-1. Pythagoras theorem: (a^2 + b^2) = c^2
-2. Shortest distance = sqrt(x^2 + y^2)
-3. Always keep track of N, S, E, W
-4. Angle turns: Left turn = 90 deg anticlockwise, Right turn = 90 deg clockwise
-5. Opposite directions = 180 deg, perpendicular = 90 deg
-
-Chapter 16: Coding & Decoding
-1. Letter shifting (e.g., A+1=B)
-2. Reverse position: Z=1, A=26
-3. Pattern-based substitution
-4. Word-letter mapping
-5. Symbol/numeric code interpretation
-
-Chapter 17: Blood Relations
-1. Tree diagram helps
-2. Gender clues (e.g., "his", "her")
-3. Direct and indirect relation types
-4. Chain logic: A is B's son's...
-5. Shortcut terms: Brother's/Sister's husband = Brother-in-law
-
-Chapter 18: Data Arrangements
-1. Linear/seating arrangements
-2. Circle arrangements (clockwise/anticlockwise)
-3. Use condition-first statements
-4. Elimination technique
-5. Always draw table/diagrams
-
-Chapter 19: Statement & Assumption
-1. Assumption is what must be true for statement
-2. General assumptions > specific ones
-3. Avoid extreme/biased language
-4. Common trap: confusing assumption with inference
-5. Focus on underlying beliefs, not facts
-
-Chapter 20: Series & Progressions
-1. Arithmetic Progression (AP):
-   - a_n = a + (n-1)d
-   - Sum = (n/2) * [2a + (n-1)d]
-2. Geometric Progression (GP):
-   - a_n = a * r^(n-1)
-   - Sum = a * (1 - r^n) / (1 - r)
-   - Sum (infinite) = a / (1 - r) [if |r| < 1]
-`;
+let PDF_TEXT_CONTENT = '';
+try {
+    const dataPath = path.join(__dirname, '../data/aptitude_book.txt');
+    if (fs.existsSync(dataPath)) {
+        console.log('Loading Aptitude Book content...');
+        PDF_TEXT_CONTENT = fs.readFileSync(dataPath, 'utf-8');
+        // Truncate if too huge to prevent OOM or context limits (optional, Flash matches 1M tokens)
+        // PDF_TEXT_CONTENT = PDF_TEXT_CONTENT.substring(0, 1000000); 
+    } else {
+        console.warn('Aptitude Book content file not found. Study guides will be empty.');
+    }
+} catch (err) {
+    console.error('Failed to load Aptitude Book content:', err);
+}
 
 // --- (Existing Schemas: resourceSchema, stepSchema, roadmapSchema, analysisReportSchema) ... ---
 // (Copy them from your existing file)
@@ -196,8 +47,8 @@ const stepSchema = {
     type: Type.OBJECT,
     properties: {
         title: { type: Type.STRING }, description: { type: Type.STRING },
-        resources: { type: Type.ARRAY, items: resourceSchema },
-    }, required: ["title", "description", "resources"],
+        // resources removed
+    }, required: ["title", "description"],
 };
 const roadmapSchema = {
     type: Type.OBJECT,
@@ -358,9 +209,8 @@ Your task is to create a comprehensive, step-by-step learning roadmap for the fo
 
 Requirements:
 1.  **Structure:** Break down the learning path into logical steps (e.g., "Foundations", "Core Concepts", "Advanced Topics").
-2.  **Resources:** For EACH step, provide 2-3 high-quality, free online resources (documentation, videos, articles).
-3.  **Clarity:** Be specific about what to learn in each step.
-4.  **Goal:** The user should be job-ready or proficient by the end of this roadmap.
+2.  **Clarity:** Be specific about what to learn in each step.
+3.  **Goal:** The user should be job-ready or proficient by the end of this roadmap.
 
 The output MUST be a valid JSON object matching the provided \`roadmapSchema\`.`;
 
@@ -382,6 +232,12 @@ The output MUST be a valid JSON object matching the provided \`roadmapSchema\`.`
 
         // Ensure title reflects the topic
         roadmapData.title = roadmapData.title || `Roadmap for ${topic}`;
+
+        // Polyfill resources to satisfy the type definition
+        roadmapData.steps = roadmapData.steps.map(step => ({
+            ...step,
+            resources: []
+        }));
 
         return roadmapData;
 
@@ -609,7 +465,7 @@ Your task is to create a personalized, step-by-step learning roadmap for a user 
 2.  **Identify** the key skill and experience GAPS.
 3.  **Generate** a comprehensive, step-by-step roadmap to fill exactly those gaps.
 4.  The roadmap should be realistically achievable within the user's TIMELINE.
-5.  Each step must include a clear description and a list of high-quality, free online resources (articles, videos, docs).
+5.  Each step must include a clear description.
 
 The output MUST be a valid JSON object matching the \`roadmapSchema\`.
 
@@ -648,6 +504,12 @@ Please generate the personalized roadmap now.`;
 
         // Prepend the Job Title to the roadmap title
         roadmapData.title = `Your Personalized Roadmap to become a ${jobTitle}`;
+
+        // Polyfill resources
+        roadmapData.steps = roadmapData.steps.map(step => ({
+            ...step,
+            resources: []
+        }));
 
         return roadmapData;
     } catch (error) {

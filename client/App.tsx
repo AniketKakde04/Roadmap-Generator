@@ -14,6 +14,8 @@ import HomePage from './components/HomePage';
 import AptitudeDashboard from './components/AptitudeDashboard';
 import MockInterviewPage from './components/MockInterviewPage';
 import PortfolioPreview from './components/PortfolioPreview';
+import LearningResources from './components/LearningResources';
+import ProjectShowcase from './components/ProjectShowcase';
 import OnboardingTour, { TourStep } from './components/OnboardingTour'; // Import Tour
 import { getSession, onAuthStateChange, signOutUser } from './services/authService';
 import { getSavedRoadmaps, saveRoadmap, deleteRoadmap, updateRoadmapProgress, updateRoadmap } from './services/roadmapService';
@@ -24,7 +26,7 @@ import ArrowUpTrayIcon from './components/icons/ArrowUpTrayIcon';
 // Configure the worker for pdfjs-dist
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs`;
 
-type View = 'home' | 'dashboard' | 'roadmapGenerator' | 'resume' | 'profile' | 'resumeBuilder' | 'aptitude' | 'mockInterview' | 'sharedPortfolio';
+type View = 'home' | 'dashboard' | 'roadmapGenerator' | 'resume' | 'profile' | 'resumeBuilder' | 'aptitude' | 'mockInterview' | 'sharedPortfolio' | 'resources' | 'projects';
 
 const App: React.FC = () => {
     // Initialize view based on URL to prevent flicker
@@ -361,6 +363,10 @@ const App: React.FC = () => {
                 return <ResumeBuilderPage />;
             case 'aptitude':
                 return <AptitudeDashboard />;
+            case 'resources':
+                return <LearningResources />;
+            case 'projects':
+                return <ProjectShowcase />;
             case 'mockInterview':
                 return <MockInterviewPage />;
 
