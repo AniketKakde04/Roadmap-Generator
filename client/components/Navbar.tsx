@@ -128,11 +128,11 @@ const Navbar: React.FC<NavbarProps> = ({
                                 <button onClick={() => handleNav('resume')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Resume Analyzer</button>
                                 <button onClick={() => handleNav('resumeBuilder')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Resume Builder</button>
 
+                                <button onClick={() => handleNav('resources')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Resources</button>
+                                <button onClick={() => handleNav('projects')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Projects</button>
+                                <button onClick={() => handleNav('aptitude')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Aptitude Prep</button>
+
                                 {/* Disabled Links */}
-                                <div className="px-3 py-2 flex items-center justify-between text-base font-medium text-text-secondary/50 cursor-not-allowed">
-                                    <span>Aptitude Prep</span>
-                                    <span className="text-xs bg-background-accent px-2 py-0.5 rounded-full">Soon</span>
-                                </div>
                                 <div className="px-3 py-2 flex items-center justify-between text-base font-medium text-text-secondary/50 cursor-not-allowed">
                                     <span>Mock Interview</span>
                                     <span className="text-xs bg-background-accent px-2 py-0.5 rounded-full">Soon</span>
