@@ -383,7 +383,7 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
 
                             {/* Pro Plan */}
                             <PricingCard
-                                title="Pro Student"
+                                title="Pro "
                                 price="₹79"
                                 period="month"
                                 isPopular={true}
