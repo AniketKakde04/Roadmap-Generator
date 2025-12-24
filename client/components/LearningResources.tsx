@@ -1,8 +1,12 @@
 import React from 'react';
-import PlayCircleIcon from './icons/PlayCircleIcon';
-import WrenchScrewdriverIcon from './icons/WrenchScrewdriverIcon';
-import BookOpenIcon from './icons/BookOpenIcon';
-import LinkIcon from './icons/LinkIcon';
+import {
+    PlayCircleIcon,
+    WrenchScrewdriverIcon,
+    BookOpenIcon,
+    LinkIcon,
+    SparklesIcon,
+    AcademicCapIcon
+} from '@heroicons/react/24/outline';
 
 const LearningResources: React.FC = () => {
     return (
@@ -25,7 +29,7 @@ const LearningResources: React.FC = () => {
                         </div>
                         <div>
                             <h2 className="text-2xl font-bold text-text-primary">Perfect Guide for Engineering Students</h2>
-                            <p className="text-text-secondary text-sm">Interships,Hackathons,</p>
+                            <p className="text-text-secondary text-sm">Interships, Hackathons & More</p>
                         </div>
                     </div>
 
@@ -40,36 +44,44 @@ const LearningResources: React.FC = () => {
                     </div>
                 </section>
 
-                {/* --- Section 2: AI Tools --- */}
+                {/* --- Section 2: Generative AI Tools (NEW) --- */}
                 <section>
                     <div className="flex items-center space-x-3 mb-6 px-2">
-                        <WrenchScrewdriverIcon className="w-6 h-6 text-accent" />
-                        <h2 className="text-2xl font-bold text-text-primary">AI Learning Assistants</h2>
+                        <SparklesIcon className="w-6 h-6 text-accent" />
+                        <h2 className="text-2xl font-bold text-text-primary">Generative AI Tools</h2>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <ResourceCard
-                            title="ChatGPT"
-                            description="Excellent for explaining concepts, solving problems step-by-step, and generating practice questions."
-                            url="https://chat.openai.com/"
-                            icon="🤖"
+                            title="Bolt.new"
+                            description="Full-stack web development in the browser. Build apps instantly."
+                            url="https://bolt.new/"
+                            icon="⚡"
                         />
                         <ResourceCard
-                            title="Google Gemini"
-                            description="Powerful multi-modal AI that can help with coding, math, and logical reasoning problems."
-                            url="https://gemini.google.com/"
-                            icon="✨"
+                            title="Lovable.dev"
+                            description="GPT Engineer for building real web apps with natural language."
+                            url="https://lovable.dev/"
+                            icon="❤️"
                         />
                         <ResourceCard
-                            title="Perplexity AI"
-                            description="Real-time web search combined with AI. Great for finding latest study resources and fact-checking."
-                            url="https://www.perplexity.ai/"
-                            icon="🔍"
+                            title="Gamma"
+                            description="Generate beautiful presentations, decks, and websites in seconds."
+                            url="https://gamma.app/"
+                            icon="📊"
+                        />
+                        <ResourceCard
+                            title="Napkin.ai"
+                            description="Turn your text into visual diagrams and charts instantly."
+                            url="https://www.napkin.ai/"
+                            icon="📝"
                         />
                     </div>
                 </section>
 
-                {/* --- Section 3: Learning Platforms --- */}
+
+
+                {/* --- Section 4: Learning Platforms --- */}
                 <section>
                     <div className="flex items-center space-x-3 mb-6 px-2">
                         <BookOpenIcon className="w-6 h-6 text-primary" />
@@ -78,22 +90,51 @@ const LearningResources: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <ResourceCard
-                            title="IndiaBIX"
-                            description="The go-to platform for aptitude questions, logical reasoning, and interview preparation."
-                            url="https://www.indiabix.com/"
-                            icon="📚"
+                            title="Coursera"
+                            description="Professional certificates from top universities to boost your resume."
+                            url="https://www.coursera.org/"
+                            icon="🎓"
+                        />
+                        <ResourceCard
+                            title="Udemy"
+                            description="Huge selection of affordable courses on any technical topic."
+                            url="https://www.udemy.com/"
+                            icon="📹"
+                        />
+                        <ResourceCard
+                            title="FreeCodeCamp"
+                            description="Learn to code for free. Build projects and earn certifications."
+                            url="https://www.freecodecamp.org/"
+                            icon="🏕️"
+                        />
+                        <ResourceCard
+                            title="Internshala"
+                            description="Find internships and trainings to kickstart your career."
+                            url="https://isp.internshala.com/"
+                            icon="💼"
                         />
                         <ResourceCard
                             title="GeeksforGeeks"
-                            description="Vast collection of computer science resources, algorithms, and placement preparation tracks."
+                            description="Vast collection of CS resources, algorithms, and prep tracks."
                             url="https://www.geeksforgeeks.org/"
                             icon="🟩"
                         />
+                    </div>
+                </section>
+
+                {/* --- Section 5: Aptitude Preparation (NEW) --- */}
+                <section>
+                    <div className="flex items-center space-x-3 mb-6 px-2">
+                        <AcademicCapIcon className="w-6 h-6 text-accent" />
+                        <h2 className="text-2xl font-bold text-text-primary">Aptitude Preparation</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <ResourceCard
-                            title="Coursera"
-                            description="Professional certificates and courses from top universities to boost your resume."
-                            url="https://www.coursera.org/"
-                            icon="🎓"
+                            title="IndiaBIX"
+                            description="The go-to platform for aptitude questions, logical reasoning, and interview preparation."
+                            url="https://www.indiabix.com/"
+                            icon="🧠"
                         />
                     </div>
                 </section>

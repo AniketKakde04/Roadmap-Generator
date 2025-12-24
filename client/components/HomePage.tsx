@@ -372,10 +372,10 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
                                 price="Free"
                                 colorClass="text-text-primary"
                                 features={[
-                                    '1 AI Roadmap per month',
-                                    'Basic Resume Analysis',
-                                    '5 Aptitude Practice Quizzes',
-                                    'Community Access'
+                                    '1 AI Roadmap Generator',
+                                    'Resume Builder',
+                                    '1 Resume Analysis',
+                                    'Aptitude Notes'
                                 ]}
                                 onAction={handleCTAClick}
                             />
