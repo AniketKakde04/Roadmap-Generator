@@ -67,7 +67,7 @@ const App: React.FC = () => {
     const tourSteps: TourStep[] = [
         {
             targetId: 'tour-welcome-header',
-            title: 'Welcome to EduPath!',
+            title: 'Welcome to BuildMyPortfolio!',
             content: 'This is your dashboard. From here, you can access all the AI-powered tools to boost your career.',
             position: 'center'
         },
@@ -134,7 +134,7 @@ const App: React.FC = () => {
         };
         checkUser();
 
-        const { data: authListener } = onAuthStateChange((_event, session) => {
+        const subscription = onAuthStateChange((_event, session) => {
             const currentUser = session?.user ?? null;
             setUser(currentUser);
 
@@ -149,7 +149,7 @@ const App: React.FC = () => {
         });
 
         return () => {
-            authListener?.subscription?.unsubscribe();
+            subscription?.unsubscribe();
         };
     }, []);
 
@@ -327,10 +327,14 @@ const App: React.FC = () => {
                     <a
                         href="/"
                         className="fixed bottom-6 left-6 z-50 flex items-center gap-2 bg-white/90 backdrop-blur border border-slate-200 px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all group no-underline"
-                        title="Create your own portfolio with EduPath"
+                        title="Create your own portfolio with BuildMyPortfolio"
                     >
-                        <div className="w-5 h-5 bg-primary rounded flex items-center justify-center text-[9px] text-white font-bold">AI</div>
-                        <span className="text-xs font-medium text-slate-500 group-hover:text-primary transition-colors">Made with EduPath</span>
+                        <div className="w-5 h-5 bg-primary rounded flex items-center justify-center text-white">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 2.613a48.116 48.116 0 01-3.413-.387m-7.757-2.557c.818-.28 1.954-.59 3.25-.855m0 0a48.109 48.109 0 00-3.413.387m3.413-.387L19.5 7.5m-9.062.371c.674.05 1.354.102 2.037.152m-6.099-.548a9.026 9.026 0 0111.41 0m-11.41 0a9.042 9.042 0 01-2.096-.983M3 14.15l-1.618-2.52a2.18 2.18 0 01.378-2.83l.882-.588m0 0a9.052 9.052 0 012.096-.983M3 14.15l2.25-3.375M20.25 14.15l-2.25-3.375" />
+                            </svg>
+                        </div>
+                        <span className="text-xs font-medium text-slate-500 group-hover:text-primary transition-colors">Made with BuildMyPortfolio</span>
                     </a>
                 </div>
             );

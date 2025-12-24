@@ -82,8 +82,10 @@ const VerticalNavbar: React.FC<VerticalNavbarProps> = ({ currentView, onNavigate
       <div className="flex items-center justify-between p-4 h-20 border-b border-border">
         {!isCollapsed && (
           <div className="flex items-center gap-2 animate-fadeIn">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg">AI</div>
-            <span className="text-xl font-bold text-text-primary tracking-tight">EduPath</span>
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg">
+              <BriefcaseIcon className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold text-text-primary tracking-tight">BuildMyPortfolio</span>
           </div>
         )}
         <button onClick={() => setIsCollapsed(!isCollapsed)} className="p-2 rounded-lg hover:bg-background-hover text-text-secondary transition-colors mx-auto">

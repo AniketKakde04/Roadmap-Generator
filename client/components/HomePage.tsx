@@ -7,7 +7,8 @@ import {
     CheckIcon,
     ArrowRightIcon,
     SparklesIcon,
-    StarIcon
+    StarIcon,
+    BriefcaseIcon
 } from '@heroicons/react/24/outline';
 
 import TestimonialsSection from './TestimonialsSection';
@@ -258,14 +259,14 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
                     </div>
 
                     <h1 className="text-5xl md:text-7xl font-extrabold text-text-primary tracking-tight mb-8 leading-[1.1] animate-fadeInUp" style={{ animationDelay: '100ms' }}>
-                        Your Career Journey, <br className="hidden md:block" />
+                        Build Your Career, <br className="hidden md:block" />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-secondary animate-text-shimmer bg-[length:200%_100%]">
-                            Gamified & Guided.
+                            From Resumes to Offer Letter.
                         </span>
                     </h1>
 
                     <p className="text-xl text-text-secondary mb-12 max-w-2xl mx-auto leading-relaxed animate-fadeInUp" style={{ animationDelay: '200ms' }}>
-                        EduPath turns the chaos of career prep into a clear, level-by-level game plan. From your first roadmap to your final interview.
+                        Generate personal learning paths, build ATS-friendly resumes, practice mock interviews, and showcase your portfolio—all in one platform.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fadeInUp" style={{ animationDelay: '300ms' }}>
@@ -289,7 +290,7 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
                     <div className="text-center mb-20">
                         <h2 className="text-3xl md:text-5xl font-bold text-text-primary mb-6">Level Up Your Career</h2>
                         <p className="text-lg text-text-secondary max-w-xl mx-auto">
-                            Follow the path. Unlock new opportunities. Here is how EduPath guides you from "Lost" to "Hired".
+                            Follow the path. Unlock new opportunities. Here is how BuildMyPortfolio guides you from learning to landing the job.
                         </p>
                     </div>
 
@@ -419,17 +420,19 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
                 {/* --- SIMPLE FOOTER --- */}
                 <footer className="py-12 border-t border-border text-center">
                     <div className="flex items-center justify-center gap-2 mb-4">
-                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">AI</div>
-                        <span className="text-xl font-bold text-text-primary">EduPath</span>
+                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                            <BriefcaseIcon className="w-5 h-5 text-white" />
+                        </div>
+                        <span className="text-xl font-bold text-text-primary">BuildMyPortfolio</span>
                     </div>
-                    <p className="text-text-secondary text-sm mb-6">Your personal AI career coach. Built for students, by students.</p>
+                    <p className="text-text-secondary text-sm mb-6">The all-in-one platform to build skills, showcase work, and get hired.</p>
                     <div className="flex justify-center gap-6 text-sm font-medium text-text-secondary">
                         <a href="#" className="hover:text-primary">Roadmap</a>
                         <a href="#" className="hover:text-primary">Resume</a>
                         <a href="#" className="hover:text-primary">Interview</a>
                         <a href="#" className="hover:text-primary">About</a>
                     </div>
-                    <p className="text-xs text-text-secondary mt-8 opacity-50">&copy; {new Date().getFullYear()} EduPath AI. All rights reserved.</p>
+                    <p className="text-xs text-text-secondary mt-8 opacity-50">&copy; {new Date().getFullYear()} BuildMyPortfolio. All rights reserved.</p>
                 </footer>
 
             </div>

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
+import { BriefcaseIcon } from '@heroicons/react/24/outline';
 
 import ThemeToggle from '../src/components/ThemeToggle';
 
-type View = 'home' | 'dashboard' | 'roadmapGenerator' | 'resume' | 'profile' | 'resumeBuilder' | 'aptitude' | 'mockInterview';
+type View = 'home' | 'dashboard' | 'roadmapGenerator' | 'resume' | 'profile' | 'resumeBuilder' | 'aptitude' | 'mockInterview' | 'sharedPortfolio' | 'resources' | 'projects';
 
 interface NavbarProps {
     currentView: View;
@@ -30,8 +31,10 @@ const Navbar: React.FC<NavbarProps> = ({
                     {/* Brand Logo */}
                     <div className="flex-shrink-0 flex items-center mr-4"> {/* Added mr-4 to prevent overlap */}
                         <button onClick={() => handleNav(isLoggedIn ? 'dashboard' : 'home')} className="flex items-center space-x-2 group">
-                            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold group-hover:scale-105 transition-transform">AI</div>
-                            <span className="text-text-primary text-xl font-bold tracking-tight whitespace-nowrap">EduPath</span>
+                            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-sm group-hover:scale-105 transition-transform">
+                                <BriefcaseIcon className="w-5 h-5 text-white" />
+                            </div>
+                            <span className="text-text-primary text-xl font-bold tracking-tight whitespace-nowrap">BuildMyPortfolio</span>
                         </button>
                     </div>
 
