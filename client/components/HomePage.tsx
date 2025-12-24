@@ -362,7 +362,7 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
                 <section id="pricing" className="py-20 border-t border-border/50">
                     <div className="max-w-4xl mx-auto px-4">
                         <div className="text-center mb-16">
-                            <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-6">Simple Student Pricing</h2>
+                            <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-6">Pricing</h2>
                             <p className="text-lg text-text-secondary">Start for free. Upgrade when you're ready to get serious.</p>
                         </div>
 
