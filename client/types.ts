@@ -93,6 +93,7 @@ export interface ProjectEntry {
   id: string;
   name: string;
   description: string;
+  link?: string;
 }
 
 export interface SkillEntry {

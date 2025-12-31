@@ -244,7 +244,10 @@ const TwoColumnTemplate: React.FC<{ data: ResumeData }> = ({ data }) => (
                 <MainSection title="Projects">
                     {data.projects.map(proj => (
                         <div key={proj.id} className="mb-3">
-                            <h3 className="text-md font-bold">{proj.name}</h3>
+                            <h3 className="text-md font-bold">
+                                {proj.name}
+                                {proj.link && <a href={proj.link} target="_blank" rel="noopener noreferrer" className="ml-2 text-xs text-sky-600 hover:underline font-normal">Project Link</a>}
+                            </h3>
                             <ul className="list-disc pl-5 mt-1 text-sm text-gray-700">
                                 {proj.description.split('\n').map((line, i) => line.trim() && <li key={i}>{line.replace(/^- /, '')}</li>)}
                             </ul>
@@ -407,7 +410,10 @@ const RightSidebarTemplate: React.FC<{ data: ResumeData }> = ({ data }) => (
                     <h3 className="text-sm font-extrabold uppercase tracking-wide border-b-2 border-black pb-2 mb-4">Projects</h3>
                     {data.projects.map(proj => (
                         <div key={proj.id} className="mb-4 text-sm">
-                            <div className="font-bold text-gray-900 border-l-4 border-gray-900 pl-2 mb-1">{proj.name}</div>
+                            <div className="font-bold text-gray-900 border-l-4 border-gray-900 pl-2 mb-1">
+                                {proj.name}
+                                {proj.link && <a href={proj.link} target="_blank" rel="noopener noreferrer" className="ml-2 text-xs text-sky-600 hover:underline font-normal">Project Link</a>}
+                            </div>
                             <p className="text-gray-600 pl-3 text-xs leading-relaxed">{proj.description}</p>
                         </div>
                     ))}
@@ -511,7 +517,10 @@ const IvyLeagueTemplate: React.FC<{ data: ResumeData }> = ({ data }) => (
                 <h2 className="text-base font-bold uppercase border-b border-black mb-3 pb-0.5">Projects</h2>
                 {data.projects.map(proj => (
                     <div key={proj.id} className="mb-4 last:mb-0">
-                        <div className="font-bold text-base mb-0.5">{proj.name}</div>
+                        <div className="font-bold text-base mb-0.5">
+                            {proj.name}
+                            {proj.link && <a href={proj.link} target="_blank" rel="noopener noreferrer" className="ml-2 text-sm font-normal text-blue-800 hover:underline">Project Link</a>}
+                        </div>
                         <ul className="list-disc ml-5 text-sm leading-relaxed space-y-0.5">
                             {proj.description.split('\n').map((line, i) => line.trim() && (
                                 <li key={i}>{line.replace(/^- /, '')}</li>
@@ -669,7 +678,10 @@ const ElegantTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
                                         Project
                                     </div>
                                     <div className="text-xs">
-                                        <p className="font-bold text-slate-900 mb-0.5">{proj.name}</p>
+                                        <p className="font-bold text-slate-900 mb-0.5">
+                                            {proj.name}
+                                            {proj.link && <a href={proj.link} target="_blank" rel="noopener noreferrer" className="ml-2 text-sky-600 hover:underline font-normal">Project Link</a>}
+                                        </p>
                                         <ul className="list-none space-y-0 text-slate-600 leading-tight">
                                             {proj.description.split('\n').map((line, i) => line.trim() && (
                                                 <li key={i}>{line.replace(/^- /, '')}</li>
@@ -840,7 +852,10 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData }) => {
                     <SectionTitle templateType={templateType}>Projects</SectionTitle>
                     {data.projects.map(proj => (
                         <div key={proj.id} className="mb-2">
-                            <h3 className="text-md font-bold">{proj.name}</h3>
+                            <h3 className="text-md font-bold">
+                                {proj.name}
+                                {proj.link && <a href={proj.link} target="_blank" rel="noopener noreferrer" className="ml-2 text-sm text-sky-700 hover:underline font-normal">Project Link</a>}
+                            </h3>
                             <ul className="list-disc pl-5 mt-1 text-sm text-gray-700">
                                 {proj.description.split('\n').map((line, i) => line.trim() && <li key={i}>{line.replace(/^- /, '')}</li>)}
                             </ul>

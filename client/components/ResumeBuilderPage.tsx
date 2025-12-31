@@ -128,7 +128,7 @@ const ResumeBuilderPage: React.FC = () => {
         switch (section) {
             case 'education': newItem = { id: uuidv4(), university: '', degree: '', startDate: '', endDate: '' }; break;
             case 'experience': newItem = { id: uuidv4(), title: '', company: '', startDate: '', endDate: '', description: '' }; break;
-            case 'projects': newItem = { id: uuidv4(), name: '', description: '' }; break;
+            case 'projects': newItem = { id: uuidv4(), name: '', description: '', link: '' }; break;
             case 'skills': newItem = { id: uuidv4(), name: '' }; break;
             case 'achievements': newItem = { id: uuidv4(), description: '' }; break;
             case 'certifications': newItem = { id: uuidv4(), name: '', issuer: '', date: '' }; break;
@@ -310,6 +310,7 @@ const ResumeBuilderPage: React.FC = () => {
                                     {resumeData.projects.map((proj, index) => (
                                         <div key={proj.id} className="p-2 bg-background border border-border rounded-lg space-y-2 shadow-sm">
                                             <input value={proj.name} onChange={e => handleArrayChange('projects', index, 'name', e.target.value)} placeholder="Project Name" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm" />
+                                            <input value={proj.link || ''} onChange={e => handleArrayChange('projects', index, 'link', e.target.value)} placeholder="Project Link (e.g., https://github.com/...)" className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all text-sm" />
                                             <textarea value={proj.description} onChange={e => handleArrayChange('projects', index, 'description', e.target.value)} rows={2} placeholder="Project description..." className="w-full bg-background-accent border border-border p-2 rounded-md text-text-primary placeholder-dark focus:bg-background focus:border-primary focus:ring-2 outline-none transition-all resize-none text-sm" />
                                             <button onClick={() => removeArrayItem('projects', proj.id)} className="text-xs text-error hover:text-red-600 font-medium">Remove</button>
                                         </div>
