@@ -14,6 +14,9 @@ import HomePage from './components/HomePage';
 import AptitudeDashboard from './components/AptitudeDashboard';
 import MockInterviewPage from './components/MockInterviewPage';
 import PortfolioPreview from './components/PortfolioPreview';
+import DevCardPortfolio from './components/portfolio-templates/DevCardPortfolio';
+import CleanPortfolio from './components/portfolio-templates/CleanPortfolio';
+import GradientPortfolio from './components/portfolio-templates/GradientPortfolio';
 import LearningResources from './components/LearningResources';
 import ProjectShowcase from './components/ProjectShowcase';
 import OnboardingTour, { TourStep } from './components/OnboardingTour'; // Import Tour
@@ -323,7 +326,16 @@ const App: React.FC = () => {
             if (!publicResumeData) return <div className="w-full min-h-screen flex items-center justify-center bg-white"><Loader /></div>;
             return (
                 <div className="w-full min-h-screen bg-white relative">
-                    <PortfolioPreview data={publicResumeData} readOnly={true} />
+                    {(() => {
+                        const template = publicResumeData.portfolio_template || 'modern-minimalist';
+                        switch (template) {
+                            case 'dev-card': return <DevCardPortfolio data={publicResumeData} readOnly={true} />;
+                            case 'clean': return <CleanPortfolio data={publicResumeData} readOnly={true} />;
+                            case 'gradient': return <GradientPortfolio data={publicResumeData} readOnly={true} />;
+                            case 'modern-minimalist':
+                            default: return <PortfolioPreview data={publicResumeData} readOnly={true} />;
+                        }
+                    })()}
                     <a
                         href="/"
                         className="fixed bottom-6 left-6 z-50 flex items-center gap-2 bg-white/90 backdrop-blur border border-slate-200 px-3 py-1.5 rounded-full shadow-sm hover:shadow-md transition-all group no-underline"

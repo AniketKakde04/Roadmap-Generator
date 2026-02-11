@@ -70,6 +70,7 @@ export interface ResumeData {
   certifications?: CertificationEntry[];
   updated_at?: string;
   templateType?: 'single-column' | 'two-column' | 'minimalist' | 'creative' | 'right-sidebar' | 'ivy-league';
+  portfolio_template?: 'modern-minimalist' | 'dev-card' | 'clean' | 'gradient';
 }
 
 export interface EducationEntry {

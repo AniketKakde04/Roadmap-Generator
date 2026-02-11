@@ -4,6 +4,10 @@ import CourseView from './CourseView';
 import { RoadmapEditor } from './RoadmapEditor';
 import ResumePreview from './ResumePreview';
 import PortfolioPreview from './PortfolioPreview';
+import DevCardPortfolio from './portfolio-templates/DevCardPortfolio';
+import CleanPortfolio from './portfolio-templates/CleanPortfolio';
+import GradientPortfolio from './portfolio-templates/GradientPortfolio';
+import PortfolioTemplateSelector from './PortfolioTemplateSelector';
 import EditProfileModal from './EditProfileModal';
 import { getResume, upsertResume } from '../services/resumeService';
 import Loader from './Loader';
@@ -105,6 +109,29 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
             setCopySuccess(true);
             setTimeout(() => setCopySuccess(false), 2000);
         });
+    };
+
+    const handleTemplateSelect = async (template: 'modern-minimalist' | 'dev-card' | 'clean' | 'gradient') => {
+        if (!resumeData) return;
+        const updatedData = { ...resumeData, portfolio_template: template };
+        setResumeData(updatedData);
+        try {
+            await upsertResume(updatedData);
+        } catch (error) {
+            console.error('Failed to save portfolio template:', error);
+        }
+    };
+
+    const renderPortfolioTemplate = () => {
+        if (!resumeData) return null;
+        const template = resumeData.portfolio_template || 'modern-minimalist';
+        switch (template) {
+            case 'dev-card': return <DevCardPortfolio data={resumeData} readOnly />;
+            case 'clean': return <CleanPortfolio data={resumeData} readOnly />;
+            case 'gradient': return <GradientPortfolio data={resumeData} readOnly />;
+            case 'modern-minimalist':
+            default: return <PortfolioPreview data={resumeData} readOnly />;
+        }
     };
 
     if (editMode && selectedRoadmap) {
@@ -229,8 +256,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as any)}
                                 className={`flex items-center gap-2 py-3 px-6 border-b-2 font-medium transition-all whitespace-nowrap ${activeTab === tab.id
-                                        ? 'border-primary text-primary bg-primary/5'
-                                        : 'border-transparent text-text-secondary hover:text-text-primary hover:bg-background-hover'
+                                    ? 'border-primary text-primary bg-primary/5'
+                                    : 'border-transparent text-text-secondary hover:text-text-primary hover:bg-background-hover'
                                     }`}
                             >
                                 <tab.icon className="w-5 h-5" />
@@ -377,6 +404,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                                             </button>
                                         </div>
 
+                                        <PortfolioTemplateSelector
+                                            selectedTemplate={resumeData.portfolio_template || 'modern-minimalist'}
+                                            onSelectTemplate={handleTemplateSelect}
+                                        />
+
                                         <div className="border border-border rounded-xl overflow-hidden shadow-lg">
                                             <div className="bg-slate-100 border-b border-slate-200 p-3 flex items-center gap-2">
                                                 <div className="flex gap-1.5">
@@ -386,13 +418,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onPr
                                                 </div>
                                                 <div className="flex-grow text-center">
                                                     <div className="bg-white text-xs text-slate-500 py-1 px-4 rounded-md inline-block border border-slate-200 w-1/2 truncate shadow-sm">
-                                                        edupath.ai/{userName || 'portfolio'}
+                                                        buildmyportfolio.ai/{userName || 'portfolio'}
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="h-[600px] overflow-y-auto bg-white relative">
                                                 <div className="absolute inset-0 transform origin-top">
-                                                    <PortfolioPreview data={resumeData} readOnly />
+                                                    {renderPortfolioTemplate()}
                                                 </div>
                                             </div>
                                         </div>
