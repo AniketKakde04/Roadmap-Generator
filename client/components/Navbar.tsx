@@ -3,7 +3,7 @@ import { BriefcaseIcon } from '@heroicons/react/24/outline';
 
 import ThemeToggle from '../src/components/ThemeToggle';
 
-type View = 'home' | 'dashboard' | 'roadmapGenerator' | 'resume' | 'profile' | 'resumeBuilder' | 'aptitude' | 'mockInterview' | 'sharedPortfolio' | 'resources' | 'projects';
+type View = 'home' | 'dashboard' | 'roadmapGenerator' | 'resume' | 'profile' | 'portfolio' | 'resumeBuilder' | 'aptitude' | 'mockInterview' | 'sharedPortfolio' | 'resources' | 'projects';
 
 interface NavbarProps {
     currentView: View;

@@ -33,6 +33,7 @@ interface ProfilePageProps {
     onDeleteRoadmap: (roadmapId: string) => void;
     onUpdateRoadmap: (updatedRoadmap: SavedRoadmap) => void;
     onNavigate: (view: 'home' | 'resume' | 'profile' | 'resumeBuilder') => void;
+    initialTab?: 'roadmaps' | 'resume' | 'portfolio';
 }
 
 // Helper component moved outside to prevent re-renders
@@ -48,10 +49,10 @@ const StatsCard = ({ icon, label, value, colorClass }: { icon: JSX.Element, labe
     </div>
 );
 
-const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onProgressToggle, onDeleteRoadmap, onUpdateRoadmap, onNavigate }) => {
+const ProfilePage: React.FC<ProfilePageProps> = ({ userName, savedRoadmaps, onProgressToggle, onDeleteRoadmap, onUpdateRoadmap, onNavigate, initialTab }) => {
     const [selectedRoadmap, setSelectedRoadmap] = useState<SavedRoadmap | null>(null);
     const [editMode, setEditMode] = useState(false);
-    const [activeTab, setActiveTab] = useState<'roadmaps' | 'resume' | 'portfolio'>('roadmaps');
+    const [activeTab, setActiveTab] = useState<'roadmaps' | 'resume' | 'portfolio'>(initialTab || 'roadmaps');
 
     const [resumeData, setResumeData] = useState<ResumeData | null>(null);
     const [loadingResume, setLoadingResume] = useState(true);

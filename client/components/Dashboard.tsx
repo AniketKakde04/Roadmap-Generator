@@ -6,7 +6,8 @@ import {
   AcademicCapIcon,
   ChatBubbleLeftRightIcon,
   QueueListIcon,
-  RocketLaunchIcon
+  RocketLaunchIcon,
+  GlobeAltIcon
 } from '@heroicons/react/24/outline';
 
 interface DashboardProps {
@@ -26,7 +27,6 @@ const Dashboard: React.FC<DashboardProps> = ({ userName, onNavigate, stats }) =>
       description: 'Create personalized learning paths for any topic or job role.',
       icon: <MapIcon className="w-8 h-8" />,
       color: 'bg-blue-500',
-      hover: 'hover:bg-blue-600',
       hover: 'hover:bg-blue-600'
     },
     {
@@ -84,6 +84,15 @@ const Dashboard: React.FC<DashboardProps> = ({ userName, onNavigate, stats }) =>
       icon: <RocketLaunchIcon className="w-8 h-8" />,
       color: 'bg-red-500',
       hover: 'hover:bg-red-600'
+    },
+    {
+      id: 'portfolio',
+      tourId: 'tour-portfolio-card',
+      title: 'Portfolio Website',
+      description: 'Build and customize your personal portfolio website to share with recruiters.',
+      icon: <GlobeAltIcon className="w-8 h-8" />,
+      color: 'bg-teal-500',
+      hover: 'hover:bg-teal-600'
     }
   ];
 

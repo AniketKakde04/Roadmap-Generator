@@ -29,7 +29,7 @@ import ArrowUpTrayIcon from './components/icons/ArrowUpTrayIcon';
 // Configure the worker for pdfjs-dist
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs`;
 
-type View = 'home' | 'dashboard' | 'roadmapGenerator' | 'resume' | 'profile' | 'resumeBuilder' | 'aptitude' | 'mockInterview' | 'sharedPortfolio' | 'resources' | 'projects';
+type View = 'home' | 'dashboard' | 'roadmapGenerator' | 'resume' | 'profile' | 'portfolio' | 'resumeBuilder' | 'aptitude' | 'mockInterview' | 'sharedPortfolio' | 'resources' | 'projects';
 
 const App: React.FC = () => {
     // Initialize view based on URL to prevent flicker
@@ -367,6 +367,7 @@ const App: React.FC = () => {
                 return <ResumeAnalyzer onProjectSelect={handleProjectSelect} />;
 
             case 'profile':
+            case 'portfolio':
                 return <ProfilePage
                     userName={userName}
                     savedRoadmaps={savedRoadmaps}
@@ -374,6 +375,7 @@ const App: React.FC = () => {
                     onDeleteRoadmap={handleDeleteRoadmap}
                     onUpdateRoadmap={handleUpdateRoadmap}
                     onNavigate={setView as any}
+                    initialTab={view === 'portfolio' ? 'portfolio' : undefined}
                 />;
             case 'resumeBuilder':
                 return <ResumeBuilderPage />;
