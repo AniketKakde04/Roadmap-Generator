@@ -49,7 +49,9 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
 
             try {
                 const arrayBuffer = await file.arrayBuffer();
+                console.log("ArrayBuffer created, loading PDF...");
                 const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                console.log(`PDF loaded, pages: ${pdf.numPages}`);
                 let fullText = '';
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
@@ -63,16 +65,21 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                 if (cleanedText.length < 50) {
                     // Threshold of 50 chars is arbitrary but safe for a resume. 
                     // Empty or very short text implies parsing failed or it's an image PDF.
-                    setError('Could not extract text from this PDF. It might be a scanned image. Please upload a text-based PDF.');
+                    const msg = 'Could not extract text from this PDF. It might be a scanned image. Please upload a text-based PDF.';
+                    setError(msg);
+                    window.alert(`Error: ${msg}`);
                     setResumeText(''); // Clear it so they can't proceed with bad data
                     setFileName(null);
                 } else {
                     setResumeText(cleanedText);
                     console.log(`Successfully extracted ${cleanedText.length} characters from custom PDF parser.`);
+                    window.alert("Resume uploaded and parsed successfully!");
                 }
             } catch (err) {
-                console.error(err);
-                setError('Failed to parse PDF. Please try again.');
+                console.error("PDF Parsing Error:", err);
+                const msg = 'Failed to parse PDF. Please try again.';
+                setError(msg);
+                window.alert(`Error: ${msg}`);
                 setFileName(null);
             } finally {
                 setIsParsing(false);

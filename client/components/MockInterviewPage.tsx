@@ -134,7 +134,9 @@ const MockInterviewPage: React.FC<MockInterviewPageProps> = ({ user }) => {
         setIsParsing(true);
         try {
           const arrayBuffer = await file.arrayBuffer();
+          console.log("ArrayBuffer created, loading PDF...");
           const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+          console.log(`PDF loaded, pages: ${pdf.numPages}`);
           let fullText = '';
           for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
@@ -144,8 +146,13 @@ const MockInterviewPage: React.FC<MockInterviewPageProps> = ({ user }) => {
           }
           if (!fullText.trim()) throw new Error('Could not extract text from PDF.');
           setResumeText(fullText);
+          console.log("PDF parsed successfully");
+          window.alert("Resume uploaded and parsed successfully!");
         } catch (err) {
-          setError(err instanceof Error ? err.message : 'Failed to parse PDF.');
+          console.error("PDF Parsing Error:", err);
+          const msg = err instanceof Error ? err.message : 'Failed to parse PDF.';
+          setError(msg);
+          window.alert(`Error: ${msg}`);
           setResumeText('');
           setResumeFile(null);
         } finally {
@@ -387,7 +394,9 @@ const MockInterviewPage: React.FC<MockInterviewPageProps> = ({ user }) => {
                 >
                   <div className="text-center">
                     <ArrowUpTrayIcon className="mx-auto h-12 w-12 text-text-secondary" />
-                    <span className="mt-2 block text-sm font-semibold text-primary">{resumeFile ? resumeFile.name : 'Click to upload a file'}</span>
+                    <span className={`mt-2 block text-sm font-semibold ${resumeFile ? 'text-success' : 'text-primary'}`}>
+                      {resumeFile ? `✓ ${resumeFile.name} (Uploaded)` : 'Click to upload a file'}
+                    </span>
                     <span className="block text-xs text-text-secondary">{isParsing ? 'Parsing PDF...' : '(PDF only)'}</span>
                     <input
                       id="resume-upload"
