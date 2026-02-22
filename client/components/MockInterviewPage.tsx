@@ -121,7 +121,10 @@ const MockInterviewPage: React.FC<MockInterviewPageProps> = ({ user }) => {
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
-      if (file.type !== 'application/pdf') {
+      const isPdfMime = file.type === 'application/pdf';
+      const isPdfExt = file.name.toLowerCase().endsWith('.pdf');
+
+      if (!isPdfMime && !isPdfExt) {
         setError('Please upload a PDF file.');
         setResumeFile(null);
         setResumeText('');
@@ -386,7 +389,15 @@ const MockInterviewPage: React.FC<MockInterviewPageProps> = ({ user }) => {
                     <ArrowUpTrayIcon className="mx-auto h-12 w-12 text-text-secondary" />
                     <span className="mt-2 block text-sm font-semibold text-primary">{resumeFile ? resumeFile.name : 'Click to upload a file'}</span>
                     <span className="block text-xs text-text-secondary">{isParsing ? 'Parsing PDF...' : '(PDF only)'}</span>
-                    <input id="resume-upload" name="resume-upload" type="file" className="sr-only" accept=".pdf" onChange={handleFileChange} disabled={isParsing} />
+                    <input
+                      id="resume-upload"
+                      name="resume-upload"
+                      type="file"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      accept=".pdf"
+                      onChange={handleFileChange}
+                      disabled={isParsing}
+                    />
                   </div>
                 </label>
               </div>

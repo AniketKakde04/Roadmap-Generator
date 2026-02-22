@@ -35,7 +35,10 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
             const file = event.target.files[0];
-            if (file.type !== 'application/pdf') {
+            const isPdfMime = file.type === 'application/pdf';
+            const isPdfExt = file.name.toLowerCase().endsWith('.pdf');
+
+            if (!isPdfMime && !isPdfExt) {
                 setError('Please upload a PDF file.');
                 return;
             }
@@ -311,11 +314,11 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                             <div className="flex-1 flex flex-col justify-center space-y-6">
                                 {/* File Upload - Main and Only Input */}
                                 <label
-                                    className={`border-2 border-dashed border-purple-300 rounded-3xl p-12 text-center hover:bg-purple-50 hover:border-purple-500 transition-all cursor-pointer group ${isParsing ? 'opacity-50 cursor-wait' : ''}`}
+                                    className={`relative border-2 border-dashed border-purple-300 rounded-3xl p-12 text-center hover:bg-purple-50 hover:border-purple-500 transition-all cursor-pointer group ${isParsing ? 'opacity-50 cursor-wait' : ''}`}
                                 >
                                     <input
                                         type="file"
-                                        className="hidden"
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                         accept=".pdf"
                                         onChange={handleFileChange}
                                         disabled={isParsing}
