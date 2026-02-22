@@ -33,8 +33,10 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
     const [isParsing, setIsParsing] = useState(false);
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        window.alert("handleFileChange event triggered in ResumeAnalyzer!");
         if (event.target.files && event.target.files.length > 0) {
             const file = event.target.files[0];
+            window.alert(`File selected: ${file.name}, type: ${file.type}`);
             const isPdfMime = file.type === 'application/pdf';
             const isPdfExt = file.name.toLowerCase().endsWith('.pdf');
 
@@ -325,7 +327,7 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                                 >
                                     <input
                                         type="file"
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50"
                                         accept=".pdf"
                                         onChange={handleFileChange}
                                         disabled={isParsing}
