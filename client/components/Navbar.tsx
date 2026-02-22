@@ -57,6 +57,11 @@ const Navbar: React.FC<NavbarProps> = ({
                                         Resume
                                     </button>
                                 </li>
+                                <li>
+                                    <button onClick={() => handleNav('mockInterview')} className={`text-sm font-medium transition-colors ${currentView === 'mockInterview' ? 'text-primary' : 'text-text-secondary hover:text-text-primary'}`}>
+                                        Interview
+                                    </button>
+                                </li>
                             </ul>
                         )}
                     </div>
@@ -131,8 +136,6 @@ const Navbar: React.FC<NavbarProps> = ({
                                 <button onClick={() => handleNav('resources')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Resources</button>
                                 <button onClick={() => handleNav('projects')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Projects</button>
                                 <button onClick={() => handleNav('aptitude')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Aptitude Prep</button>
-
-                                {/* Disabled Links */}
                                 <button onClick={() => handleNav('mockInterview')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Mock Interview</button>
 
                                 <button onClick={() => handleNav('profile')} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-text-secondary hover:text-text-primary hover:bg-background-hover">Profile</button>

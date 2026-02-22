@@ -19,82 +19,90 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ userName, onNavigate, stats }) => {
-  const tools = [
-    {
-      id: 'roadmapGenerator',
-      tourId: 'tour-roadmap-card',
-      title: 'Roadmap Generator',
-      description: 'Create personalized learning paths for any topic or job role.',
-      icon: <MapIcon className="w-8 h-8" />,
-      color: 'bg-blue-500',
-      hover: 'hover:bg-blue-600'
-    },
-    {
-      id: 'resume',
-      tourId: 'tour-resume-card',
-      title: 'Resume Analyzer',
-      description: 'Analyze your resume against job descriptions to find gaps.',
-      icon: <DocumentTextIcon className="w-8 h-8" />,
-      color: 'bg-indigo-500',
-      hover: 'hover:bg-indigo-600'
-    },
-    {
-      id: 'resumeBuilder',
-      tourId: 'tour-builder-card',
-      title: 'Resume Builder',
-      description: 'Build a professional, ATS-friendly resume from scratch.',
-      icon: <BriefcaseIcon className="w-8 h-8" />,
-      color: 'bg-purple-500',
-      hover: 'hover:bg-purple-600'
-    },
-    {
-      id: 'mockInterview',
-      tourId: 'tour-interview-card',
-      title: 'AI Mock Interview',
-      description: 'Practice voice-based technical interviews with AI feedback.',
-      icon: <ChatBubbleLeftRightIcon className="w-8 h-8" />,
-      color: 'bg-pink-500',
-      hover: 'hover:bg-pink-600',
-      disabled: true // Coming Soon
-    },
-    {
-      id: 'aptitude',
-      tourId: 'tour-aptitude-card',
-      title: 'Aptitude Prep',
-      description: 'Practice quizzes for quantitative and logical reasoning.',
-      icon: <AcademicCapIcon className="w-8 h-8" />,
-      color: 'bg-emerald-500',
-      hover: 'hover:bg-emerald-600',
-      // disabled: true // Enabled now
-    },
-    {
-      id: 'resources',
-      tourId: 'tour-resources-card',
-      title: 'Learning Resources',
-      description: 'Access curated study materials, video lectures, and tools.',
-      icon: <QueueListIcon className="w-8 h-8" />,
-      color: 'bg-orange-500',
-      hover: 'hover:bg-orange-600'
-    },
-    {
-      id: 'projects',
-      tourId: 'tour-projects-card',
-      title: 'Student Projects',
-      description: 'Showcase your work and explore projects by other students.',
-      icon: <RocketLaunchIcon className="w-8 h-8" />,
-      color: 'bg-red-500',
-      hover: 'hover:bg-red-600'
-    },
-    {
-      id: 'portfolio',
-      tourId: 'tour-portfolio-card',
-      title: 'Portfolio Website',
-      description: 'Build and customize your personal portfolio website to share with recruiters.',
-      icon: <GlobeAltIcon className="w-8 h-8" />,
-      color: 'bg-teal-500',
-      hover: 'hover:bg-teal-600'
-    }
-  ];
+  const tools: Array<{
+    id: string;
+    tourId: string;
+    title: string;
+    description: string;
+    icon: React.ReactNode;
+    color: string;
+    hover: string;
+    disabled?: boolean;
+  }> = [
+      {
+        id: 'roadmapGenerator',
+        tourId: 'tour-roadmap-card',
+        title: 'Roadmap Generator',
+        description: 'Create personalized learning paths for any topic or job role.',
+        icon: <MapIcon className="w-8 h-8" />,
+        color: 'bg-blue-500',
+        hover: 'hover:bg-blue-600'
+      },
+      {
+        id: 'resume',
+        tourId: 'tour-resume-card',
+        title: 'Resume Analyzer',
+        description: 'Analyze your resume against job descriptions to find gaps.',
+        icon: <DocumentTextIcon className="w-8 h-8" />,
+        color: 'bg-indigo-500',
+        hover: 'hover:bg-indigo-600'
+      },
+      {
+        id: 'resumeBuilder',
+        tourId: 'tour-builder-card',
+        title: 'Resume Builder',
+        description: 'Build a professional, ATS-friendly resume from scratch.',
+        icon: <BriefcaseIcon className="w-8 h-8" />,
+        color: 'bg-purple-500',
+        hover: 'hover:bg-purple-600'
+      },
+      {
+        id: 'mockInterview',
+        tourId: 'tour-interview-card',
+        title: 'AI Mock Interview',
+        description: 'Practice voice-based technical interviews with AI feedback.',
+        icon: <ChatBubbleLeftRightIcon className="w-8 h-8" />,
+        color: 'bg-pink-500',
+        hover: 'hover:bg-pink-600'
+      },
+      {
+        id: 'aptitude',
+        tourId: 'tour-aptitude-card',
+        title: 'Aptitude Prep',
+        description: 'Practice quizzes for quantitative and logical reasoning.',
+        icon: <AcademicCapIcon className="w-8 h-8" />,
+        color: 'bg-emerald-500',
+        hover: 'hover:bg-emerald-600',
+        // disabled: true // Enabled now
+      },
+      {
+        id: 'resources',
+        tourId: 'tour-resources-card',
+        title: 'Learning Resources',
+        description: 'Access curated study materials, video lectures, and tools.',
+        icon: <QueueListIcon className="w-8 h-8" />,
+        color: 'bg-orange-500',
+        hover: 'hover:bg-orange-600'
+      },
+      {
+        id: 'projects',
+        tourId: 'tour-projects-card',
+        title: 'Student Projects',
+        description: 'Showcase your work and explore projects by other students.',
+        icon: <RocketLaunchIcon className="w-8 h-8" />,
+        color: 'bg-red-500',
+        hover: 'hover:bg-red-600'
+      },
+      {
+        id: 'portfolio',
+        tourId: 'tour-portfolio-card',
+        title: 'Portfolio Website',
+        description: 'Build and customize your personal portfolio website to share with recruiters.',
+        icon: <GlobeAltIcon className="w-8 h-8" />,
+        color: 'bg-teal-500',
+        hover: 'hover:bg-teal-600'
+      }
+    ];
 
   return (
     <div className="w-full max-w-7xl mx-auto py-10 px-6 animate-fadeIn">
