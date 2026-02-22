@@ -32,11 +32,6 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
     const [fileName, setFileName] = useState<string | null>(null);
     const [isParsing, setIsParsing] = useState(false);
 
-    React.useEffect(() => {
-        window.alert("ResumeAnalyzer Mounted - Diagnostic v2");
-        console.log("ResumeAnalyzer version 2 active");
-    }, []);
-
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         window.alert("handleFileChange event triggered in ResumeAnalyzer!");
         if (event.target.files && event.target.files.length > 0) {
@@ -334,8 +329,7 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                                         type="file"
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50"
                                         accept=".pdf"
-                                        onInput={handleFileChange}
-                                        onClick={() => window.alert("Input clicked!")}
+                                        onChange={handleFileChange}
                                         disabled={isParsing}
                                     />
                                     <div className="w-20 h-20 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">

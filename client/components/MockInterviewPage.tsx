@@ -64,11 +64,6 @@ const MockInterviewPage: React.FC<MockInterviewPageProps> = ({ user }) => {
   const [isCheckingTrial, setIsCheckingTrial] = useState(true);
 
   useEffect(() => {
-    window.alert("MockInterviewPage Mounted - Diagnostic v2");
-    console.log("MockInterviewPage version 2 active");
-  }, []);
-
-  useEffect(() => {
     return () => {
       if (currentAudio) {
         currentAudio.pause();
@@ -411,8 +406,7 @@ const MockInterviewPage: React.FC<MockInterviewPageProps> = ({ user }) => {
                       type="file"
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50"
                       accept=".pdf"
-                      onInput={handleFileChange}
-                      onClick={() => window.alert("Input clicked!")}
+                      onChange={handleFileChange}
                       disabled={isParsing}
                     />
                   </div>
