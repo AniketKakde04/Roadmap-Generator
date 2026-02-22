@@ -386,7 +386,7 @@ const App: React.FC = () => {
             case 'projects':
                 return <ProjectShowcase />;
             case 'mockInterview':
-                return <MockInterviewPage />;
+                return <MockInterviewPage user={user} />;
 
             case 'roadmapGenerator':
             default:

@@ -1,6 +1,8 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+
+// Import Roadmap & Analysis features from Gemini Service
 import {
     suggestProjectsFromResume,
     generateRoadmap,
@@ -8,11 +10,15 @@ import {
     generateAptitudeQuestions,
     generateStudyGuide,
     generatePersonalizedRoadmap,
+} from './services/geminiService';
+
+// Import Interview & Voice features from Sarvam Service
+import {
     startInterview,
     continueInterview,
     getInterviewFeedback,
     getAIAudio
-} from './services/geminiService';
+} from './services/sarvamService';
 
 dotenv.config();
 
@@ -20,14 +26,14 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json({ limit: '10mb' })); // Increase limit for large resume texts
+app.use(express.json({ limit: '10mb' }));
 
 // Health check
 app.get('/', (req: Request, res: Response) => {
-    res.send('AI Roadmap Generator API is running');
+    res.send('AI Roadmap Generator API is running (Powered by Gemini & Sarvam AI)');
 });
 
-// --- API Routes ---
+// --- GEMINI ROUTES (Roadmaps, Analysis, Study Guides) ---
 
 app.post('/api/analyze-resume', async (req: Request, res: Response) => {
     try {
@@ -95,11 +101,13 @@ app.post('/api/personalized-roadmap', async (req: Request, res: Response) => {
     }
 });
 
+// --- SARVAM ROUTES (Mock Interview & TTS) ---
+
 app.post('/api/interview/start', async (req: Request, res: Response) => {
     try {
         const { resumeText, jobTitle, jobDescription } = req.body;
         const result = await startInterview(resumeText, jobTitle, jobDescription);
-        res.send(result); // Returns string
+        res.send(result);
     } catch (error) {
         console.error("Error in /api/interview/start:", error);
         res.status(500).json({ error: error instanceof Error ? error.message : "Internal Server Error" });
@@ -110,7 +118,7 @@ app.post('/api/interview/continue', async (req: Request, res: Response) => {
     try {
         const { conversationHistory, resumeText, jobTitle } = req.body;
         const result = await continueInterview(conversationHistory, resumeText, jobTitle);
-        res.send(result); // Returns string
+        res.send(result);
     } catch (error) {
         console.error("Error in /api/interview/continue:", error);
         res.status(500).json({ error: error instanceof Error ? error.message : "Internal Server Error" });
@@ -119,8 +127,9 @@ app.post('/api/interview/continue', async (req: Request, res: Response) => {
 
 app.post('/api/interview/feedback', async (req: Request, res: Response) => {
     try {
-        const { conversationHistory, jobTitle } = req.body;
-        const result = await getInterviewFeedback(conversationHistory, jobTitle);
+        const { conversationHistory, jobTitle, resumeText } = req.body;
+        console.log(`Received feedback request for job: ${jobTitle}`);
+        const result = await getInterviewFeedback(conversationHistory, jobTitle, resumeText);
         res.json(result);
     } catch (error) {
         console.error("Error in /api/interview/feedback:", error);
@@ -131,8 +140,12 @@ app.post('/api/interview/feedback', async (req: Request, res: Response) => {
 app.post('/api/tts', async (req: Request, res: Response) => {
     try {
         const { textToSpeak } = req.body;
-        const result = await getAIAudio(textToSpeak);
-        res.json({ audioUrl: result }); // Returns base64 string as audioUrl (client needs to handle this)
+        // Sarvam returns a raw Base64 string of the WAV file
+        const audioBase64 = await getAIAudio(textToSpeak);
+
+        // Pass it to the client with the correct Data URI scheme so it plays immediately
+        // The client code expects "audioUrl"
+        res.json({ audioUrl: `data:audio/wav;base64,${audioBase64}` });
     } catch (error) {
         console.error("Error in /api/tts:", error);
         res.status(500).json({ error: error instanceof Error ? error.message : "Internal Server Error" });
@@ -142,4 +155,3 @@ app.post('/api/tts', async (req: Request, res: Response) => {
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-// Restart trigger

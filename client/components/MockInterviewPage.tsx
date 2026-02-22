@@ -4,7 +4,7 @@ import ArrowUpTrayIcon from './icons/ArrowUpTrayIcon';
 import MicrophoneIcon from './icons/MicrophoneIcon';
 import StopIcon from './icons/StopIcon';
 import UserIcon from './icons/UserIcon';
-import AIAgentIcon from './icons/AIAgentIcon';
+import InterviewerLogo from './icons/InterviewerLogo';
 import Loader from './Loader';
 import { ChatMessage, InterviewFeedback } from '../types';
 import {
@@ -13,9 +13,12 @@ import {
   getInterviewFeedback,
   getAIAudio,
 } from '../services/geminiService';
+import ArrowPathIcon from './icons/ArrowPathIcon';
 import HandThumbUpIcon from './icons/HandThumbUpIcon';
 import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon';
-import ArrowPathIcon from './icons/ArrowPathIcon';
+import FeedbackModal from './FeedbackModal';
+import { checkTrialUsed, recordTrialUsage } from '../services/trialService';
+import { User } from '../types';
 
 // Configure worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs`;
@@ -32,7 +35,11 @@ if (SpeechRecognition) {
   recognition.interimResults = false;
 }
 
-const MockInterviewPage: React.FC = () => {
+interface MockInterviewPageProps {
+  user: User | null;
+}
+
+const MockInterviewPage: React.FC<MockInterviewPageProps> = ({ user }) => {
   const [stage, setStage] = useState<InterviewStage>('setup');
   const [jobTitle, setJobTitle] = useState<string>('');
   const [jobDescription, setJobDescription] = useState<string>('');
@@ -52,6 +59,9 @@ const MockInterviewPage: React.FC = () => {
   const [recordingStart, setRecordingStart] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState<string>('00:00');
   const timerRef = useRef<number | null>(null);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [isTrialUsed, setIsTrialUsed] = useState(false);
+  const [isCheckingTrial, setIsCheckingTrial] = useState(true);
 
   useEffect(() => {
     return () => {
@@ -70,6 +80,20 @@ const MockInterviewPage: React.FC = () => {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [chatHistory]);
+
+  useEffect(() => {
+    const fetchTrialStatus = async () => {
+      if (user) {
+        setIsCheckingTrial(true);
+        const used = await checkTrialUsed(user.id, 'mock_interview');
+        setIsTrialUsed(used);
+        setIsCheckingTrial(false);
+      } else {
+        setIsCheckingTrial(false);
+      }
+    };
+    fetchTrialStatus();
+  }, [user]);
 
   const startTimer = () => {
     setRecordingStart(Date.now());
@@ -161,6 +185,13 @@ const MockInterviewPage: React.FC = () => {
       const aiResponseText = await continueInterview(newHistory, resumeText, jobTitle);
       setChatHistory(prev => [...prev, { role: 'model', text: aiResponseText }]);
       await playAIAudio(aiResponseText);
+
+      // Automatic transition to feedback if AI says it's done
+      if (aiResponseText.toLowerCase().includes('compiling your feedback')) {
+        setTimeout(() => {
+          handleGetFeedback();
+        }, 2000); // Give user a moment to hear/read the end message
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'AI failed to respond.');
       setIsAILoading(false);
@@ -207,6 +238,11 @@ const MockInterviewPage: React.FC = () => {
     }
 
     setError(null);
+    if (isTrialUsed) {
+      setError("You have already used your one-time mock interview trial.");
+      return;
+    }
+
     setIsStarting(true);
 
     try {
@@ -232,9 +268,18 @@ const MockInterviewPage: React.FC = () => {
     setIsAILoading(true);
     setError(null);
     try {
-      const feedbackReport = await getInterviewFeedback(chatHistory, jobTitle);
+      const feedbackReport = await getInterviewFeedback(chatHistory, jobTitle, resumeText);
       setFeedback(feedbackReport);
       setStage('feedback');
+
+      // Record trial usage when feedback is generated
+      if (user) {
+        await recordTrialUsage(user.id, 'mock_interview');
+        setIsTrialUsed(true);
+      }
+
+      // Show feedback modal after a short delay
+      setTimeout(() => setShowFeedbackModal(true), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate feedback.');
     } finally {
@@ -279,6 +324,39 @@ const MockInterviewPage: React.FC = () => {
   };
 
   const renderContent = () => {
+    if (isCheckingTrial) {
+      return (
+        <div className="w-full min-h-[400px] flex flex-col items-center justify-center space-y-4">
+          <Loader />
+          <p className="text-text-secondary animate-pulse">Checking your trial status...</p>
+        </div>
+      );
+    }
+
+    if (isTrialUsed && stage === 'setup') {
+      return (
+        <div className="w-full max-w-2xl mx-auto mt-12 p-8 bg-background-secondary rounded-2xl border border-border text-center shadow-xl animate-fadeIn">
+          <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
+            <ExclamationTriangleIcon className="w-10 h-10" />
+          </div>
+          <h2 className="text-3xl font-bold text-text-primary mb-4">Trial Limit Reached</h2>
+          <p className="text-text-secondary text-lg mb-8">
+            You have already used your one-time mock interview trial.
+            Right now we are testing this feature
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+            <button
+              onClick={() => (window as any).location.href = '/profile'}
+              className="px-8 py-3 bg-background-accent text-text-primary font-bold rounded-xl border border-border hover:bg-background-hover transition-all"
+            >
+              Go to My Profile
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     if (isStarting) return <Loader />;
 
     const canStart = !isParsing && !!resumeFile && jobTitle.trim().length > 0;
@@ -288,7 +366,7 @@ const MockInterviewPage: React.FC = () => {
         return (
           <div className="w-full max-w-2xl mx-auto p-8 bg-background-secondary border border-border rounded-xl shadow-lg animate-fadeIn">
             <div className="flex items-center mb-6">
-              <AIAgentIcon className="w-8 h-8 text-primary mr-3" />
+              <InterviewerLogo className="w-10 h-10 text-primary mr-3" />
               <h1 className="text-3xl font-bold text-text-primary">AI Mock Interview</h1>
             </div>
             <p className="text-text-secondary mb-6">
@@ -360,7 +438,7 @@ const MockInterviewPage: React.FC = () => {
               {/* Left: Interviewer */}
               <div className="flex flex-col bg-background rounded-lg border border-border p-6 items-center justify-center shadow-sm">
                 <div className="w-36 h-36 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4 drop-shadow-lg">
-                  <AIAgentIcon className="w-16 h-16 text-white" />
+                  <InterviewerLogo className="w-20 h-20 text-white" />
                 </div>
                 <div className="text-text-primary font-semibold">Interviewer</div>
                 <div className="text-text-secondary text-sm mt-1">AI Hiring Manager</div>
@@ -384,7 +462,7 @@ const MockInterviewPage: React.FC = () => {
                     <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       {msg.role !== 'user' && (
                         <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center mr-3 shadow-sm">
-                          <AIAgentIcon className="w-4 h-4 text-white" />
+                          <InterviewerLogo className="w-5 h-5 text-white" />
                         </div>
                       )}
                       <div className={`p-3 rounded-lg max-w-[70%] shadow-sm ${msg.role === 'user' ? 'bg-primary text-white' : 'bg-background-accent text-text-primary'}`}>
@@ -399,8 +477,8 @@ const MockInterviewPage: React.FC = () => {
                   ))}
                   {isAILoading && (
                     <div className="flex justify-start">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center mr-3">
-                        <AIAgentIcon className="w-4 h-4 text-white" />
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary flex items-center justify-center mr-3 shadow-sm">
+                        <InterviewerLogo className="w-5 h-5 text-white" />
                       </div>
                       <div className="p-3 rounded-lg bg-background-accent text-text-primary">
                         <Loader />
@@ -445,7 +523,7 @@ const MockInterviewPage: React.FC = () => {
               <div>
                 <h2 className="text-xl font-semibold text-success mb-3">Strengths</h2>
                 <ul className="space-y-2">
-                  {feedback.strengths.map((strength, index) => (
+                  {(feedback.strengths || []).map((strength, index) => (
                     <li key={index} className="flex items-start p-3 bg-background border border-border rounded-lg shadow-sm">
                       <HandThumbUpIcon className="w-5 h-5 text-success mr-3 flex-shrink-0 mt-1" />
                       <span className="text-text-secondary">{strength}</span>
@@ -457,7 +535,7 @@ const MockInterviewPage: React.FC = () => {
               <div>
                 <h2 className="text-xl font-semibold text-warning mb-3">Areas for Improvement</h2>
                 <ul className="space-y-2">
-                  {feedback.areas_for_improvement.map((area, index) => (
+                  {(feedback.areas_for_improvement || []).map((area, index) => (
                     <li key={index} className="flex items-start p-3 bg-background border border-border rounded-lg shadow-sm">
                       <ExclamationTriangleIcon className="w-5 h-5 text-warning mr-3 flex-shrink-0 mt-1" />
                       <span className="text-text-secondary">{area}</span>
@@ -544,6 +622,12 @@ const MockInterviewPage: React.FC = () => {
             </button>
           </div>
         </div>
+      )}
+      {showFeedbackModal && (
+        <FeedbackModal
+          onClose={() => setShowFeedbackModal(false)}
+          currentUserId={user?.id}
+        />
       )}
     </div>
   );

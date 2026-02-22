@@ -439,6 +439,26 @@ export type Database = {
           is_ai_generated?: boolean
           created_at?: string
         }
+      },
+      user_trials: {
+        Row: {
+          id: string
+          user_id: string
+          trial_type: string
+          used_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          trial_type: string
+          used_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          trial_type?: string
+          used_at?: string
+        }
       }
     }
 

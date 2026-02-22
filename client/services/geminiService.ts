@@ -181,13 +181,14 @@ export const continueInterview = async (
 
 export const getInterviewFeedback = async (
     conversationHistory: ChatMessage[],
-    jobTitle: string
+    jobTitle: string,
+    resumeText: string
 ): Promise<InterviewFeedback> => {
     try {
         const response = await fetch(`${API_URL}/interview/feedback`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ conversationHistory, jobTitle })
+            body: JSON.stringify({ conversationHistory, jobTitle, resumeText })
         });
 
         if (!response.ok) {
@@ -216,11 +217,14 @@ export const getAIAudio = async (textToSpeak: string): Promise<string> => {
         }
 
         const data = await response.json();
-        // The server returns base64 string of the WAV file
-        // We need to convert it to a Blob URL for the client to play
-        const base64 = data.audioUrl;
 
-        // Convert base64 to Blob
+        // If the server returns a proper Data URI, use it directly
+        if (data.audioUrl && data.audioUrl.startsWith('data:')) {
+            return data.audioUrl;
+        }
+
+        // Fallback: If server returns raw base64 (old behavior), convert to Blob
+        const base64 = data.audioUrl;
         const binaryString = window.atob(base64);
         const len = binaryString.length;
         const bytes = new Uint8Array(len);

@@ -67,7 +67,8 @@ const JourneyCard = ({
     icon,
     colorClass,
     visual,
-    isLast
+    isLast,
+    onClick
 }: {
     step: string,
     title: string,
@@ -76,9 +77,10 @@ const JourneyCard = ({
     icon: JSX.Element,
     colorClass: string,
     visual: JSX.Element,
-    isLast?: boolean
+    isLast?: boolean,
+    onClick?: () => void
 }) => (
-    <div className="relative flex gap-8 md:gap-12 group">
+    <div className={`relative flex gap-8 md:gap-12 group ${onClick ? 'cursor-pointer' : ''}`} onClick={onClick}>
         {/* Timeline Connector (Desktop) */}
         <div className="hidden md:flex flex-col items-center">
             <div className={`w-12 h-12 rounded-full ${colorClass} flex items-center justify-center text-white font-bold text-xl shadow-lg z-10 ring-4 ring-background transition-transform group-hover:scale-110`}>
@@ -354,6 +356,7 @@ const HomePage: React.FC<{ onSignUpClick: () => void, onNavigate: (view: string)
                                 </div>
                             }
                             isLast
+                            onClick={() => onNavigate('mockInterview')}
                         />
                     </div>
                 </section>
