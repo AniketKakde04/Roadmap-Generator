@@ -119,10 +119,8 @@ const MockInterviewPage: React.FC<MockInterviewPageProps> = ({ user }) => {
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    window.alert("handleFileChange event triggered!");
     if (event.target.files && event.target.files.length > 0) {
       const file = event.target.files[0];
-      window.alert(`File selected: ${file.name}, type: ${file.type}`);
       const isPdfMime = file.type === 'application/pdf';
       const isPdfExt = file.name.toLowerCase().endsWith('.pdf');
 
@@ -149,12 +147,10 @@ const MockInterviewPage: React.FC<MockInterviewPageProps> = ({ user }) => {
           if (!fullText.trim()) throw new Error('Could not extract text from PDF.');
           setResumeText(fullText);
           console.log("PDF parsed successfully");
-          window.alert("Resume uploaded and parsed successfully!");
         } catch (err) {
           console.error("PDF Parsing Error:", err);
           const msg = err instanceof Error ? err.message : 'Failed to parse PDF.';
           setError(msg);
-          window.alert(`Error: ${msg}`);
           setResumeText('');
           setResumeFile(null);
         } finally {

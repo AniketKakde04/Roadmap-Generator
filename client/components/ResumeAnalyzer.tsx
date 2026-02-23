@@ -33,10 +33,8 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
     const [isParsing, setIsParsing] = useState(false);
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        window.alert("handleFileChange event triggered in ResumeAnalyzer!");
         if (event.target.files && event.target.files.length > 0) {
             const file = event.target.files[0];
-            window.alert(`File selected: ${file.name}, type: ${file.type}`);
             const isPdfMime = file.type === 'application/pdf';
             const isPdfExt = file.name.toLowerCase().endsWith('.pdf');
 
@@ -69,19 +67,16 @@ const ResumeAnalyzer: React.FC<ResumeAnalyzerProps> = ({ onProjectSelect }) => {
                     // Empty or very short text implies parsing failed or it's an image PDF.
                     const msg = 'Could not extract text from this PDF. It might be a scanned image. Please upload a text-based PDF.';
                     setError(msg);
-                    window.alert(`Error: ${msg}`);
                     setResumeText(''); // Clear it so they can't proceed with bad data
                     setFileName(null);
                 } else {
                     setResumeText(cleanedText);
                     console.log(`Successfully extracted ${cleanedText.length} characters from custom PDF parser.`);
-                    window.alert("Resume uploaded and parsed successfully!");
                 }
             } catch (err) {
                 console.error("PDF Parsing Error:", err);
                 const msg = 'Failed to parse PDF. Please try again.';
                 setError(msg);
-                window.alert(`Error: ${msg}`);
                 setFileName(null);
             } finally {
                 setIsParsing(false);
